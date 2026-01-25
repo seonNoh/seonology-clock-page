@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/seonNoh/seonology-clock-page/compare/v1.0.3...v1.0.4) (2026-01-25)
+
+
+### Bug Fixes
+
+* use cert-manager for TLS certificate instead of Traefik certResolver ([a1368d1](https://github.com/seonNoh/seonology-clock-page/commit/a1368d1c1575e8510da8cd77b1f3f6a85bd1d807))
+
 ## [1.0.3](https://github.com/seonNoh/seonology-clock-page/compare/v1.0.2...v1.0.3) (2026-01-25)
 
 
