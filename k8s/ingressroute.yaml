@@ -13,4 +13,4 @@ spec:
         - name: seonology-clock-page
           port: 80
   tls:
-    certResolver: letsencrypt
+    secretName: seonology-clock-page-tls
