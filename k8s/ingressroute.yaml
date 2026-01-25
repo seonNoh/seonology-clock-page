@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: seonology-clock-page
+  namespace: seonology-apps
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`clock.seonology.com`)
+      kind: Rule
+      services:
+        - name: seonology-clock-page
+          port: 80
+  tls:
+    certResolver: letsencrypt

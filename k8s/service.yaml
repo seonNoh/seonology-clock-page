@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: seonology-clock-page
+  namespace: seonology-apps
+  labels:
+    app: seonology-clock-page
+spec:
+  selector:
+    app: seonology-clock-page
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  type: ClusterIP

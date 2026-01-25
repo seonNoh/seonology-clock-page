@@ -1,0 +1,524 @@
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top Center Bar - Weather & Exchange */
+.top-center-bar {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  z-index: 10;
+}
+
+.top-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.top-widget:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.widget-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-primary);
+}
+
+.widget-text {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--text-secondary);
+}
+
+.bar-divider {
+  width: 1px;
+  height: 2rem;
+  background: var(--border-color);
+}
+
+/* Main content - centered clock */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  gap: 2rem;
+}
+
+/* Todo Preview - bottom left */
+.todo-preview {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  min-width: 200px;
+  z-index: 10;
+}
+
+.todo-preview:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.todo-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.todo-icon {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.todo-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.todo-count {
+  margin-left: auto;
+  background: var(--accent-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+}
+
+.todo-preview-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.todo-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.todo-bullet {
+  font-size: 0.8rem;
+  color: var(--accent-secondary);
+}
+
+.todo-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.todo-preview-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Corner Icons - now less used */
+.corner-icon {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem 2.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--radius-md);
+  z-index: 10;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.corner-icon:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.top-left {
+  top: 2rem;
+  left: 2rem;
+}
+
+.top-right {
+  top: 2rem;
+  right: 2rem;
+}
+
+.bottom-left {
+  bottom: 2rem;
+  left: 2rem;
+}
+
+.icon-emoji {
+  font-size: 3rem;
+}
+
+.icon-symbol {
+  font-size: 3rem;
+  font-weight: 300;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+/* Weather SVG Icon */
+.weather-icon-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+}
+
+.icon-text {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--text-secondary);
+}
+
+.exchange-text {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.icon-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--accent-primary);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-icon {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calendar-icon .icon-text {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.calendar-symbol {
+  font-size: 2.2rem;
+}
+
+/* Ambient Info - bottom area */
+.ambient-info {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  z-index: 10;
+}
+
+/* Ambient items (calendar, fortune) */
+.ambient-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.ambient-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ambient-symbol {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--text-primary);
+}
+
+.ambient-value {
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.calendar-item {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.calendar-item .ambient-value {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.fortune-item .ambient-symbol {
+  color: var(--accent-secondary);
+}
+
+.ambient-text {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1.75rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.ambient-text:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.ambient-label {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.fortune-ambient {
+  color: var(--text-secondary);
+}
+
+.fortune-ambient .icon-symbol {
+  font-size: 2rem;
+}
+
+/* History - centered below clock */
+.history-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--radius-md);
+  text-align: center;
+  max-width: 80%;
+}
+
+.history-center:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.history-year {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--accent-secondary);
+}
+
+.history-text {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(85vh - 70px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .corner-icon {
+    padding: 0.75rem;
+  }
+
+  .top-left,
+  .top-right,
+  .bottom-left {
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+  }
+
+  .top-left {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .top-right {
+    top: 1rem;
+    right: 1rem;
+  }
+
+  .bottom-left {
+    bottom: 5rem;
+    left: 1rem;
+  }
+
+  .ambient-info {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .history-ambient {
+    display: none;
+  }
+
+  .icon-emoji {
+    font-size: 1.25rem;
+  }
+
+  .icon-text {
+    font-size: 0.95rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .modal-body {
+    max-height: calc(90vh - 70px);
+  }
+}
+
+@media (max-width: 480px) {
+  .ambient-info {
+    gap: 0.5rem;
+  }
+
+  .ambient-text {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .ambient-label {
+    font-size: 0.8rem;
+  }
+}
