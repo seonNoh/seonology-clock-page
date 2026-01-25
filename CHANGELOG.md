@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.0.1...v1.0.2) (2026-01-25)
+
+
+### Bug Fixes
+
+* use lowercase repository owner for docker image tag ([cc2a0f7](https://github.com/seonNoh/seonology-clock-page/commit/cc2a0f79e3f5cd9d361cbc227e914e37a94ac2ed))
+
 ## [1.0.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.0.0...v1.0.1) (2026-01-25)
 
 
