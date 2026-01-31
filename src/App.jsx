@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sun, CloudSun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog, Thermometer } from 'lucide-react';
+import { Sun, CloudSun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog } from 'lucide-react';
 import Clock from './components/Clock';
 import Weather from './components/Weather';
 import TodoList from './components/TodoList';
@@ -9,9 +9,10 @@ import Fortune from './components/Fortune';
 import TodayInHistory from './components/TodayInHistory';
 import './App.css';
 
-// Weather widget - centered top
+// Weather widget - centered top (auto-refresh every 5 minutes)
 function WeatherWidget({ onClick }) {
   const [data, setData] = useState(null);
+  const [coords, setCoords] = useState(null);
 
   useEffect(() => {
     const fetchWeather = async (lat, lon) => {
@@ -29,15 +30,35 @@ function WeatherWidget({ onClick }) {
       }
     };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-        () => fetchWeather(37.5665, 126.9780)
-      );
-    } else {
-      fetchWeather(37.5665, 126.9780);
-    }
-  }, []);
+    const initWeather = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+            fetchWeather(pos.coords.latitude, pos.coords.longitude);
+          },
+          () => {
+            setCoords({ lat: 37.5665, lon: 126.9780 });
+            fetchWeather(37.5665, 126.9780);
+          }
+        );
+      } else {
+        setCoords({ lat: 37.5665, lon: 126.9780 });
+        fetchWeather(37.5665, 126.9780);
+      }
+    };
+
+    initWeather();
+
+    // Auto-refresh every 5 minutes (300000ms)
+    const interval = setInterval(() => {
+      if (coords) {
+        fetchWeather(coords.lat, coords.lon);
+      }
+    }, 300000);
+
+    return () => clearInterval(interval);
+  }, [coords]);
 
   const getIcon = (code) => {
     const iconProps = { size: 48, strokeWidth: 1.5 };
@@ -58,7 +79,7 @@ function WeatherWidget({ onClick }) {
   );
 }
 
-// Exchange rate widget - centered top
+// Exchange rate widget - centered top (auto-refresh every 5 minutes)
 function ExchangeWidget({ onClick }) {
   const [rate, setRate] = useState(null);
 
@@ -73,7 +94,13 @@ function ExchangeWidget({ onClick }) {
         setRate(null);
       }
     };
+
     fetchRate();
+
+    // Auto-refresh every 5 minutes (300000ms)
+    const interval = setInterval(fetchRate, 300000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
