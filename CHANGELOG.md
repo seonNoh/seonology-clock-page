@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.0.4...v1.1.0) (2026-01-31)
+
+
+### Features
+
+* add auto-refresh for weather and exchange rate widgets ([3cfdd95](https://github.com/seonNoh/seonology-clock-page/commit/3cfdd95dbfcd2d3d0e2974a5f4c4ab3b0b1bea38))
+
 ## [1.0.4](https://github.com/seonNoh/seonology-clock-page/compare/v1.0.3...v1.0.4) (2026-01-25)
 
 
