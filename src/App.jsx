@@ -85,10 +85,13 @@ function ExchangeWidget({ onClick }) {
   useEffect(() => {
     const fetchRate = async () => {
       try {
-        const res = await fetch('https://api.exchangerate-api.com/v4/latest/KRW');
+        const res = await fetch('https://api.manana.kr/exchange/rate/KRW/KRW,JPY.json');
         const data = await res.json();
-        const jpyPer100Krw = (data.rates.JPY * 100).toFixed(2);
-        setRate(jpyPer100Krw);
+        const jpyEntry = data.find(item => item.name === 'JPYKRW=X');
+        if (jpyEntry) {
+          const jpyPer100Krw = (jpyEntry.rate * 100).toFixed(2);
+          setRate(jpyPer100Krw);
+        }
       } catch {
         setRate(null);
       }
@@ -96,7 +99,7 @@ function ExchangeWidget({ onClick }) {
 
     fetchRate();
 
-    // Auto-refresh every 5 minutes (300000ms)
+    // Auto-refresh every 5 minutes (300000ms) - real-time API
     const interval = setInterval(fetchRate, 300000);
 
     return () => clearInterval(interval);
