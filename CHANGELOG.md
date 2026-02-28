@@ -1,3 +1,19 @@
+# [1.3.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.2.0...v1.3.0) (2026-02-28)
+
+
+### Bug Fixes
+
+* adjust bottom elements position to avoid footer overlap ([286c6a8](https://github.com/seonNoh/seonology-clock-page/commit/286c6a8b04dba83a9a7e3dcd96af30ddb669ad1a))
+
+
+### Features
+
+* add icons for all services ([c91e815](https://github.com/seonNoh/seonology-clock-page/commit/c91e81573183a7738cc4934f7bc7ffd41b9e4c11))
+* add k8s API integration and nginx proxy for production ([3e84d24](https://github.com/seonNoh/seonology-clock-page/commit/3e84d24fbf6b183bcc88b68da40e975168122382))
+* add SEONOLOGY button with dynamic service loading from k8s ([14e3cf8](https://github.com/seonNoh/seonology-clock-page/commit/14e3cf8ec22f5d31bcd423505d7725642c73d628))
+* replace text-based icons with service-specific SVG icons ([0a781d6](https://github.com/seonNoh/seonology-clock-page/commit/0a781d6fdee1d9d1e324137513296029f100e289))
+* separate SEONOLOGY button into dedicated top-left area ([10f2455](https://github.com/seonNoh/seonology-clock-page/commit/10f2455cdebda029e43ceccfa1e2f486af931d94))
+
 # [1.2.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.1.0...v1.2.0) (2026-02-28)
 
 
