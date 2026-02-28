@@ -25,7 +25,7 @@ COPY api/index.js ./api/
 
 # Copy built frontend
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/http.d/default.conf
 
 # Create startup script
 RUN echo '#!/bin/sh' > /start.sh && \
