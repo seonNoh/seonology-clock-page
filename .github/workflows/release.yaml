@@ -29,6 +29,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
+      - name: Pull latest changes
+        run: git pull origin main
+
       - name: Get version
         id: version
         run: |
