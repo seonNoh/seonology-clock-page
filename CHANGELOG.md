@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.3.0...v1.3.1) (2026-02-28)
+
+
+### Bug Fixes
+
+* remove server block wrapper from nginx.conf ([ea55c79](https://github.com/seonNoh/seonology-clock-page/commit/ea55c7954e3a4fa4677c9fd262312ad1cf215a1a))
+
 # [1.3.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.2.0...v1.3.0) (2026-02-28)
 
 
