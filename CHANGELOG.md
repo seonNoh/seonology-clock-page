@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.4.0...v1.4.1) (2026-02-28)
+
+
+### Bug Fixes
+
+* add git pull step after semantic release to fetch VERSION file ([78c8251](https://github.com/seonNoh/seonology-clock-page/commit/78c8251af21cbc34764921a8cdb6e1a40f3ec5f0))
+
 # [1.4.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.3.2...v1.4.0) (2026-02-28)
 
 
