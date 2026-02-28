@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.3.1...v1.3.2) (2026-02-28)
+
+
+### Bug Fixes
+
+* correct nginx configuration file structure ([c842e22](https://github.com/seonNoh/seonology-clock-page/commit/c842e222883c596d2079e20ccbb23a2b2ab737f0))
+
 ## [1.3.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.3.0...v1.3.1) (2026-02-28)
 
 
