@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: seonology-clock-page
-        image: ghcr.io/seonnoh/seonology-clock-page:latest
+        image: ghcr.io/seonnoh/seonology-clock-page:v1.2.0
         ports:
         - containerPort: 80
           name: http
