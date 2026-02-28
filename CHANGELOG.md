@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.3.2...v1.4.0) (2026-02-28)
+
+
+### Features
+
+* add clock theme switcher with digital, analog, and flip styles ([3e3973b](https://github.com/seonNoh/seonology-clock-page/commit/3e3973b628936ec436bee2d99bf61d8cff6b4037))
+
 ## [1.3.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.3.1...v1.3.2) (2026-02-28)
 
 
