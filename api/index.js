@@ -21,42 +21,34 @@ const isInCluster = fs.existsSync(K8S_TOKEN_PATH);
 
 // Service icon mapping
 const SERVICE_ICONS = {
-  vault: {
-    name: 'Vault',
-    description: 'Secret Management',
-    color: '#FFD814',
-    icon: 'vault',
-  },
-  auth: {
-    name: 'Keycloak',
-    description: 'Authentication',
-    color: '#4D9FFF',
-    icon: 'key',
-  },
-  argocd: {
-    name: 'Argo CD',
-    description: 'GitOps CD',
-    color: '#EF7B4D',
-    icon: 'gitops',
-  },
-  cli: {
-    name: 'seon CLI',
-    description: 'CLI Tools',
-    color: '#00D9FF',
-    icon: 'terminal',
-  },
-  clock: {
-    name: 'Clock',
-    description: 'Dashboard',
-    color: '#A78BFA',
-    icon: 'clock',
-  },
-  grafana: {
-    name: 'Grafana',
-    description: 'Monitoring',
-    color: '#F46800',
-    icon: 'chart',
-  },
+  vault: { name: 'Vault', description: 'Secret Management', color: '#FFD814', icon: 'vault' },
+  auth: { name: 'Keycloak', description: 'Authentication', color: '#4D9FFF', icon: 'key' },
+  argocd: { name: 'Argo CD', description: 'GitOps CD', color: '#EF7B4D', icon: 'gitops' },
+  cli: { name: 'seon CLI', description: 'CLI Tools', color: '#00D9FF', icon: 'terminal' },
+  clock: { name: 'Clock', description: 'Dashboard', color: '#A78BFA', icon: 'clock' },
+  grafana: { name: 'Grafana', description: 'Monitoring', color: '#F46800', icon: 'chart' },
+  aw: { name: 'ActivityWatch', description: 'Time Tracking', color: '#4CAF50', icon: 'activity' },
+  backstage: { name: 'Backstage', description: 'Developer Portal', color: '#9D4EDD', icon: 'portal' },
+  blinko: { name: 'Blinko', description: 'Notes', color: '#FFB703', icon: 'note' },
+  chat: { name: 'Mattermost', description: 'Team Chat', color: '#0072C6', icon: 'chat' },
+  cms: { name: 'CMS', description: 'Content Management', color: '#06B6D4', icon: 'content' },
+  code: { name: 'Coder', description: 'Dev Environment', color: '#6366F1', icon: 'code' },
+  comic: { name: 'Komga', description: 'Comics', color: '#EC4899', icon: 'book' },
+  file: { name: 'FileBrowser', description: 'File Manager', color: '#10B981', icon: 'folder' },
+  headlamp: { name: 'Headlamp', description: 'K8s UI', color: '#3B82F6', icon: 'k8s' },
+  journey: { name: 'Journey', description: 'Travel Planner', color: '#8B5CF6', icon: 'map' },
+  k8s: { name: 'K8s Roadmap', description: 'Learning Path', color: '#326CE5', icon: 'k8s' },
+  longhorn: { name: 'Longhorn', description: 'Storage', color: '#F97316', icon: 'storage' },
+  music: { name: 'Navidrome', description: 'Music Server', color: '#EF4444', icon: 'music' },
+  my: { name: 'Portal', description: 'User Portal', color: '#14B8A6', icon: 'user' },
+  pdf: { name: 'Stirling PDF', description: 'PDF Tools', color: '#DC2626', icon: 'pdf' },
+  photos: { name: 'Immich', description: 'Photo Library', color: '#F59E0B', icon: 'photo' },
+  share: { name: 'Content Share', description: 'File Sharing', color: '#22C55E', icon: 'share' },
+  tasks: { name: 'Vikunja', description: 'Task Manager', color: '#A855F7', icon: 'task' },
+  webdav: { name: 'WebDAV', description: 'File Sync', color: '#0EA5E9', icon: 'cloud' },
+  wiki: { name: 'Outline', description: 'Wiki', color: '#6366F1', icon: 'wiki' },
+  workflow: { name: 'n8n', description: 'Automation', color: '#EA580C', icon: 'workflow' },
+  www: { name: 'Homarr', description: 'Homepage', color: '#7C3AED', icon: 'home' },
 };
 
 // Get service key from hostname
@@ -67,6 +59,28 @@ function getServiceKey(hostname) {
   if (hostname.includes('cli')) return 'cli';
   if (hostname.includes('clock')) return 'clock';
   if (hostname.includes('grafana')) return 'grafana';
+  if (hostname.includes('aw.')) return 'aw';
+  if (hostname.includes('backstage')) return 'backstage';
+  if (hostname.includes('blinko')) return 'blinko';
+  if (hostname.includes('chat')) return 'chat';
+  if (hostname.includes('cms')) return 'cms';
+  if (hostname.includes('code')) return 'code';
+  if (hostname.includes('comic')) return 'comic';
+  if (hostname.includes('file')) return 'file';
+  if (hostname.includes('headlamp')) return 'headlamp';
+  if (hostname.includes('journey')) return 'journey';
+  if (hostname.includes('k8s')) return 'k8s';
+  if (hostname.includes('longhorn')) return 'longhorn';
+  if (hostname.includes('music')) return 'music';
+  if (hostname.includes('my.')) return 'my';
+  if (hostname.includes('pdf')) return 'pdf';
+  if (hostname.includes('photos')) return 'photos';
+  if (hostname.includes('share')) return 'share';
+  if (hostname.includes('tasks')) return 'tasks';
+  if (hostname.includes('webdav')) return 'webdav';
+  if (hostname.includes('wiki')) return 'wiki';
+  if (hostname.includes('workflow')) return 'workflow';
+  if (hostname.includes('www')) return 'www';
   return null;
 }
 

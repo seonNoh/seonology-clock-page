@@ -262,6 +262,220 @@ function ChartIcon() {
   );
 }
 
+function ActivityIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M8 32 L16 32 L24 16 L32 48 L40 24 L48 32 L56 32" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function PortalIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="32" cy="32" r="12" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="32" cy="32" r="4" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function NoteIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M16 12 L48 12 L48 52 L16 52 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="24" y1="24" x2="40" y2="24" stroke="currentColor" strokeWidth="2"/>
+      <line x1="24" y1="32" x2="40" y2="32" stroke="currentColor" strokeWidth="2"/>
+      <line x1="24" y1="40" x2="32" y2="40" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function ChatIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="12" y="16" width="40" height="28" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M24 44 L32 52 L32 44" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="20" y1="28" x2="44" y2="28" stroke="currentColor" strokeWidth="2"/>
+      <line x1="20" y1="36" x2="36" y2="36" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function ContentIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="16" y="12" width="32" height="40" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="24" y1="24" x2="40" y2="24" stroke="currentColor" strokeWidth="2"/>
+      <line x1="24" y1="32" x2="40" y2="32" stroke="currentColor" strokeWidth="2"/>
+      <line x1="24" y1="40" x2="32" y2="40" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M24 20 L12 32 L24 44" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M40 20 L52 32 L40 44" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="36" y1="16" x2="28" y2="48" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M16 12 L16 52 L32 44 L48 52 L48 12 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="32" y1="12" x2="32" y2="44" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M12 20 L12 48 L52 48 L52 24 L32 24 L28 20 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  );
+}
+
+function K8sIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M32 12 L48 24 L48 40 L32 52 L16 40 L16 24 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="32" cy="32" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="32" y1="24" x2="32" y2="16" stroke="currentColor" strokeWidth="2"/>
+      <line x1="32" y1="40" x2="32" y2="48" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function MapIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M12 16 L24 12 L40 20 L52 16 L52 48 L40 52 L24 44 L12 48 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="24" y1="12" x2="24" y2="44" stroke="currentColor" strokeWidth="2"/>
+      <line x1="40" y1="20" x2="40" y2="52" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function StorageIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="12" y="16" width="40" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <rect x="12" y="32" width="40" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="20" cy="22" r="2" fill="currentColor"/>
+      <circle cx="20" cy="38" r="2" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function MusicIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M24 40 L24 20 L44 16 L44 36" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="20" cy="44" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="40" cy="40" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <circle cx="32" cy="24" r="10" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M16 52 C16 42 22 36 32 36 C42 36 48 42 48 52" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  );
+}
+
+function PdfIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M20 12 L44 12 L52 20 L52 52 L20 52 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M44 12 L44 20 L52 20" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <text x="32" y="38" textAnchor="middle" fill="currentColor" fontSize="12" fontWeight="600">PDF</text>
+    </svg>
+  );
+}
+
+function PhotoIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="12" y="16" width="40" height="32" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="24" cy="28" r="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M12 40 L24 28 L36 40 L48 28 L52 32" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <circle cx="20" cy="32" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="44" cy="20" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="44" cy="44" r="6" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="25" y1="30" x2="39" y2="22" stroke="currentColor" strokeWidth="2"/>
+      <line x1="25" y1="34" x2="39" y2="42" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function TaskIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="16" y="12" width="32" height="40" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M24 24 L28 28 L36 20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="24" y1="36" x2="40" y2="36" stroke="currentColor" strokeWidth="2"/>
+      <line x1="24" y1="44" x2="40" y2="44" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  );
+}
+
+function CloudIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M20 40 C14 40 10 36 10 30 C10 24 14 20 20 20 C20 14 26 10 32 10 C38 10 44 14 44 20 C50 20 54 24 54 30 C54 36 50 40 44 40 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  );
+}
+
+function WikiIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="16" y="12" width="32" height="40" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="24" y1="24" x2="40" y2="24" stroke="currentColor" strokeWidth="2"/>
+      <line x1="24" y1="32" x2="40" y2="32" stroke="currentColor" strokeWidth="2"/>
+      <line x1="24" y1="40" x2="36" y2="40" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="44" cy="44" r="8" fill="currentColor"/>
+      <text x="44" y="48" textAnchor="middle" fill="white" fontSize="10" fontWeight="600">W</text>
+    </svg>
+  );
+}
+
+function WorkflowIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="12" y="12" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <rect x="40" y="12" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <rect x="26" y="40" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M24 18 L32 18 L32 40" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M40 18 L32 18" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M12 32 L32 12 L52 32 L52 52 L12 52 Z" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <rect x="28" y="36" width="8" height="16" fill="currentColor"/>
+    </svg>
+  );
+}
+
 function DefaultIcon() {
   return (
     <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -281,6 +495,27 @@ function ServiceIcon({ service }) {
       case 'terminal': return <TerminalIcon />;
       case 'clock': return <ClockIcon />;
       case 'chart': return <ChartIcon />;
+      case 'activity': return <ActivityIcon />;
+      case 'portal': return <PortalIcon />;
+      case 'note': return <NoteIcon />;
+      case 'chat': return <ChatIcon />;
+      case 'content': return <ContentIcon />;
+      case 'code': return <CodeIcon />;
+      case 'book': return <BookIcon />;
+      case 'folder': return <FolderIcon />;
+      case 'k8s': return <K8sIcon />;
+      case 'map': return <MapIcon />;
+      case 'storage': return <StorageIcon />;
+      case 'music': return <MusicIcon />;
+      case 'user': return <UserIcon />;
+      case 'pdf': return <PdfIcon />;
+      case 'photo': return <PhotoIcon />;
+      case 'share': return <ShareIcon />;
+      case 'task': return <TaskIcon />;
+      case 'cloud': return <CloudIcon />;
+      case 'wiki': return <WikiIcon />;
+      case 'workflow': return <WorkflowIcon />;
+      case 'home': return <HomeIcon />;
       default: return <DefaultIcon />;
     }
   };
