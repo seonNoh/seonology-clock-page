@@ -568,6 +568,96 @@
   color: var(--border-color);
 }
 
+/* SEONOLOGY Button */
+.seonology-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.seonology-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--accent-primary);
+}
+
+/* Services Grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  padding: 0.5rem;
+}
+
+.services-loading,
+.services-error {
+  text-align: center;
+  padding: 2rem;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  color: var(--text-muted);
+}
+
+.services-error {
+  color: #ff6b6b;
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.service-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--service-color);
+  transform: translateY(-2px);
+}
+
+.service-icon {
+  color: var(--service-color);
+  transition: var(--transition);
+}
+
+.service-card:hover .service-icon {
+  transform: scale(1.1);
+}
+
+.service-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.service-name {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.service-desc {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 @media (max-width: 768px) {
   .app-footer {
     padding: 0.75rem 1rem;
@@ -577,5 +667,19 @@
     font-size: 0.75rem;
     gap: 0.5rem;
     flex-wrap: wrap;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .service-card {
+    padding: 1rem;
+  }
+
+  .seonology-btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
   }
 }

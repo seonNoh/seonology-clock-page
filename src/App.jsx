@@ -10,6 +10,8 @@ import './App.css';
 // Import version from VERSION file (will be replaced at build time)
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
 
+// Services will be loaded from API
+
 // Weather widget - centered top (auto-refresh every 5 minutes)
 function WeatherWidget({ onClick }) {
   const [data, setData] = useState(null);
@@ -192,6 +194,82 @@ function Modal({ isOpen, onClose, title, children }) {
   );
 }
 
+// Service icon component
+function ServiceIcon({ service }) {
+  const firstLetter = service.name.charAt(0).toUpperCase();
+  
+  return (
+    <a
+      href={service.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="service-card"
+      style={{ '--service-color': service.color }}
+    >
+      <div className="service-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+          <rect width="64" height="64" rx="12" fill="currentColor" fillOpacity="0.1" />
+          <text
+            x="32"
+            y="40"
+            textAnchor="middle"
+            fill="currentColor"
+            fontSize="28"
+            fontWeight="600"
+            fontFamily="'JetBrains Mono', monospace"
+          >
+            {firstLetter}
+          </text>
+        </svg>
+      </div>
+      <div className="service-info">
+        <div className="service-name">{service.name}</div>
+        <div className="service-desc">{service.description}</div>
+      </div>
+    </a>
+  );
+}
+
+// Services modal content
+function ServicesModal() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch('http://localhost:3001/api/services');
+        const data = await res.json();
+        setServices(data.services || []);
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to fetch services:', err);
+        setError('Failed to load services');
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return <div className="services-loading">Loading services...</div>;
+  }
+
+  if (error) {
+    return <div className="services-error">{error}</div>;
+  }
+
+  return (
+    <div className="services-grid">
+      {services.map((service) => (
+        <ServiceIcon key={service.id} service={service} />
+      ))}
+    </div>
+  );
+}
+
 // Footer component
 function Footer() {
   return (
@@ -231,6 +309,10 @@ function App() {
     <div className="dashboard">
       {/* Top Center - Weather & Exchange */}
       <div className="top-center-bar">
+        <button className="seonology-btn" onClick={() => openModal('services')}>
+          SEONOLOGY
+        </button>
+        <div className="bar-divider"></div>
         <WeatherWidget onClick={() => openModal('weather')} />
         <div className="bar-divider"></div>
         <ExchangeWidget onClick={() => openModal('exchange')} />
@@ -250,6 +332,10 @@ function App() {
       </div>
 
       {/* Modals */}
+      <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="Services">
+        <ServicesModal />
+      </Modal>
+
       <Modal isOpen={activeModal === 'weather'} onClose={closeModal} title="Weather">
         <Weather />
       </Modal>
