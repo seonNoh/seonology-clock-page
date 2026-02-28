@@ -71,7 +71,7 @@
 /* Todo Preview - bottom left */
 .todo-preview {
   position: fixed;
-  bottom: 2rem;
+  bottom: 5rem;
   left: 2rem;
   display: flex;
   flex-direction: column;
@@ -247,7 +247,7 @@
 /* Ambient Info - bottom area */
 .ambient-info {
   position: fixed;
-  bottom: 2rem;
+  bottom: 5rem;
   right: 2rem;
   display: flex;
   align-items: center;
@@ -474,12 +474,16 @@
   }
 
   .bottom-left {
-    bottom: 5rem;
+    bottom: 6rem;
     left: 1rem;
   }
 
+  .todo-preview {
+    bottom: 6rem;
+  }
+
   .ambient-info {
-    bottom: 1rem;
+    bottom: 6rem;
     right: 1rem;
     left: 1rem;
     justify-content: flex-end;
