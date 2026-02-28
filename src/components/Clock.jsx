@@ -37,7 +37,7 @@ function Clock() {
   const { hours, minutes, seconds } = formatTime(time);
 
   const cycleTheme = () => {
-    const themes = ['digital', 'analog', 'flip'];
+    const themes = ['digital', 'analog'];
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
     setTheme(themes[nextIndex]);
@@ -106,34 +106,6 @@ function Clock() {
     );
   };
 
-  const renderFlipClock = () => (
-    <>
-      <div className="flip-clock">
-        <div className="flip-segment">
-          <div className="flip-card">
-            <div className="flip-card-top">{hours}</div>
-            <div className="flip-card-bottom">{hours}</div>
-          </div>
-        </div>
-        <div className="flip-separator">:</div>
-        <div className="flip-segment">
-          <div className="flip-card">
-            <div className="flip-card-top">{minutes}</div>
-            <div className="flip-card-bottom">{minutes}</div>
-          </div>
-        </div>
-        <div className="flip-separator">:</div>
-        <div className="flip-segment">
-          <div className="flip-card">
-            <div className="flip-card-top">{seconds}</div>
-            <div className="flip-card-bottom">{seconds}</div>
-          </div>
-        </div>
-      </div>
-      <div className="clock-date flip-date">{formatDate(time)}</div>
-    </>
-  );
-
   return (
     <div className={`clock clock-${theme}`}>
       <button className="theme-toggle" onClick={cycleTheme} title="Change clock theme">
@@ -145,7 +117,6 @@ function Clock() {
       
       {theme === 'digital' && renderDigitalClock()}
       {theme === 'analog' && renderAnalogClock()}
-      {theme === 'flip' && renderFlipClock()}
     </div>
   );
 }
