@@ -12,11 +12,30 @@ function WeatherWidget({ onClick }) {
   const [data, setData] = useState(null);
   const [coords, setCoords] = useState(null);
 
+  // Initialize location once
   useEffect(() => {
-    const fetchWeather = async (lat, lon) => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+        },
+        () => {
+          setCoords({ lat: 37.5665, lon: 126.9780 });
+        }
+      );
+    } else {
+      setCoords({ lat: 37.5665, lon: 126.9780 });
+    }
+  }, []);
+
+  // Fetch weather when coords are available and set up interval
+  useEffect(() => {
+    if (!coords) return;
+
+    const fetchWeather = async () => {
       try {
         const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`
+          `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,weather_code`
         );
         const result = await res.json();
         setData({
@@ -28,32 +47,11 @@ function WeatherWidget({ onClick }) {
       }
     };
 
-    const initWeather = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude });
-            fetchWeather(pos.coords.latitude, pos.coords.longitude);
-          },
-          () => {
-            setCoords({ lat: 37.5665, lon: 126.9780 });
-            fetchWeather(37.5665, 126.9780);
-          }
-        );
-      } else {
-        setCoords({ lat: 37.5665, lon: 126.9780 });
-        fetchWeather(37.5665, 126.9780);
-      }
-    };
-
-    initWeather();
+    // Fetch immediately
+    fetchWeather();
 
     // Auto-refresh every 5 minutes (300000ms)
-    const interval = setInterval(() => {
-      if (coords) {
-        fetchWeather(coords.lat, coords.lon);
-      }
-    }, 300000);
+    const interval = setInterval(fetchWeather, 300000);
 
     return () => clearInterval(interval);
   }, [coords]);
