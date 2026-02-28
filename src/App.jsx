@@ -5,8 +5,6 @@ import Weather from './components/Weather';
 import TodoList from './components/TodoList';
 import Calendar from './components/Calendar';
 import ExchangeRate from './components/ExchangeRate';
-import Fortune from './components/Fortune';
-import TodayInHistory from './components/TodayInHistory';
 import './App.css';
 
 // Weather widget - centered top (auto-refresh every 5 minutes)
@@ -171,92 +169,6 @@ function CalendarIcon({ onClick }) {
   );
 }
 
-// Fortune display - blends naturally
-function FortuneDisplay({ onClick }) {
-  const today = new Date();
-  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-  const rand = Math.sin(seed) * 10000;
-  const score = Math.floor((rand - Math.floor(rand)) * 40) + 60;
-
-  const getSymbol = (s) => {
-    if (s >= 90) return '★';
-    if (s >= 80) return '☆';
-    if (s >= 70) return '◆';
-    return '◇';
-  };
-
-  return (
-    <div className="ambient-item fortune-item" onClick={onClick}>
-      <span className="ambient-symbol">{getSymbol(score)}</span>
-      <span className="ambient-value">luck {score}</span>
-    </div>
-  );
-}
-
-// History display - now centered below clock (Korean first, English fallback)
-function HistoryDisplay({ onClick }) {
-  const [event, setEvent] = useState(null);
-
-  useEffect(() => {
-    const fetchHistory = async () => {
-      const today = new Date();
-      const month = today.getMonth() + 1;
-      const day = today.getDate();
-
-      // Try Korean Wikipedia first
-      try {
-        const koRes = await fetch(
-          `https://api.wikimedia.org/feed/v1/wikipedia/ko/onthisday/events/${month}/${day}`
-        );
-        if (koRes.ok) {
-          const koData = await koRes.json();
-          if (koData.events && koData.events.length > 0) {
-            const randomEvent = koData.events[Math.floor(Math.random() * Math.min(5, koData.events.length))];
-            setEvent({
-              year: randomEvent.year,
-              text: randomEvent.text.length > 80
-                ? randomEvent.text.substring(0, 80) + '...'
-                : randomEvent.text
-            });
-            return;
-          }
-        }
-      } catch {
-        // Korean API failed, try English
-      }
-
-      // Fallback to English Wikipedia
-      try {
-        const enRes = await fetch(
-          `https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`
-        );
-        const enData = await enRes.json();
-        if (enData.events && enData.events.length > 0) {
-          const randomEvent = enData.events[Math.floor(Math.random() * Math.min(5, enData.events.length))];
-          setEvent({
-            year: randomEvent.year,
-            text: randomEvent.text.length > 80
-              ? randomEvent.text.substring(0, 80) + '...'
-              : randomEvent.text
-          });
-        }
-      } catch {
-        setEvent(null);
-      }
-    };
-    fetchHistory();
-  }, []);
-
-  if (!event) return null;
-
-  return (
-    <div className="history-center" onClick={onClick}>
-      <span className="history-year">{event.year}</span>
-      <span className="history-text">{event.text}</span>
-    </div>
-  );
-}
-
 // Modal component
 function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
@@ -302,16 +214,14 @@ function App() {
       {/* Main Clock */}
       <main className="main-content">
         <Clock />
-        <HistoryDisplay onClick={() => openModal('history')} />
       </main>
 
       {/* Bottom Left - Todo Preview */}
       <TodoPreview onClick={() => openModal('todo')} />
 
-      {/* Bottom Right - Calendar & Fortune */}
+      {/* Bottom Right - Calendar */}
       <div className="ambient-info">
         <CalendarIcon onClick={() => openModal('calendar')} />
-        <FortuneDisplay onClick={() => openModal('fortune')} />
       </div>
 
       {/* Modals */}
@@ -329,14 +239,6 @@ function App() {
 
       <Modal isOpen={activeModal === 'calendar'} onClose={closeModal} title="Calendar">
         <Calendar />
-      </Modal>
-
-      <Modal isOpen={activeModal === 'fortune'} onClose={closeModal} title="Fortune">
-        <Fortune />
-      </Modal>
-
-      <Modal isOpen={activeModal === 'history'} onClose={closeModal} title="On This Day">
-        <TodayInHistory />
       </Modal>
     </div>
   );
