@@ -53,8 +53,8 @@ function WeatherWidget({ onClick }) {
     // Fetch immediately
     fetchWeather();
 
-    // Auto-refresh every 5 minutes (300000ms)
-    const interval = setInterval(fetchWeather, 300000);
+    // Auto-refresh every 15 minutes (900000ms)
+    const interval = setInterval(fetchWeather, 900000);
 
     return () => clearInterval(interval);
   }, [coords]);
