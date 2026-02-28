@@ -194,9 +194,96 @@ function Modal({ isOpen, onClose, title, children }) {
   );
 }
 
+// Service icon SVGs
+function VaultIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="12" y="16" width="40" height="36" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="32" cy="34" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="32" y1="34" x2="38" y2="34" stroke="currentColor" strokeWidth="2"/>
+      <line x1="32" y1="34" x2="32" y2="40" stroke="currentColor" strokeWidth="2"/>
+      <rect x="28" y="10" width="8" height="6" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function KeyIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <circle cx="20" cy="32" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="26" y1="28" x2="48" y2="28" stroke="currentColor" strokeWidth="2"/>
+      <rect x="40" y="24" width="4" height="8" fill="currentColor"/>
+      <rect x="46" y="24" width="4" height="8" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function GitOpsIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M16 32 L32 16 L48 32" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M32 16 L32 48" stroke="currentColor" strokeWidth="2"/>
+      <circle cx="32" cy="48" r="4" fill="currentColor"/>
+      <circle cx="16" cy="32" r="4" fill="currentColor"/>
+      <circle cx="48" cy="32" r="4" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function TerminalIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="8" y="12" width="48" height="40" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <path d="M16 24 L24 32 L16 40" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="28" y1="40" x2="44" y2="40" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <circle cx="32" cy="32" r="20" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <line x1="32" y1="32" x2="32" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="32" y1="32" x2="42" y2="32" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="32" cy="32" r="2" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function ChartIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="12" y="36" width="8" height="16" fill="currentColor"/>
+      <rect x="24" y="28" width="8" height="24" fill="currentColor"/>
+      <rect x="36" y="20" width="8" height="32" fill="currentColor"/>
+      <rect x="48" y="32" width="8" height="20" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function DefaultIcon() {
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <rect x="16" y="16" width="32" height="32" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+      <circle cx="32" cy="32" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+    </svg>
+  );
+}
+
 // Service icon component
 function ServiceIcon({ service }) {
-  const firstLetter = service.name.charAt(0).toUpperCase();
+  const getIcon = () => {
+    switch (service.icon) {
+      case 'vault': return <VaultIcon />;
+      case 'key': return <KeyIcon />;
+      case 'gitops': return <GitOpsIcon />;
+      case 'terminal': return <TerminalIcon />;
+      case 'clock': return <ClockIcon />;
+      case 'chart': return <ChartIcon />;
+      default: return <DefaultIcon />;
+    }
+  };
   
   return (
     <a
@@ -207,20 +294,7 @@ function ServiceIcon({ service }) {
       style={{ '--service-color': service.color }}
     >
       <div className="service-icon">
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <rect width="64" height="64" rx="12" fill="currentColor" fillOpacity="0.1" />
-          <text
-            x="32"
-            y="40"
-            textAnchor="middle"
-            fill="currentColor"
-            fontSize="28"
-            fontWeight="600"
-            fontFamily="'JetBrains Mono', monospace"
-          >
-            {firstLetter}
-          </text>
-        </svg>
+        {getIcon()}
       </div>
       <div className="service-info">
         <div className="service-name">{service.name}</div>
