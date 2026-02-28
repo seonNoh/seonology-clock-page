@@ -7,6 +7,9 @@ import Calendar from './components/Calendar';
 import ExchangeRate from './components/ExchangeRate';
 import './App.css';
 
+// Import version from VERSION file (will be replaced at build time)
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
+
 // Weather widget - centered top (auto-refresh every 5 minutes)
 function WeatherWidget({ onClick }) {
   const [data, setData] = useState(null);
@@ -186,6 +189,27 @@ function Modal({ isOpen, onClose, title, children }) {
   );
 }
 
+// Footer component
+function Footer() {
+  return (
+    <footer className="app-footer">
+      <div className="footer-content">
+        <span className="footer-text">
+          Craft by seon (
+          <a href="mailto:dark.pearl.nst@gmail.com" className="footer-link">
+            dark.pearl.nst@gmail.com
+          </a>
+          )
+        </span>
+        <span className="footer-divider">|</span>
+        <span className="footer-text">React + Vite</span>
+        <span className="footer-divider">|</span>
+        <span className="footer-text">v{APP_VERSION}</span>
+      </div>
+    </footer>
+  );
+}
+
 function App() {
   const [activeModal, setActiveModal] = useState(null);
 
@@ -238,6 +262,9 @@ function App() {
       <Modal isOpen={activeModal === 'calendar'} onClose={closeModal} title="Calendar">
         <Calendar />
       </Modal>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
