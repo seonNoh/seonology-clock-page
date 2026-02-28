@@ -1,3 +1,21 @@
+# [1.2.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.1.0...v1.2.0) (2026-02-28)
+
+
+### Bug Fixes
+
+* resolve infinite refresh issue in WeatherWidget ([ab7919e](https://github.com/seonNoh/seonology-clock-page/commit/ab7919eeea8310b002796a085b57dd3b30af7c39))
+
+
+### Features
+
+* add footer with author info and version ([2bd629c](https://github.com/seonNoh/seonology-clock-page/commit/2bd629c690c36fd04507c6e9e9354c1446c9a525))
+* change exchange rate API to real-time Manana API ([9809d3d](https://github.com/seonNoh/seonology-clock-page/commit/9809d3d25a889d10f973b3f91fd085ca841fdee5))
+
+
+### Performance Improvements
+
+* change weather API refresh interval to 15 minutes ([3d6dfec](https://github.com/seonNoh/seonology-clock-page/commit/3d6dfece495b54990276c673877f2efd54249b19))
+
 # [1.1.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.0.4...v1.1.0) (2026-01-31)
 
 
