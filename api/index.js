@@ -1,9 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { exec } = require('child_process');
-const util = require('util');
-
-const execPromise = util.promisify(exec);
+const https = require('https');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,6 +9,15 @@ const PORT = process.env.PORT || 3001;
 // CORS configuration
 app.use(cors());
 app.use(express.json());
+
+// Kubernetes API configuration
+const K8S_API_HOST = process.env.KUBERNETES_SERVICE_HOST || 'kubernetes.default.svc';
+const K8S_API_PORT = process.env.KUBERNETES_SERVICE_PORT || '443';
+const K8S_TOKEN_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/token';
+const K8S_CA_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
+
+// Check if running in k8s
+const isInCluster = fs.existsSync(K8S_TOKEN_PATH);
 
 // Service icon mapping
 const SERVICE_ICONS = {
@@ -63,33 +70,106 @@ function getServiceKey(hostname) {
   return null;
 }
 
-// API endpoint to get services
-app.get('/api/services', async (req, res) => {
+// Kubernetes API request helper
+function k8sRequest(path) {
+  return new Promise((resolve, reject) => {
+    if (!isInCluster) {
+      reject(new Error('Not running in Kubernetes cluster'));
+      return;
+    }
+
+    const token = fs.readFileSync(K8S_TOKEN_PATH, 'utf8');
+    const ca = fs.readFileSync(K8S_CA_PATH);
+
+    const options = {
+      hostname: K8S_API_HOST,
+      port: K8S_API_PORT,
+      path: path,
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      ca: ca,
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+// Fallback to kubectl for local development
+async function fetchWithKubectl() {
+  const { exec } = require('child_process');
+  const util = require('util');
+  const execPromise = util.promisify(exec);
+
+  const services = [];
+
   try {
-    console.log('=== Fetching services from k8s ===');
-    
-    const services = [];
-    
-    // Get standard Ingresses using kubectl
-    try {
-      console.log('Fetching standard Ingresses...');
-      const { stdout: ingressJson } = await execPromise(
-        'kubectl --context k3s-lightsail get ingress -A -o json'
-      );
-      const ingressData = JSON.parse(ingressJson);
-      const ingresses = ingressData.items || [];
-      console.log('Found', ingresses.length, 'standard ingresses');
-      
-      ingresses
-        .filter((ingress) => {
-          return ingress.spec.rules?.some((rule) =>
-            rule.host?.includes('seonology.com')
-          );
-        })
-        .forEach((ingress) => {
-          const rule = ingress.spec.rules[0];
-          const hostname = rule.host;
-          console.log('Processing Ingress:', hostname);
+    const { stdout: ingressJson } = await execPromise(
+      'kubectl --context k3s-lightsail get ingress -A -o json'
+    );
+    const ingressData = JSON.parse(ingressJson);
+    const ingresses = ingressData.items || [];
+
+    ingresses
+      .filter((ingress) => {
+        return ingress.spec.rules?.some((rule) =>
+          rule.host?.includes('seonology.com')
+        );
+      })
+      .forEach((ingress) => {
+        const rule = ingress.spec.rules[0];
+        const hostname = rule.host;
+        const serviceKey = getServiceKey(hostname);
+        const serviceInfo = SERVICE_ICONS[serviceKey] || {
+          name: hostname.split('.')[0],
+          description: 'Service',
+          color: '#888888',
+          icon: 'default',
+        };
+
+        services.push({
+          id: serviceKey || hostname,
+          name: serviceInfo.name,
+          url: `https://${hostname}`,
+          description: serviceInfo.description,
+          color: serviceInfo.color,
+          icon: serviceInfo.icon,
+        });
+      });
+  } catch (err) {
+    console.error('Error fetching Ingresses:', err.message);
+  }
+
+  try {
+    const { stdout: routeOutput } = await execPromise(
+      'kubectl --context k3s-lightsail get ingressroute -A -o json'
+    );
+    const routeData = JSON.parse(routeOutput);
+    const ingressRoutes = routeData.items || [];
+
+    ingressRoutes.forEach((route) => {
+      const routes = route.spec?.routes || [];
+      routes.forEach((r) => {
+        const match = r.match || '';
+        const hostMatch = match.match(/Host\(`([^`]+)`\)/);
+        if (hostMatch && hostMatch[1].includes('seonology.com')) {
+          const hostname = hostMatch[1];
           const serviceKey = getServiceKey(hostname);
           const serviceInfo = SERVICE_ICONS[serviceKey] || {
             name: hostname.split('.')[0],
@@ -106,29 +186,39 @@ app.get('/api/services', async (req, res) => {
             color: serviceInfo.color,
             icon: serviceInfo.icon,
           });
-        });
-    } catch (err) {
-      console.error('Error fetching Ingresses:', err.message);
-    }
-    
-    // Get Traefik IngressRoutes using kubectl
-    try {
-      console.log('Fetching IngressRoutes...');
-      const { stdout: routeOutput } = await execPromise(
-        'kubectl --context k3s-lightsail get ingressroute -A -o json'
-      );
-      const routeData = JSON.parse(routeOutput);
-      const ingressRoutes = routeData.items || [];
-      console.log('Found', ingressRoutes.length, 'ingressroutes');
-      
-      ingressRoutes.forEach((route) => {
-        const routes = route.spec?.routes || [];
-        routes.forEach((r) => {
-          const match = r.match || '';
-          const hostMatch = match.match(/Host\(`([^`]+)`\)/);
-          if (hostMatch && hostMatch[1].includes('seonology.com')) {
-            const hostname = hostMatch[1];
-            console.log('Processing IngressRoute:', hostname);
+        }
+      });
+    });
+  } catch (err) {
+    console.error('Error fetching IngressRoutes:', err);
+  }
+
+  return services;
+}
+
+// API endpoint to get services
+app.get('/api/services', async (req, res) => {
+  try {
+    console.log('=== Fetching services from k8s ===');
+    console.log('Running in cluster:', isInCluster);
+
+    let services = [];
+
+    if (isInCluster) {
+      // Fetch from k8s API
+      try {
+        const ingressData = await k8sRequest('/apis/networking.k8s.io/v1/ingresses');
+        const ingresses = ingressData.items || [];
+
+        ingresses
+          .filter((ingress) => {
+            return ingress.spec.rules?.some((rule) =>
+              rule.host?.includes('seonology.com')
+            );
+          })
+          .forEach((ingress) => {
+            const rule = ingress.spec.rules[0];
+            const hostname = rule.host;
             const serviceKey = getServiceKey(hostname);
             const serviceInfo = SERVICE_ICONS[serviceKey] || {
               name: hostname.split('.')[0],
@@ -145,18 +235,54 @@ app.get('/api/services', async (req, res) => {
               color: serviceInfo.color,
               icon: serviceInfo.icon,
             });
-          }
+          });
+      } catch (err) {
+        console.error('Error fetching Ingresses from k8s API:', err.message);
+      }
+
+      try {
+        const routeData = await k8sRequest('/apis/traefik.io/v1alpha1/ingressroutes');
+        const ingressRoutes = routeData.items || [];
+
+        ingressRoutes.forEach((route) => {
+          const routes = route.spec?.routes || [];
+          routes.forEach((r) => {
+            const match = r.match || '';
+            const hostMatch = match.match(/Host\(`([^`]+)`\)/);
+            if (hostMatch && hostMatch[1].includes('seonology.com')) {
+              const hostname = hostMatch[1];
+              const serviceKey = getServiceKey(hostname);
+              const serviceInfo = SERVICE_ICONS[serviceKey] || {
+                name: hostname.split('.')[0],
+                description: 'Service',
+                color: '#888888',
+                icon: 'default',
+              };
+
+              services.push({
+                id: serviceKey || hostname,
+                name: serviceInfo.name,
+                url: `https://${hostname}`,
+                description: serviceInfo.description,
+                color: serviceInfo.color,
+                icon: serviceInfo.icon,
+              });
+            }
+          });
         });
-      });
-    } catch (err) {
-      console.error('Error fetching IngressRoutes:', err);
+      } catch (err) {
+        console.error('Error fetching IngressRoutes from k8s API:', err.message);
+      }
+    } else {
+      // Fallback to kubectl for local development
+      services = await fetchWithKubectl();
     }
-    
+
     // Remove duplicates
     const uniqueServices = services.filter((service, index, self) =>
       index === self.findIndex((s) => s.id === service.id)
     );
-    
+
     console.log('Total unique services:', uniqueServices.length);
     console.log('Services:', uniqueServices.map(s => s.name).join(', '));
 
@@ -174,4 +300,5 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
+  console.log(`Running in cluster: ${isInCluster}`);
 });

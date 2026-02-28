@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: seonology-clock-page
+  namespace: seonology-apps
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: seonology-clock-page-reader
+rules:
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list"]
+- apiGroups: ["traefik.io", "traefik.containo.us"]
+  resources: ["ingressroutes"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: seonology-clock-page-reader-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seonology-clock-page-reader
+subjects:
+- kind: ServiceAccount
+  name: seonology-clock-page
+  namespace: seonology-apps

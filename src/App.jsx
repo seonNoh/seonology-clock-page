@@ -239,7 +239,12 @@ function ServicesModal() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/services');
+        // Use relative path for API - works in both dev and production
+        const apiUrl = window.location.hostname === 'localhost' 
+          ? 'http://localhost:3001/api/services'
+          : '/api/services';
+        
+        const res = await fetch(apiUrl);
         const data = await res.json();
         setServices(data.services || []);
         setLoading(false);
