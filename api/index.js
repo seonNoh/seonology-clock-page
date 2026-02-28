@@ -28,6 +28,7 @@ const SERVICE_ICONS = {
   clock: { name: 'Clock', description: 'Dashboard', color: '#A78BFA', icon: 'clock' },
   grafana: { name: 'Grafana', description: 'Monitoring', color: '#F46800', icon: 'chart' },
   aw: { name: 'ActivityWatch', description: 'Time Tracking', color: '#4CAF50', icon: 'activity' },
+  'aw-api': { name: 'ActivityWatch API', description: 'Time Tracking API', color: '#4CAF50', icon: 'activity' },
   backstage: { name: 'Backstage', description: 'Developer Portal', color: '#9D4EDD', icon: 'portal' },
   blinko: { name: 'Blinko', description: 'Notes', color: '#FFB703', icon: 'note' },
   chat: { name: 'Mattermost', description: 'Team Chat', color: '#0072C6', icon: 'chat' },
@@ -59,6 +60,7 @@ function getServiceKey(hostname) {
   if (hostname.includes('cli')) return 'cli';
   if (hostname.includes('clock')) return 'clock';
   if (hostname.includes('grafana')) return 'grafana';
+  if (hostname.includes('aw-api')) return 'aw-api';
   if (hostname.includes('aw.')) return 'aw';
   if (hostname.includes('backstage')) return 'backstage';
   if (hostname.includes('blinko')) return 'blinko';

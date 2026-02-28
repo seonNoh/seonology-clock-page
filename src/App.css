@@ -8,6 +8,14 @@
   overflow: hidden;
 }
 
+/* Top Left Bar - SEONOLOGY Button */
+.top-left-bar {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 10;
+}
+
 /* Top Center Bar - Weather & Exchange */
 .top-center-bar {
   position: fixed;
@@ -659,6 +667,15 @@
 }
 
 @media (max-width: 768px) {
+  .top-left-bar {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .top-center-bar {
+    top: 1rem;
+  }
+
   .app-footer {
     padding: 0.75rem 1rem;
   }

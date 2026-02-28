@@ -621,12 +621,15 @@ function App() {
 
   return (
     <div className="dashboard">
-      {/* Top Center - Weather & Exchange */}
-      <div className="top-center-bar">
+      {/* Top Left - SEONOLOGY Button */}
+      <div className="top-left-bar">
         <button className="seonology-btn" onClick={() => openModal('services')}>
           SEONOLOGY
         </button>
-        <div className="bar-divider"></div>
+      </div>
+
+      {/* Top Center - Weather & Exchange */}
+      <div className="top-center-bar">
         <WeatherWidget onClick={() => openModal('weather')} />
         <div className="bar-divider"></div>
         <ExchangeWidget onClick={() => openModal('exchange')} />
