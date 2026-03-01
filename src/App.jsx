@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sun, CloudSun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog } from 'lucide-react';
 import Clock from './components/Clock';
 import CursorCanvas from './components/CursorCanvas';
@@ -708,30 +708,104 @@ function BookmarksPanel() {
 
 function SearchBar() {
   const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const suggestTimer = useRef(null);
+  const wrapperRef = useRef(null);
+
+  const fetchSuggestions = (q) => {
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    if (!q.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
+    suggestTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/suggest?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        setSuggestions(data.slice(0, 8));
+        setShowSuggestions(data.length > 0);
+        setSelectedIndex(-1);
+      } catch { setSuggestions([]); }
+    }, 200);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const doSearch = (text) => {
+    if (!text.trim()) return;
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(text.trim())}`, '_blank');
+    setQuery('');
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
   const handleSearch = (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(query.trim())}`, '_blank');
-    setQuery('');
+    doSearch(query);
   };
+
+  const handleKeyDown = (e) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev + 1) % suggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(prev => (prev - 1 + suggestions.length) % suggestions.length);
+    } else if (e.key === 'Enter' && selectedIndex >= 0) {
+      e.preventDefault();
+      doSearch(suggestions[selectedIndex]);
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  };
+
   return (
-    <form className="search-bar" onSubmit={handleSearch}>
-      <svg className="search-bar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input
-        className="search-bar-input"
-        type="text"
-        placeholder="Search Google..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      {query && (
-        <button type="button" className="search-bar-clear" onClick={() => setQuery('')}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+    <div className="search-bar-wrapper" ref={wrapperRef}>
+      <form className="search-bar" onSubmit={handleSearch}>
+        <svg className="search-bar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          className="search-bar-input"
+          type="text"
+          placeholder="Search Google..."
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); fetchSuggestions(e.target.value); }}
+          onKeyDown={handleKeyDown}
+          onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+        />
+        {query && (
+          <button type="button" className="search-bar-clear" onClick={() => { setQuery(''); setSuggestions([]); setShowSuggestions(false); }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        )}
+      </form>
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="search-suggestions">
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              className={`search-suggestion-item${i === selectedIndex ? ' selected' : ''}`}
+              onClick={() => doSearch(s)}
+              onMouseEnter={() => setSelectedIndex(i)}
+            >
+              <svg className="suggest-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span className="suggest-text">{s}</span>
+            </button>
+          ))}
+        </div>
       )}
-    </form>
+    </div>
   );
 }
 

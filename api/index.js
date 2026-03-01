@@ -465,7 +465,27 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// ===== TODOS API =====
+// ===== GOOGLE SUGGEST PROXY =====
+app.get('/api/suggest', async (req, res) => {
+  const q = req.query.q;
+  if (!q) return res.json([]);
+  try {
+    const url = `http://suggestqueries.google.com/complete/search?client=firefox&hl=ko&q=${encodeURIComponent(q)}`;
+    const response = await new Promise((resolve, reject) => {
+      const http = require('http');
+      http.get(url, (resp) => {
+        let data = '';
+        resp.on('data', chunk => data += chunk);
+        resp.on('end', () => resolve(data));
+      }).on('error', reject);
+    });
+    const parsed = JSON.parse(response);
+    res.json(parsed[1] || []);
+  } catch (err) {
+    console.error('Google suggest error:', err.message);
+    res.json([]);
+  }
+});
 const TODOS_FILE = path.join(BOOKMARKS_DIR, 'todos.json');
 
 const DEFAULT_TODOS = { todos: [] };
