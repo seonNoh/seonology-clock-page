@@ -12,6 +12,11 @@ function NotesPanel({ isOpen, onClose }) {
   const [saving, setSaving] = useState(false);
   const textareaRef = useRef(null);
   const saveTimerRef = useRef(null);
+  const swipeAccumRef = useRef(0);
+  const swipeResetRef = useRef(null);
+  const navigatingRef = useRef(false);
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const [swipeOffset, setSwipeOffset] = useState(0);
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -113,6 +118,77 @@ function NotesPanel({ isOpen, onClose }) {
     setSearchQuery('');
   };
 
+  // Trackpad & touch: swipe between notes
+  const currentNoteIndex = notes.findIndex(n => n.id === activeNoteId);
+
+  const navigateNote = useCallback((direction) => {
+    if (navigatingRef.current) return;
+    const idx = notes.findIndex(n => n.id === activeNoteId);
+    const newIdx = idx + direction;
+    if (newIdx < 0 || newIdx >= notes.length) return;
+    navigatingRef.current = true;
+    setSwipeOffset(direction > 0 ? -40 : 40);
+    setTimeout(() => {
+      setActiveNoteId(notes[newIdx].id);
+      setSwipeOffset(0);
+      navigatingRef.current = false;
+    }, 120);
+  }, [notes, activeNoteId]);
+
+  const handleEditorWheel = useCallback((e) => {
+    if (view !== 'single' || notes.length <= 1 || navigatingRef.current) return;
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    if (Math.abs(e.deltaX) < 3) return;
+
+    swipeAccumRef.current += e.deltaX;
+    const clamped = Math.max(-50, Math.min(50, -swipeAccumRef.current * 0.4));
+    setSwipeOffset(clamped);
+
+    if (swipeResetRef.current) clearTimeout(swipeResetRef.current);
+    swipeResetRef.current = setTimeout(() => {
+      swipeAccumRef.current = 0;
+      setSwipeOffset(0);
+    }, 200);
+
+    if (swipeAccumRef.current > 80) {
+      swipeAccumRef.current = 0;
+      navigateNote(1);
+    } else if (swipeAccumRef.current < -80) {
+      swipeAccumRef.current = 0;
+      navigateNote(-1);
+    }
+  }, [view, notes.length, navigateNote]);
+
+  const handleTouchStart = useCallback((e) => {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (view !== 'single' || notes.length <= 1) return;
+    const dx = e.touches[0].clientX - touchStartRef.current.x;
+    const dy = e.touches[0].clientY - touchStartRef.current.y;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      setSwipeOffset(Math.max(-50, Math.min(50, dx * 0.4)));
+    }
+  }, [view, notes.length]);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (view !== 'single') { setSwipeOffset(0); return; }
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+      navigateNote(dx > 0 ? -1 : 1);
+    } else {
+      setSwipeOffset(0);
+    }
+  }, [view, navigateNote]);
+
+  useEffect(() => {
+    return () => {
+      if (swipeResetRef.current) clearTimeout(swipeResetRef.current);
+    };
+  }, []);
+
   const filteredNotes = searchQuery
     ? notes.filter(n => n.content?.toLowerCase().includes(searchQuery.toLowerCase()))
     : notes;
@@ -135,6 +211,17 @@ function NotesPanel({ isOpen, onClose }) {
         {/* Header */}
         <div className="notes-header">
           <span className="notes-title">Notes</span>
+          {view === 'single' && notes.length > 1 && (
+            <div className="notes-nav">
+              <button className="notes-nav-btn" onClick={() => navigateNote(-1)} disabled={currentNoteIndex <= 0}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <span className="notes-nav-counter">{currentNoteIndex + 1} / {notes.length}</span>
+              <button className="notes-nav-btn" onClick={() => navigateNote(1)} disabled={currentNoteIndex >= notes.length - 1}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+              </button>
+            </div>
+          )}
           <div className="notes-actions">
             <button className="notes-action-btn" onClick={createNote} title="New Note">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -180,7 +267,12 @@ function NotesPanel({ isOpen, onClose }) {
         {/* Content */}
         <div className="notes-body">
           {view === 'single' && activeNote ? (
-            <div className="notes-editor">
+            <div className="notes-editor"
+              onWheel={handleEditorWheel}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <textarea
                 ref={textareaRef}
                 className="notes-textarea"
@@ -188,6 +280,7 @@ function NotesPanel({ isOpen, onClose }) {
                 onChange={handleContentChange}
                 placeholder="Start typing..."
                 spellCheck={false}
+                style={swipeOffset ? { transform: `translateX(${swipeOffset}px)`, opacity: 1 - Math.abs(swipeOffset) / 120 } : undefined}
               />
               {saving && <span className="notes-saving">saving...</span>}
             </div>
