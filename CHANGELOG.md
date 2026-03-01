@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.7.0...v1.8.0) (2026-03-01)
+
+
+### Features
+
+* show holidays on calendar dates with SVG flags ([261dc8a](https://github.com/seonNoh/seonology-clock-page/commit/261dc8a9fc529918083570fe68db67e66f813778))
+
 # [1.7.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.6.0...v1.7.0) (2026-03-01)
 
 
