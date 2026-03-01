@@ -1148,13 +1148,15 @@ function App() {
         </button>
       </div>
 
-      {/* Top Center - Weather & Exchange & Browser Stats */}
+      {/* Top Center - Weather & Exchange */}
       <div className="top-center-bar">
         <WeatherWidget onClick={() => openModal('weather')} />
         <div className="bar-divider"></div>
         <ExchangeWidget onClick={() => openModal('exchange')} />
-        <BrowserStats />
       </div>
+
+      {/* Top Right - Browser Stats */}
+      <BrowserStats />
 
       {/* Main Clock */}
       <main className="main-content">

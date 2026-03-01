@@ -1,6 +1,9 @@
 /* Browser Stats Widget */
 .browser-stats-wrapper {
-  position: relative;
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 10;
 }
 
 .browser-stats-mini {
