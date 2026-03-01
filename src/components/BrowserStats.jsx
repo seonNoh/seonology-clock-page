@@ -23,17 +23,51 @@ function BrowserStats() {
     };
 
     fetchStats();
-    const interval = setInterval(fetchStats, 10000); // refresh every 10 seconds
+    const interval = setInterval(fetchStats, 10000);
     return () => clearInterval(interval);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!expanded) return;
+    const handleClick = (e) => {
+      if (!e.target.closest('.browser-stats-wrapper')) {
+        setExpanded(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [expanded]);
+
   if (!stats) return null;
 
-  const { tabs, windows, memory } = stats;
+  const { tabs, windows } = stats;
 
-  const formatBytes = (bytes) => {
-    const gb = bytes / (1024 * 1024 * 1024);
-    return `${gb.toFixed(1)}GB`;
+  const handleTabClick = (tab, windowId) => {
+    // Send message to content script → extension → activate tab
+    window.postMessage({
+      type: 'seonology-activate-tab',
+      tabId: tab.id,
+      windowId: windowId,
+    }, '*');
+  };
+
+  // Extract domain from URL for display
+  const getDomain = (url) => {
+    try {
+      const u = new URL(url);
+      return u.hostname.replace('www.', '');
+    } catch {
+      return '';
+    }
+  };
+
+  // Get favicon URL or fallback
+  const getFavicon = (tab) => {
+    if (tab.favIconUrl && !tab.favIconUrl.startsWith('chrome://')) {
+      return tab.favIconUrl;
+    }
+    return null;
   };
 
   return (
@@ -48,69 +82,60 @@ function BrowserStats() {
         </span>
         <span className="stats-tabs">{tabs.total}</span>
         <span className="stats-label">tabs</span>
-        {memory && (
-          <>
-            <span className="stats-sep">·</span>
-            <span className={`stats-mem ${memory.usedPercent > 80 ? 'high' : memory.usedPercent > 60 ? 'mid' : ''}`}>
-              {memory.usedPercent}%
-            </span>
-          </>
-        )}
+        <span className="stats-sep">·</span>
+        <span className="stats-windows">{windows}</span>
+        <span className="stats-label">win</span>
       </div>
 
       {expanded && (
         <div className="browser-stats-detail">
-          <div className="stats-detail-header">Browser Stats</div>
-          <div className="stats-detail-grid">
-            <div className="stats-detail-item">
-              <span className="stats-detail-value">{tabs.total}</span>
-              <span className="stats-detail-label">Total Tabs</span>
-            </div>
-            <div className="stats-detail-item">
-              <span className="stats-detail-value">{windows}</span>
-              <span className="stats-detail-label">Windows</span>
-            </div>
-            {memory && (
-              <>
-                <div className="stats-detail-item">
-                  <span className={`stats-detail-value ${memory.usedPercent > 80 ? 'high' : memory.usedPercent > 60 ? 'mid' : ''}`}>
-                    {memory.usedPercent}%
-                  </span>
-                  <span className="stats-detail-label">Memory Used</span>
-                </div>
-                <div className="stats-detail-item">
-                  <span className="stats-detail-value">
-                    {formatBytes(memory.totalBytes - memory.availableBytes)}
-                  </span>
-                  <span className="stats-detail-label">
-                    / {formatBytes(memory.totalBytes)}
-                  </span>
-                </div>
-              </>
-            )}
+          <div className="stats-detail-header">
+            <span>Open Tabs</span>
+            <span className="stats-detail-count">{tabs.total}</span>
           </div>
 
-          {tabs.byWindow && tabs.byWindow.length > 1 && (
-            <div className="stats-window-list">
-              <div className="stats-window-title">Tabs per Window</div>
-              {tabs.byWindow.map((w, i) => (
-                <div key={w.windowId} className="stats-window-row">
-                  <span className="stats-window-icon">◻</span>
-                  <span className="stats-window-name">Window {i + 1}</span>
-                  <span className="stats-window-count">{w.count}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {memory && (
-            <div className="stats-mem-bar">
-              <div
-                className={`stats-mem-fill ${memory.usedPercent > 80 ? 'high' : memory.usedPercent > 60 ? 'mid' : ''}`}
-                style={{ width: `${memory.usedPercent}%` }}
-              />
-            </div>
-          )}
+          <div className="stats-tab-list">
+            {tabs.byWindow && tabs.byWindow.map((win, winIdx) => (
+              <div key={win.windowId} className="stats-window-group">
+                {tabs.byWindow.length > 1 && (
+                  <div className="stats-window-label">
+                    <span className="stats-window-icon">◻</span>
+                    Window {winIdx + 1}
+                    <span className="stats-window-badge">{win.count}</span>
+                  </div>
+                )}
+                {win.tabs && win.tabs.map((tab) => (
+                  <div
+                    key={tab.id}
+                    className={`stats-tab-row ${tab.active ? 'active' : ''}`}
+                    onClick={() => handleTabClick(tab, win.windowId)}
+                    title={tab.url}
+                  >
+                    <span className="stats-tab-favicon">
+                      {getFavicon(tab) ? (
+                        <img
+                          src={getFavicon(tab)}
+                          alt=""
+                          width="14"
+                          height="14"
+                          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
+                        />
+                      ) : null}
+                      <span className="stats-tab-favicon-fallback" style={{ display: getFavicon(tab) ? 'none' : 'block' }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="2" y1="12" x2="22" y2="12" />
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                      </span>
+                    </span>
+                    <span className="stats-tab-title">{tab.title}</span>
+                    <span className="stats-tab-domain">{getDomain(tab.url)}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

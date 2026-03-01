@@ -393,32 +393,29 @@ async function collectAndSendStats() {
     const tabs = await chrome.tabs.query({});
     const windows = await chrome.windows.getAll({ windowTypes: ['normal'] });
 
-    // Group tabs by window
+    // Group tabs by window with full details
     const tabsByWindow = {};
     for (const tab of tabs) {
-      if (!tabsByWindow[tab.windowId]) tabsByWindow[tab.windowId] = 0;
-      tabsByWindow[tab.windowId]++;
-    }
-
-    // Get system memory info
-    let memoryInfo = null;
-    if (chrome.system && chrome.system.memory) {
-      memoryInfo = await new Promise(resolve => {
-        chrome.system.memory.getInfo(info => resolve(info));
+      if (!tabsByWindow[tab.windowId]) tabsByWindow[tab.windowId] = [];
+      tabsByWindow[tab.windowId].push({
+        id: tab.id,
+        title: tab.title || 'Untitled',
+        url: tab.url || '',
+        favIconUrl: tab.favIconUrl || '',
+        active: tab.active,
       });
     }
 
     const stats = {
       tabs: {
         total: tabs.length,
-        byWindow: Object.entries(tabsByWindow).map(([winId, count]) => ({ windowId: Number(winId), count })),
+        byWindow: Object.entries(tabsByWindow).map(([winId, tabList]) => ({
+          windowId: Number(winId),
+          count: tabList.length,
+          tabs: tabList,
+        })),
       },
       windows: windows.length,
-      memory: memoryInfo ? {
-        totalBytes: memoryInfo.capacity,
-        availableBytes: memoryInfo.availableCapacity,
-        usedPercent: Math.round((1 - memoryInfo.availableCapacity / memoryInfo.capacity) * 100),
-      } : null,
       timestamp: new Date().toISOString(),
     };
 
@@ -429,7 +426,7 @@ async function collectAndSendStats() {
       body: JSON.stringify(stats),
     });
 
-    console.log(`[Seonology Stats] ${tabs.length} tabs, ${windows.length} windows, mem ${stats.memory?.usedPercent}%`);
+    console.log(`[Seonology Stats] ${tabs.length} tabs, ${windows.length} windows`);
   } catch (err) {
     console.error('[Seonology Stats] Error:', err.message);
   }
@@ -488,6 +485,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'getBrowserStats') {
     collectAndSendStats().then(() => sendResponse({ success: true }))
       .catch(err => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+  if (message.type === 'activateTab') {
+    chrome.tabs.update(message.tabId, { active: true }).then(() => {
+      return chrome.windows.update(message.windowId, { focused: true });
+    }).then(() => {
+      sendResponse({ success: true });
+    }).catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
 });
