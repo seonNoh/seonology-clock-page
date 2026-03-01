@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.14.0...v1.14.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* Google suggest API 응답 인코딩 수정 (EUC-KR → UTF-8) ([c86ce47](https://github.com/seonNoh/seonology-clock-page/commit/c86ce47a57fce96ec3ce6c571cb6789fd19e9722))
+
 # [1.14.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.13.0...v1.14.0) (2026-03-01)
 
 
