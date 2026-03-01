@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.9.0...v1.9.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* show holiday names on calendar dates & fix Korean flag SVG ([3368fa2](https://github.com/seonNoh/seonology-clock-page/commit/3368fa2806c209c268022d8e43753109db290fe1))
+
 # [1.9.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.8.0...v1.9.0) (2026-03-01)
 
 
