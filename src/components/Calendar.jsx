@@ -100,6 +100,21 @@ function Calendar() {
 
   const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
+  const FlagKR = () => (
+    <svg className="flag-icon" width="14" height="10" viewBox="0 0 900 600">
+      <rect fill="#fff" width="900" height="600"/>
+      <circle fill="#C60C30" cx="450" cy="300" r="150"/>
+      <path fill="#003478" d="M450 150a150 150 0 0 0 0 300 75 75 0 0 1 0-150 75 75 0 0 0 0-150z"/>
+      <path fill="#C60C30" d="M450 150a75 75 0 0 1 0 150 75 75 0 0 0 0 150"/>
+    </svg>
+  );
+  const FlagJP = () => (
+    <svg className="flag-icon" width="14" height="10" viewBox="0 0 900 600">
+      <rect fill="#fff" width="900" height="600"/>
+      <circle fill="#BC002D" cx="450" cy="300" r="180"/>
+    </svg>
+  );
+
   // Get upcoming holidays
   const upcomingHolidays = useMemo(() => {
     const holidays = [];
@@ -118,19 +133,19 @@ function Calendar() {
           holidays.push({
             date: new Date(checkDate),
             name: krHoliday[0].name,
-            country: '🇰🇷',
+            country: 'KR',
           });
         }
         if (jpHoliday && jpHoliday.length > 0) {
           holidays.push({
             date: new Date(checkDate),
             name: jpHoliday[0].name,
-            country: '🇯🇵',
+            country: 'JP',
           });
         }
       }
 
-      if (holidays.length >= 4) break;
+      if (holidays.length >= 6) break;
     }
 
     return holidays;
@@ -181,16 +196,18 @@ function Calendar() {
                 !dayInfo.isCurrentMonth ? 'other-month' : ''
               } ${dayInfo.isToday ? 'today' : ''} ${
                 dayOfWeek === 0 || hasKrHoliday ? 'sunday' : ''
-              } ${dayOfWeek === 6 ? 'saturday' : ''}`}
+              } ${dayOfWeek === 6 ? 'saturday' : ''} ${
+                dayInfo.holidays?.length > 0 ? 'has-holiday' : ''
+              }`}
               title={
-                dayInfo.holidays?.map((h) => `${h.country === 'KR' ? '🇰🇷' : '🇯🇵'} ${h.name}`).join('\n') || ''
+                dayInfo.holidays?.map((h) => `${h.name}`).join(' / ') || ''
               }
             >
               <span className="day-number">{dayInfo.day}</span>
               {dayInfo.holidays && dayInfo.holidays.length > 0 && (
-                <div className="holiday-dots">
-                  {hasKrHoliday && <span className="holiday-dot kr"></span>}
-                  {hasJpHoliday && <span className="holiday-dot jp"></span>}
+                <div className="holiday-flags">
+                  {hasKrHoliday && <span className="holiday-flag kr"><FlagKR /></span>}
+                  {hasJpHoliday && <span className="holiday-flag jp"><FlagJP /></span>}
                 </div>
               )}
             </div>
@@ -204,7 +221,7 @@ function Calendar() {
           <div className="upcoming-list">
             {upcomingHolidays.map((holiday, index) => (
               <div key={index} className="upcoming-item">
-                <span className="upcoming-country">{holiday.country}</span>
+                <span className="upcoming-country">{holiday.country === 'KR' ? <FlagKR /> : <FlagJP />}</span>
                 <span className="upcoming-date">{formatHolidayDate(holiday.date)}</span>
                 <span className="upcoming-name">{holiday.name}</span>
               </div>

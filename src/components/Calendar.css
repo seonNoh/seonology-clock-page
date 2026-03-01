@@ -121,25 +121,31 @@
   color: var(--text-primary);
 }
 
-.holiday-dots {
+.calendar-day.has-holiday {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.calendar-day.has-holiday:not(.today) {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.holiday-flags {
   position: absolute;
-  bottom: 3px;
+  bottom: 2px;
   display: flex;
   gap: 2px;
+  align-items: center;
 }
 
-.holiday-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
+.holiday-flag {
+  display: flex;
+  align-items: center;
+  line-height: 1;
 }
 
-.holiday-dot.kr {
-  background: #ef4444;
-}
-
-.holiday-dot.jp {
-  background: #f97316;
+.flag-icon {
+  border-radius: 1px;
+  box-shadow: 0 0 1px rgba(0,0,0,0.3);
 }
 
 /* Upcoming holidays */
@@ -171,7 +177,9 @@
 }
 
 .upcoming-country {
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  min-width: 18px;
 }
 
 .upcoming-date {
