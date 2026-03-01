@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.17.0...v1.18.0) (2026-03-01)
+
+
+### Features
+
+* 브라우저 탭 목록 UI + 탭 전환 기능 ([c74b6ed](https://github.com/seonNoh/seonology-clock-page/commit/c74b6ed648797119dfa5cd89705f9311dca115c4))
+
 # [1.17.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.16.2...v1.17.0) (2026-03-01)
 
 
