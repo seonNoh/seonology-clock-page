@@ -14,3 +14,6 @@ spec:
           port: 80
   tls:
     secretName: seonology-clock-page-tls
+    options:
+      name: clock-mtls
+      namespace: seonology-apps

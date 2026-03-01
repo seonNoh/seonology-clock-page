@@ -1,0 +1,10 @@
+apiVersion: traefik.io/v1alpha1
+kind: TLSOption
+metadata:
+  name: clock-mtls
+  namespace: seonology-apps
+spec:
+  clientAuth:
+    secretNames:
+      - clock-mtls-ca
+    clientAuthType: RequireAndVerifyClientCert
