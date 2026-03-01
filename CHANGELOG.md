@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.10.0...v1.11.0) (2026-03-01)
+
+
+### Features
+
+* add Google autocomplete suggestions to search bar ([bcfcaa9](https://github.com/seonNoh/seonology-clock-page/commit/bcfcaa90d41a1dfff7065fcc729e14f0322328f5))
+
 # [1.10.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.9.1...v1.10.0) (2026-03-01)
 
 
