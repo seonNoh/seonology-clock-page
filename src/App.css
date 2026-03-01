@@ -16,12 +16,21 @@
   transition: background 0.3s ease;
 }
 
-/* ===== Glow Effect Picker ===== */
-.glow-picker-area {
+/* ===== Bottom Right Stack ===== */
+.bottom-right-stack {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
   z-index: 15;
+}
+
+/* ===== Glow Effect Picker ===== */
+.glow-picker-area {
+  position: relative;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -507,15 +516,11 @@
   font-size: 2.2rem;
 }
 
-/* Ambient Info - bottom area */
+/* Ambient Info - in bottom-right stack */
 .ambient-info {
-  position: fixed;
-  bottom: 5rem;
-  right: 2rem;
   display: flex;
   align-items: center;
   gap: 2rem;
-  z-index: 10;
 }
 
 /* Ambient items (calendar, fortune) */

@@ -250,11 +250,8 @@
   font-size: 0.85rem;
 }
 
-/* Notes trigger button */
+/* Notes trigger button - in bottom-right stack */
 .notes-trigger {
-  position: fixed;
-  bottom: 5rem;
-  right: 2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -267,7 +264,6 @@
   font-size: 0.8rem;
   cursor: pointer;
   transition: var(--transition);
-  z-index: 10;
 }
 
 .notes-trigger:hover {
@@ -335,10 +331,5 @@
     width: 100%;
     max-height: 80vh;
     border-radius: 0;
-  }
-
-  .notes-trigger {
-    bottom: 1.5rem;
-    right: 1rem;
   }
 }
