@@ -474,9 +474,9 @@ app.get('/api/suggest', async (req, res) => {
     const response = await new Promise((resolve, reject) => {
       const http = require('http');
       http.get(url, (resp) => {
-        let data = '';
-        resp.on('data', chunk => data += chunk);
-        resp.on('end', () => resolve(data));
+        const chunks = [];
+        resp.on('data', chunk => chunks.push(chunk));
+        resp.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
       }).on('error', reject);
     });
     const parsed = JSON.parse(response);

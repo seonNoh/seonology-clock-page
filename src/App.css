@@ -288,13 +288,13 @@
 
 .search-suggestions {
   position: absolute;
-  top: calc(100% + 4px);
+  bottom: calc(100% + 4px);
   left: 0;
   right: 0;
   background: rgba(30, 30, 35, 0.97);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(20px);
   overflow: hidden;
   z-index: 100;
@@ -302,7 +302,7 @@
 }
 
 @keyframes suggest-fade {
-  from { opacity: 0; transform: translateY(-4px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
