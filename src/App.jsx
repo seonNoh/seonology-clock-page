@@ -6,6 +6,7 @@ import Weather from './components/Weather';
 import TodoList from './components/TodoList';
 import Calendar from './components/Calendar';
 import ExchangeRate from './components/ExchangeRate';
+import NotesPanel from './components/NotesPanel';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -840,6 +841,7 @@ const ANIM_EFFECTS = [
 
 function App() {
   const [activeModal, setActiveModal] = useState(null);
+  const [showNotes, setShowNotes] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
   const [cursorAnim, setCursorAnim] = useState(() => localStorage.getItem('clock-cursor-anim') || 'none');
@@ -851,11 +853,14 @@ function App() {
 
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape') {
+        if (showNotes) setShowNotes(false);
+        else closeModal();
+      }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
+  }, [showNotes]);
 
   useEffect(() => { localStorage.setItem('clock-cursor-effect', cursorEffect); }, [cursorEffect]);
   useEffect(() => { localStorage.setItem('clock-cursor-anim', cursorAnim); }, [cursorAnim]);
@@ -971,6 +976,23 @@ function App() {
       <div className="ambient-info">
         <CalendarIcon onClick={() => openModal('calendar')} />
       </div>
+
+      {/* Notes trigger button */}
+      <button className="notes-trigger" onClick={() => setShowNotes(true)}>
+        <span className="notes-trigger-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+        </span>
+        Notes
+      </button>
+
+      {/* Notes Panel */}
+      <NotesPanel isOpen={showNotes} onClose={() => setShowNotes(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">

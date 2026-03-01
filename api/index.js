@@ -557,6 +557,84 @@ app.delete('/api/todos', (req, res) => {
   }
 });
 
+// ===== NOTES API =====
+const NOTES_FILE = path.join(BOOKMARKS_DIR, 'notes.json');
+
+const DEFAULT_NOTES = { notes: [] };
+
+function readNotes() {
+  try {
+    ensureDir(BOOKMARKS_DIR);
+    if (!fs.existsSync(NOTES_FILE)) {
+      fs.writeFileSync(NOTES_FILE, JSON.stringify(DEFAULT_NOTES, null, 2));
+      return DEFAULT_NOTES;
+    }
+    return JSON.parse(fs.readFileSync(NOTES_FILE, 'utf8'));
+  } catch (err) {
+    console.error('Error reading notes:', err);
+    return DEFAULT_NOTES;
+  }
+}
+
+function writeNotes(data) {
+  ensureDir(BOOKMARKS_DIR);
+  fs.writeFileSync(NOTES_FILE, JSON.stringify(data, null, 2));
+}
+
+// GET all notes
+app.get('/api/notes', (req, res) => {
+  try {
+    res.json(readNotes());
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read notes' });
+  }
+});
+
+// POST create note
+app.post('/api/notes', (req, res) => {
+  try {
+    const data = readNotes();
+    const note = {
+      id: `note-${Date.now()}`,
+      content: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    data.notes.unshift(note);
+    writeNotes(data);
+    res.json({ success: true, note });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create note' });
+  }
+});
+
+// PATCH update note content
+app.patch('/api/notes/:id', (req, res) => {
+  try {
+    const data = readNotes();
+    const note = data.notes.find(n => n.id === req.params.id);
+    if (!note) return res.status(404).json({ error: 'Note not found' });
+    if (req.body.content !== undefined) note.content = req.body.content;
+    note.updatedAt = new Date().toISOString();
+    writeNotes(data);
+    res.json({ success: true, note });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update note' });
+  }
+});
+
+// DELETE note
+app.delete('/api/notes/:id', (req, res) => {
+  try {
+    const data = readNotes();
+    data.notes = data.notes.filter(n => n.id !== req.params.id);
+    writeNotes(data);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete note' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Running in cluster: ${isInCluster}`);
