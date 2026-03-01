@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.12.2...v1.13.0) (2026-03-01)
+
+
+### Features
+
+* add mTLS client certificate authentication ([7eed650](https://github.com/seonNoh/seonology-clock-page/commit/7eed650f8208cc9a62fe810ccf7a5b09476b8ff4))
+
 ## [1.12.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.12.1...v1.12.2) (2026-03-01)
 
 
