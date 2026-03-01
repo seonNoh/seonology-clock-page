@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.4.1...v1.5.0) (2026-03-01)
+
+
+### Features
+
+* add cursor canvas animations, enhance SEONOLOGY title & fix theme toggle hover\n\n- 12가지 캔버스 기반 커서 애니메이션 효과 추가 (trail, comet, particles, ripple, fireflies, bubbles, stardust, snow, magnetic, constellation, wave, spotlight)\n- CursorCanvas.jsx 컴포넌트 신규 생성 (memo + requestAnimationFrame 기반)\n- 기존 글로우 색상 13종과 독립적으로 조합 가능한 2버튼 피커 UI 구현\n- SEONOLOGY 버튼을 브랜드 타이틀 스타일로 개선 (hover 시 accent dot, 언더라인 애니메이션, Services 라벨 슬라이드업)\n- 시계 테마 토글 버튼 hover 영역 수정 (padding 확장으로 모든 테마에서 접근 가능)\n- Word Clock/LED 테마의 개별 패딩 해킹 제거, 공통 .clock 패딩 체계로 통합\n- FlipClock 버그 수정, 폰트 Inter/Noto Sans KR/JP 적용, LED 6색상+5형태 등 이전 작업 포함" ([a579c87](https://github.com/seonNoh/seonology-clock-page/commit/a579c872d031ce232a3d886d4ab44844b1df9f7c))
+
 ## [1.4.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.4.0...v1.4.1) (2026-02-28)
 
 
