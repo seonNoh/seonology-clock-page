@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.13.0...v1.14.0) (2026-03-01)
+
+
+### Features
+
+* mTLS + OIDC 하이브리드 인증 전환 ([2db85ef](https://github.com/seonNoh/seonology-clock-page/commit/2db85efba02ab916de7a2be2e8b9a6fdd0f31d7a))
+
 # [1.13.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.12.2...v1.13.0) (2026-03-01)
 
 
