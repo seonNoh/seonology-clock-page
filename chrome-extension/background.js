@@ -68,6 +68,42 @@ async function getSelectedBookmarks(config) {
   return folders;
 }
 
+// ===== Flatten folder tree: collect all subfolders with their path =====
+function flattenFolders(folder, parentPath = '') {
+  const result = [];
+  const currentPath = parentPath ? `${parentPath} / ${folder.title}` : folder.title;
+  const bookmarks = (folder.children || []).filter(c => c.url);
+  const subfolders = (folder.children || []).filter(c => !c.url && c.children);
+
+  // Include this folder if it has bookmarks
+  if (bookmarks.length > 0) {
+    result.push({ id: folder.id, title: currentPath, bookmarks });
+  }
+
+  // Recurse into subfolders
+  for (const sub of subfolders) {
+    result.push(...flattenFolders(sub, currentPath));
+  }
+  return result;
+}
+
+// ===== Check if a folder is inside a synced folder (ancestor check) =====
+async function findSyncAncestor(folderId, syncFolders) {
+  let currentId = folderId;
+  const visited = new Set();
+  while (currentId && !visited.has(currentId)) {
+    visited.add(currentId);
+    if (syncFolders.includes(currentId)) return currentId;
+    try {
+      const [node] = await chrome.bookmarks.get(currentId);
+      currentId = node.parentId;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 // ===== Full sync =====
 async function fullSync() {
   const config = await getConfig();
@@ -83,65 +119,65 @@ async function fullSync() {
     // 2. Get selected Chrome folders
     const chromeFolders = await getSelectedBookmarks(config);
 
-    // 3. For each Chrome folder → ensure category exists, sync bookmarks
+    // 3. For each Chrome folder → flatten subfolders, ensure categories, sync bookmarks
     for (const folder of chromeFolders) {
-      const categoryName = `${config.categoryPrefix ? config.categoryPrefix + ' · ' : ''}${folder.title}`;
+      const flatList = flattenFolders(folder);
 
-      // Find or create category
-      let categoryId = syncMap.categories[folder.id];
-      let existingCat = categoryId
-        ? clockData.categories.find(c => c.id === categoryId)
-        : null;
+      for (const entry of flatList) {
+        const categoryName = `${config.categoryPrefix ? config.categoryPrefix + ' · ' : ''}${entry.title}`;
 
-      if (!existingCat) {
-        // Create new category
-        const result = await apiCall(config, 'POST', '/api/bookmarks/categories', {
-          name: categoryName,
-        });
-        categoryId = result.category.id;
-        syncMap.categories[folder.id] = categoryId;
-        existingCat = result.category;
-      }
+        // Find or create category
+        let categoryId = syncMap.categories[entry.id];
+        let existingCat = categoryId
+          ? clockData.categories.find(c => c.id === categoryId)
+          : null;
 
-      // 4. Sync bookmarks in this folder
-      const chromeBookmarks = (folder.children || []).filter(c => c.url);
-      const existingBookmarks = existingCat.bookmarks || [];
-
-      // Track URLs already in Clock Page for this category
-      const existingUrls = new Set(existingBookmarks.map(b => b.url));
-      const chromeUrls = new Set(chromeBookmarks.map(b => b.url));
-
-      // Add new bookmarks from Chrome
-      for (const cb of chromeBookmarks) {
-        if (!existingUrls.has(cb.url)) {
-          const result = await apiCall(config, 'POST',
-            `/api/bookmarks/categories/${categoryId}/bookmarks`, {
-              name: cb.title || cb.url,
-              url: cb.url,
-              icon: 'default',
-              color: '#6366f1',
-            });
-          syncMap.bookmarks[cb.id] = result.bookmark.id;
-          console.log(`[Seonology Sync] Added: ${cb.title}`);
+        if (!existingCat) {
+          const result = await apiCall(config, 'POST', '/api/bookmarks/categories', {
+            name: categoryName,
+          });
+          categoryId = result.category.id;
+          syncMap.categories[entry.id] = categoryId;
+          existingCat = result.category;
         }
-      }
 
-      // Remove bookmarks that were deleted from Chrome
-      for (const eb of existingBookmarks) {
-        if (!chromeUrls.has(eb.url)) {
-          // Check if this bookmark was synced from Chrome (not manually added)
-          const isSynced = Object.values(syncMap.bookmarks).includes(eb.id);
-          if (isSynced) {
-            await apiCall(config, 'DELETE',
-              `/api/bookmarks/categories/${categoryId}/bookmarks/${eb.id}`);
-            // Remove from syncMap
-            for (const [chromeId, clockId] of Object.entries(syncMap.bookmarks)) {
-              if (clockId === eb.id) {
-                delete syncMap.bookmarks[chromeId];
-                break;
+        // 4. Sync bookmarks in this subfolder
+        const chromeBookmarks = entry.bookmarks;
+        const existingBookmarks = existingCat.bookmarks || [];
+
+        const existingUrls = new Set(existingBookmarks.map(b => b.url));
+        const chromeUrls = new Set(chromeBookmarks.map(b => b.url));
+
+        // Add new bookmarks from Chrome
+        for (const cb of chromeBookmarks) {
+          if (!existingUrls.has(cb.url)) {
+            const result = await apiCall(config, 'POST',
+              `/api/bookmarks/categories/${categoryId}/bookmarks`, {
+                name: cb.title || cb.url,
+                url: cb.url,
+                icon: 'default',
+                color: '#6366f1',
+              });
+            syncMap.bookmarks[cb.id] = result.bookmark.id;
+            console.log(`[Seonology Sync] Added: ${cb.title}`);
+          }
+        }
+
+        // Remove bookmarks that were deleted from Chrome
+        for (const eb of existingBookmarks) {
+          if (!chromeUrls.has(eb.url)) {
+            const isSynced = Object.values(syncMap.bookmarks).includes(eb.id);
+            if (isSynced) {
+              await apiCall(config, 'DELETE',
+                `/api/bookmarks/categories/${categoryId}/bookmarks/${eb.id}`);
+              for (const [chromeId, clockId] of Object.entries(syncMap.bookmarks)) {
+                if (clockId === eb.id) {
+                  delete syncMap.bookmarks[chromeId];
+                  break;
+                }
               }
+              console.log(`[Seonology Sync] Removed: ${eb.name}`);
             }
-            console.log(`[Seonology Sync] Removed: ${eb.name}`);
           }
         }
       }
@@ -165,13 +201,14 @@ async function onBookmarkCreated(id, bookmark) {
   const config = await getConfig();
   if (!config.enabled || !bookmark.url) return;
 
-  // Check if this bookmark's parent folder is in syncFolders
-  if (!config.syncFolders.includes(bookmark.parentId)) return;
+  // Check if this bookmark's parent (or any ancestor) is in syncFolders
+  const syncAncestor = await findSyncAncestor(bookmark.parentId, config.syncFolders);
+  if (!syncAncestor) return;
 
   const syncMap = await getSyncMap();
   const categoryId = syncMap.categories[bookmark.parentId];
   if (!categoryId) {
-    // Folder not yet synced, trigger full sync
+    // Subfolder not yet synced as category, trigger full sync to create it
     return fullSync();
   }
 
@@ -268,8 +305,8 @@ async function onBookmarkMoved(id, moveInfo) {
   if (!config.enabled) return;
 
   const syncMap = await getSyncMap();
-  const wasInSync = config.syncFolders.includes(moveInfo.oldParentId);
-  const nowInSync = config.syncFolders.includes(moveInfo.parentId);
+  const wasInSync = await findSyncAncestor(moveInfo.oldParentId, config.syncFolders);
+  const nowInSync = await findSyncAncestor(moveInfo.parentId, config.syncFolders);
 
   if (wasInSync && !nowInSync) {
     // Moved out of synced folder → remove from Clock Page
