@@ -100,17 +100,16 @@ function Calendar() {
 
   const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
 
-  const FlagKR = () => (
-    <svg className="flag-icon" width="14" height="10" viewBox="0 0 900 600">
-      <rect fill="#fff" width="900" height="600"/>
-      <circle fill="#C60C30" cx="450" cy="300" r="150"/>
-      <path fill="#003478" d="M450 150a150 150 0 0 0 0 300 75 75 0 0 1 0-150 75 75 0 0 0 0-150z"/>
-      <path fill="#C60C30" d="M450 150a75 75 0 0 1 0 150 75 75 0 0 0 0 150"/>
+  const FlagKR = ({ size = 14 }) => (
+    <svg className="flag-icon" width={size} height={Math.round(size * 2 / 3)} viewBox="0 0 900 600">
+      <rect fill="#FFFFFF" width="900" height="600"/>
+      <circle cx="450" cy="300" r="150" fill="#CD2E3A"/>
+      <path fill="#0047A0" d="M450,150 A150,150 0 0,0 450,450 A75,75 0 0,0 450,300 A75,75 0 0,1 450,150Z"/>
     </svg>
   );
-  const FlagJP = () => (
-    <svg className="flag-icon" width="14" height="10" viewBox="0 0 900 600">
-      <rect fill="#fff" width="900" height="600"/>
+  const FlagJP = ({ size = 14 }) => (
+    <svg className="flag-icon" width={size} height={Math.round(size * 2 / 3)} viewBox="0 0 900 600">
+      <rect fill="#FFFFFF" width="900" height="600"/>
       <circle fill="#BC002D" cx="450" cy="300" r="180"/>
     </svg>
   );
@@ -205,9 +204,13 @@ function Calendar() {
             >
               <span className="day-number">{dayInfo.day}</span>
               {dayInfo.holidays && dayInfo.holidays.length > 0 && (
-                <div className="holiday-flags">
-                  {hasKrHoliday && <span className="holiday-flag kr"><FlagKR /></span>}
-                  {hasJpHoliday && <span className="holiday-flag jp"><FlagJP /></span>}
+                <div className="holiday-info">
+                  {dayInfo.holidays.map((h, i) => (
+                    <div key={i} className="holiday-label">
+                      <span className="holiday-flag">{h.country === 'KR' ? <FlagKR size={10} /> : <FlagJP size={10} />}</span>
+                      <span className="holiday-name-cell">{h.name}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
