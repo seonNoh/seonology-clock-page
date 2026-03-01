@@ -169,6 +169,7 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   z-index: 10;
+  transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .top-widget {
@@ -806,6 +807,7 @@
   background: rgba(0, 0, 0, 0.3);
   border-top: 1px solid var(--border-color);
   z-index: 5;
+  transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footer-content {
@@ -1366,6 +1368,14 @@
 
 .dashboard-wrapper.quicklinks-open .todo-preview {
   left: calc(280px + 2rem);
+}
+
+.dashboard-wrapper.quicklinks-open .top-center-bar {
+  left: calc(50% + 140px);
+}
+
+.dashboard-wrapper.quicklinks-open .app-footer {
+  left: 280px;
 }
 
 /* ===== Quick Links Panel ===== */
