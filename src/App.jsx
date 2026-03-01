@@ -486,40 +486,42 @@ function DefaultIcon() {
   );
 }
 
+// Icon resolver (shared by ServiceIcon and BookmarksPanel)
+function getIconByName(iconName) {
+  switch (iconName) {
+    case 'vault': return <VaultIcon />;
+    case 'key': return <KeyIcon />;
+    case 'gitops': return <GitOpsIcon />;
+    case 'terminal': return <TerminalIcon />;
+    case 'clock': return <ClockIcon />;
+    case 'chart': return <ChartIcon />;
+    case 'activity': return <ActivityIcon />;
+    case 'portal': return <PortalIcon />;
+    case 'note': return <NoteIcon />;
+    case 'chat': return <ChatIcon />;
+    case 'content': return <ContentIcon />;
+    case 'code': return <CodeIcon />;
+    case 'book': return <BookIcon />;
+    case 'folder': return <FolderIcon />;
+    case 'k8s': return <K8sIcon />;
+    case 'map': return <MapIcon />;
+    case 'storage': return <StorageIcon />;
+    case 'music': return <MusicIcon />;
+    case 'user': return <UserIcon />;
+    case 'pdf': return <PdfIcon />;
+    case 'photo': return <PhotoIcon />;
+    case 'share': return <ShareIcon />;
+    case 'task': return <TaskIcon />;
+    case 'cloud': return <CloudIcon />;
+    case 'wiki': return <WikiIcon />;
+    case 'workflow': return <WorkflowIcon />;
+    case 'home': return <HomeIcon />;
+    default: return <DefaultIcon />;
+  }
+}
+
 // Service icon component
 function ServiceIcon({ service }) {
-  const getIcon = () => {
-    switch (service.icon) {
-      case 'vault': return <VaultIcon />;
-      case 'key': return <KeyIcon />;
-      case 'gitops': return <GitOpsIcon />;
-      case 'terminal': return <TerminalIcon />;
-      case 'clock': return <ClockIcon />;
-      case 'chart': return <ChartIcon />;
-      case 'activity': return <ActivityIcon />;
-      case 'portal': return <PortalIcon />;
-      case 'note': return <NoteIcon />;
-      case 'chat': return <ChatIcon />;
-      case 'content': return <ContentIcon />;
-      case 'code': return <CodeIcon />;
-      case 'book': return <BookIcon />;
-      case 'folder': return <FolderIcon />;
-      case 'k8s': return <K8sIcon />;
-      case 'map': return <MapIcon />;
-      case 'storage': return <StorageIcon />;
-      case 'music': return <MusicIcon />;
-      case 'user': return <UserIcon />;
-      case 'pdf': return <PdfIcon />;
-      case 'photo': return <PhotoIcon />;
-      case 'share': return <ShareIcon />;
-      case 'task': return <TaskIcon />;
-      case 'cloud': return <CloudIcon />;
-      case 'wiki': return <WikiIcon />;
-      case 'workflow': return <WorkflowIcon />;
-      case 'home': return <HomeIcon />;
-      default: return <DefaultIcon />;
-    }
-  };
   
   return (
     <a
@@ -530,7 +532,7 @@ function ServiceIcon({ service }) {
       style={{ '--service-color': service.color }}
     >
       <div className="service-icon">
-        {getIcon()}
+        {getIconByName(service.icon)}
       </div>
       <div className="service-info">
         <div className="service-name">{service.name}</div>
@@ -541,7 +543,169 @@ function ServiceIcon({ service }) {
 }
 
 // Services modal content
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+
+// Bookmarks panel
+function BookmarksPanel() {
+  const [data, setData] = useState({ categories: [] });
+  const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
+  const [addingTo, setAddingTo] = useState(null); // categoryId for add form
+  const [newCatName, setNewCatName] = useState('');
+  const [showAddCat, setShowAddCat] = useState(false);
+  const [form, setForm] = useState({ name: '', url: '', icon: 'default', color: '#6366f1' });
+
+  const fetchBookmarks = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/bookmarks`);
+      const result = await res.json();
+      setData(result);
+    } catch (err) {
+      console.error('Failed to fetch bookmarks:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchBookmarks(); }, []);
+
+  const addCategory = async () => {
+    if (!newCatName.trim()) return;
+    await fetch(`${API_BASE}/api/bookmarks/categories`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newCatName.trim() }),
+    });
+    setNewCatName('');
+    setShowAddCat(false);
+    fetchBookmarks();
+  };
+
+  const deleteCategory = async (catId) => {
+    await fetch(`${API_BASE}/api/bookmarks/categories/${catId}`, { method: 'DELETE' });
+    fetchBookmarks();
+  };
+
+  const addBookmark = async (catId) => {
+    if (!form.name.trim() || !form.url.trim()) return;
+    let url = form.url.trim();
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    await fetch(`${API_BASE}/api/bookmarks/categories/${catId}/bookmarks`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, url }),
+    });
+    setForm({ name: '', url: '', icon: 'default', color: '#6366f1' });
+    setAddingTo(null);
+    fetchBookmarks();
+  };
+
+  const deleteBookmark = async (catId, bmId) => {
+    await fetch(`${API_BASE}/api/bookmarks/categories/${catId}/bookmarks/${bmId}`, { method: 'DELETE' });
+    fetchBookmarks();
+  };
+
+  if (loading) return <div className="services-loading">Loading bookmarks...</div>;
+
+  return (
+    <div className="bookmarks-panel">
+      <div className="bookmarks-toolbar">
+        <button className="bm-toolbar-btn" onClick={() => setEditMode(!editMode)}>
+          {editMode ? (
+            <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Done</>
+          ) : (
+            <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</>
+          )}
+        </button>
+        {editMode && (
+          <button className="bm-toolbar-btn bm-add-cat-btn" onClick={() => setShowAddCat(true)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Category
+          </button>
+        )}
+      </div>
+
+      {showAddCat && (
+        <div className="bm-add-cat-form">
+          <input
+            className="bm-input"
+            placeholder="Category name"
+            value={newCatName}
+            onChange={(e) => setNewCatName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addCategory()}
+            autoFocus
+          />
+          <button className="bm-btn-save" onClick={addCategory}>Add</button>
+          <button className="bm-btn-cancel" onClick={() => { setShowAddCat(false); setNewCatName(''); }}>Cancel</button>
+        </div>
+      )}
+
+      {data.categories.length === 0 && !showAddCat && (
+        <div className="bm-empty">
+          No bookmarks yet. Click Edit to add categories and bookmarks.
+        </div>
+      )}
+
+      {data.categories.map(cat => (
+        <div key={cat.id} className="bm-category">
+          <div className="bm-category-header">
+            <h3 className="bm-category-name">{cat.name}</h3>
+            <div className="bm-category-actions">
+              {editMode && (
+                <>
+                  <button className="bm-icon-btn" onClick={() => { setAddingTo(cat.id); setForm({ name: '', url: '', icon: 'default', color: '#6366f1' }); }} title="Add bookmark">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  <button className="bm-icon-btn bm-icon-btn-danger" onClick={() => deleteCategory(cat.id)} title="Delete category">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {addingTo === cat.id && (
+            <div className="bm-add-form">
+              <input className="bm-input" placeholder="Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} autoFocus />
+              <input className="bm-input" placeholder="URL" value={form.url} onChange={e => setForm({...form, url: e.target.value})} onKeyDown={e => e.key === 'Enter' && addBookmark(cat.id)} />
+              <div className="bm-form-row">
+                <label className="bm-label">Color</label>
+                <input type="color" className="bm-color-input" value={form.color} onChange={e => setForm({...form, color: e.target.value})} />
+                <button className="bm-btn-save" onClick={() => addBookmark(cat.id)}>Add</button>
+                <button className="bm-btn-cancel" onClick={() => setAddingTo(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {cat.bookmarks.length > 0 ? (
+            <div className="bm-grid">
+              {cat.bookmarks.map(bm => (
+                <div key={bm.id} className="bm-card" style={{ '--bm-color': bm.color }}>
+                  <a href={bm.url} target="_blank" rel="noopener noreferrer" className="bm-card-link">
+                    <div className="bm-card-icon">
+                      {getIconByName(bm.icon)}
+                    </div>
+                    <div className="bm-card-info">
+                      <span className="bm-card-name">{bm.name}</span>
+                      <span className="bm-card-url">{bm.url.replace(/^https?:\/\//, '').slice(0, 30)}</span>
+                    </div>
+                  </a>
+                  {editMode && (
+                    <button className="bm-delete-btn" onClick={() => deleteBookmark(cat.id, bm.id)} title="Delete">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bm-empty-cat">No bookmarks in this category</div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ServicesModal() {
+  const [tab, setTab] = useState('services');
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -549,12 +713,7 @@ function ServicesModal() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Use relative path for API - works in both dev and production
-        const apiUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:3001/api/services'
-          : '/api/services';
-        
-        const res = await fetch(apiUrl);
+        const res = await fetch(`${API_BASE}/api/services`);
         const data = await res.json();
         setServices(data.services || []);
         setLoading(false);
@@ -568,19 +727,30 @@ function ServicesModal() {
     fetchServices();
   }, []);
 
-  if (loading) {
-    return <div className="services-loading">Loading services...</div>;
-  }
-
-  if (error) {
-    return <div className="services-error">{error}</div>;
-  }
-
   return (
-    <div className="services-grid">
-      {services.map((service) => (
-        <ServiceIcon key={service.id} service={service} />
-      ))}
+    <div className="services-modal-wrapper">
+      <div className="services-tabs">
+        <button className={`services-tab${tab === 'services' ? ' active' : ''}`} onClick={() => setTab('services')}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Services
+        </button>
+        <button className={`services-tab${tab === 'bookmarks' ? ' active' : ''}`} onClick={() => setTab('bookmarks')}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Bookmarks
+        </button>
+      </div>
+
+      {tab === 'services' && (
+        loading ? <div className="services-loading">Loading services...</div> :
+        error ? <div className="services-error">{error}</div> :
+        <div className="services-grid">
+          {services.map((service) => (
+            <ServiceIcon key={service.id} service={service} />
+          ))}
+        </div>
+      )}
+
+      {tab === 'bookmarks' && <BookmarksPanel />}
     </div>
   );
 }
@@ -772,7 +942,7 @@ function App() {
       </div>
 
       {/* Modals */}
-      <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="Services">
+      <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">
         <ServicesModal />
       </Modal>
 

@@ -24,6 +24,12 @@ spec:
           name: http
         - containerPort: 3001
           name: api
+        env:
+        - name: BOOKMARKS_DIR
+          value: /data
+        volumeMounts:
+        - name: bookmarks-data
+          mountPath: /data
         resources:
           requests:
             memory: "128Mi"
@@ -43,3 +49,7 @@ spec:
             port: 80
           initialDelaySeconds: 5
           periodSeconds: 5
+      volumes:
+      - name: bookmarks-data
+        persistentVolumeClaim:
+          claimName: clock-bookmarks-pvc

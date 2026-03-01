@@ -309,6 +309,157 @@ app.get('/api/services', async (req, res) => {
   }
 });
 
+// ===== BOOKMARKS API =====
+const path = require('path');
+const BOOKMARKS_DIR = process.env.BOOKMARKS_DIR || path.join(__dirname, '..', 'data');
+const BOOKMARKS_FILE = path.join(BOOKMARKS_DIR, 'bookmarks.json');
+
+// Default bookmarks structure
+const DEFAULT_BOOKMARKS = {
+  categories: [
+    {
+      id: 'default',
+      name: 'Bookmarks',
+      order: 0,
+      bookmarks: [],
+    },
+  ],
+};
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function readBookmarks() {
+  try {
+    ensureDir(BOOKMARKS_DIR);
+    if (!fs.existsSync(BOOKMARKS_FILE)) {
+      fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(DEFAULT_BOOKMARKS, null, 2));
+      return DEFAULT_BOOKMARKS;
+    }
+    return JSON.parse(fs.readFileSync(BOOKMARKS_FILE, 'utf8'));
+  } catch (err) {
+    console.error('Error reading bookmarks:', err);
+    return DEFAULT_BOOKMARKS;
+  }
+}
+
+function writeBookmarks(data) {
+  ensureDir(BOOKMARKS_DIR);
+  fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(data, null, 2));
+}
+
+// GET all bookmarks
+app.get('/api/bookmarks', (req, res) => {
+  try {
+    const data = readBookmarks();
+    res.json(data);
+  } catch (err) {
+    console.error('Error getting bookmarks:', err);
+    res.status(500).json({ error: 'Failed to read bookmarks' });
+  }
+});
+
+// PUT replace all bookmarks (full save)
+app.put('/api/bookmarks', (req, res) => {
+  try {
+    const data = req.body;
+    if (!data || !Array.isArray(data.categories)) {
+      return res.status(400).json({ error: 'Invalid bookmarks data' });
+    }
+    writeBookmarks(data);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error saving bookmarks:', err);
+    res.status(500).json({ error: 'Failed to save bookmarks' });
+  }
+});
+
+// POST add a category
+app.post('/api/bookmarks/categories', (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Category name is required' });
+    const data = readBookmarks();
+    const id = `cat-${Date.now()}`;
+    const order = data.categories.length;
+    data.categories.push({ id, name, order, bookmarks: [] });
+    writeBookmarks(data);
+    res.json({ success: true, category: { id, name, order, bookmarks: [] } });
+  } catch (err) {
+    console.error('Error adding category:', err);
+    res.status(500).json({ error: 'Failed to add category' });
+  }
+});
+
+// DELETE a category
+app.delete('/api/bookmarks/categories/:categoryId', (req, res) => {
+  try {
+    const data = readBookmarks();
+    data.categories = data.categories.filter(c => c.id !== req.params.categoryId);
+    writeBookmarks(data);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting category:', err);
+    res.status(500).json({ error: 'Failed to delete category' });
+  }
+});
+
+// POST add a bookmark to a category
+app.post('/api/bookmarks/categories/:categoryId/bookmarks', (req, res) => {
+  try {
+    const { name, url, icon, color } = req.body;
+    if (!name || !url) return res.status(400).json({ error: 'Name and URL are required' });
+    const data = readBookmarks();
+    const cat = data.categories.find(c => c.id === req.params.categoryId);
+    if (!cat) return res.status(404).json({ error: 'Category not found' });
+    const bookmark = { id: `bm-${Date.now()}`, name, url, icon: icon || 'default', color: color || '#6366f1' };
+    cat.bookmarks.push(bookmark);
+    writeBookmarks(data);
+    res.json({ success: true, bookmark });
+  } catch (err) {
+    console.error('Error adding bookmark:', err);
+    res.status(500).json({ error: 'Failed to add bookmark' });
+  }
+});
+
+// DELETE a bookmark
+app.delete('/api/bookmarks/categories/:categoryId/bookmarks/:bookmarkId', (req, res) => {
+  try {
+    const data = readBookmarks();
+    const cat = data.categories.find(c => c.id === req.params.categoryId);
+    if (!cat) return res.status(404).json({ error: 'Category not found' });
+    cat.bookmarks = cat.bookmarks.filter(b => b.id !== req.params.bookmarkId);
+    writeBookmarks(data);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting bookmark:', err);
+    res.status(500).json({ error: 'Failed to delete bookmark' });
+  }
+});
+
+// PATCH update a bookmark
+app.patch('/api/bookmarks/categories/:categoryId/bookmarks/:bookmarkId', (req, res) => {
+  try {
+    const data = readBookmarks();
+    const cat = data.categories.find(c => c.id === req.params.categoryId);
+    if (!cat) return res.status(404).json({ error: 'Category not found' });
+    const bm = cat.bookmarks.find(b => b.id === req.params.bookmarkId);
+    if (!bm) return res.status(404).json({ error: 'Bookmark not found' });
+    if (req.body.name) bm.name = req.body.name;
+    if (req.body.url) bm.url = req.body.url;
+    if (req.body.icon) bm.icon = req.body.icon;
+    if (req.body.color) bm.color = req.body.color;
+    writeBookmarks(data);
+    res.json({ success: true, bookmark: bm });
+  } catch (err) {
+    console.error('Error updating bookmark:', err);
+    res.status(500).json({ error: 'Failed to update bookmark' });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -317,4 +468,5 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Running in cluster: ${isInCluster}`);
+  console.log(`Bookmarks file: ${BOOKMARKS_FILE}`);
 });

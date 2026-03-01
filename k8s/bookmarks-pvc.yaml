@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: clock-bookmarks-pvc
+  namespace: seonology-apps
+  labels:
+    app: seonology-clock-page
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 64Mi
