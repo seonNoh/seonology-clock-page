@@ -120,26 +120,19 @@ function TodoPreview({ onClick }) {
   const [todos, setTodos] = useState([]);
 
   useEffect(() => {
-    const checkTodos = () => {
-      const saved = localStorage.getItem('seonology-todos');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          // Show up to 3 pending todos
-          const pending = parsed.filter(t => !t.completed).slice(0, 3);
-          setTodos(pending);
-        } catch {
-          setTodos([]);
-        }
+    const fetchTodos = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/todos`);
+        const data = await res.json();
+        const pending = (data.todos || []).filter(t => !t.completed).slice(0, 3);
+        setTodos(pending);
+      } catch {
+        setTodos([]);
       }
     };
-    checkTodos();
-    window.addEventListener('storage', checkTodos);
-    const interval = setInterval(checkTodos, 2000); // Check every 2 seconds
-    return () => {
-      window.removeEventListener('storage', checkTodos);
-      clearInterval(interval);
-    };
+    fetchTodos();
+    const interval = setInterval(fetchTodos, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

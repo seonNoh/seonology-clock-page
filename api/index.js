@@ -465,6 +465,98 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// ===== TODOS API =====
+const TODOS_FILE = path.join(BOOKMARKS_DIR, 'todos.json');
+
+const DEFAULT_TODOS = { todos: [] };
+
+function readTodos() {
+  try {
+    ensureDir(BOOKMARKS_DIR);
+    if (!fs.existsSync(TODOS_FILE)) {
+      fs.writeFileSync(TODOS_FILE, JSON.stringify(DEFAULT_TODOS, null, 2));
+      return DEFAULT_TODOS;
+    }
+    return JSON.parse(fs.readFileSync(TODOS_FILE, 'utf8'));
+  } catch (err) {
+    console.error('Error reading todos:', err);
+    return DEFAULT_TODOS;
+  }
+}
+
+function writeTodos(data) {
+  ensureDir(BOOKMARKS_DIR);
+  fs.writeFileSync(TODOS_FILE, JSON.stringify(data, null, 2));
+}
+
+// GET all todos
+app.get('/api/todos', (req, res) => {
+  try {
+    res.json(readTodos());
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read todos' });
+  }
+});
+
+// POST add todo
+app.post('/api/todos', (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'text required' });
+    const data = readTodos();
+    const todo = {
+      id: `todo-${Date.now()}`,
+      text: text.trim(),
+      completed: false,
+      createdAt: new Date().toISOString(),
+    };
+    data.todos.push(todo);
+    writeTodos(data);
+    res.json({ success: true, todo });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to add todo' });
+  }
+});
+
+// PATCH toggle/update todo
+app.patch('/api/todos/:id', (req, res) => {
+  try {
+    const data = readTodos();
+    const todo = data.todos.find(t => t.id === req.params.id);
+    if (!todo) return res.status(404).json({ error: 'Todo not found' });
+    if (req.body.completed !== undefined) todo.completed = req.body.completed;
+    if (req.body.text !== undefined) todo.text = req.body.text;
+    writeTodos(data);
+    res.json({ success: true, todo });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update todo' });
+  }
+});
+
+// DELETE todo
+app.delete('/api/todos/:id', (req, res) => {
+  try {
+    const data = readTodos();
+    data.todos = data.todos.filter(t => t.id !== req.params.id);
+    writeTodos(data);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete todo' });
+  }
+});
+
+// DELETE completed todos
+app.delete('/api/todos', (req, res) => {
+  try {
+    const data = readTodos();
+    data.todos = data.todos.filter(t => !t.completed);
+    writeTodos(data);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to clear completed' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Running in cluster: ${isInCluster}`);

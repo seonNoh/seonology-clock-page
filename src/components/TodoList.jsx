@@ -1,58 +1,56 @@
 import { useState, useEffect } from 'react';
 import './TodoList.css';
 
-const STORAGE_KEY = 'seonology-todos';
-
-const getInitialTodos = () => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return [];
-    }
-  }
-  return [];
-};
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
 function TodoList() {
-  const [todos, setTodos] = useState(getInitialTodos);
+  const [todos, setTodos] = useState([]);
   const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Save todos to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-  }, [todos]);
+  const fetchTodos = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/todos`);
+      const data = await res.json();
+      setTodos(data.todos || []);
+    } catch (err) {
+      console.error('Failed to fetch todos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const addTodo = (e) => {
+  useEffect(() => { fetchTodos(); }, []);
+
+  const addTodo = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-
-    const newTodo = {
-      id: Date.now(),
-      text: inputValue.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    setTodos([...todos, newTodo]);
+    await fetch(`${API_BASE}/api/todos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: inputValue.trim() }),
+    });
     setInputValue('');
+    fetchTodos();
   };
 
-  const toggleTodo = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+  const toggleTodo = async (id, completed) => {
+    await fetch(`${API_BASE}/api/todos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ completed: !completed }),
+    });
+    fetchTodos();
   };
 
-  const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const deleteTodo = async (id) => {
+    await fetch(`${API_BASE}/api/todos/${id}`, { method: 'DELETE' });
+    fetchTodos();
   };
 
-  const clearCompleted = () => {
-    setTodos(todos.filter((todo) => !todo.completed));
+  const clearCompleted = async () => {
+    await fetch(`${API_BASE}/api/todos`, { method: 'DELETE' });
+    fetchTodos();
   };
 
   const completedCount = todos.filter((t) => t.completed).length;
@@ -86,7 +84,7 @@ function TodoList() {
             >
               <button
                 className="todo-checkbox"
-                onClick={() => toggleTodo(todo.id)}
+                onClick={() => toggleTodo(todo.id, todo.completed)}
               >
                 {todo.completed ? '✓' : ''}
               </button>
