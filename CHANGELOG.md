@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.9.1...v1.10.0) (2026-03-01)
+
+
+### Features
+
+* add Unclutter-style Notes panel with PVC persistence ([b0ff45f](https://github.com/seonNoh/seonology-clock-page/commit/b0ff45f8dd24e1d96a43240217f8db7978c859a4))
+
 ## [1.9.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.9.0...v1.9.1) (2026-03-01)
 
 
