@@ -546,6 +546,14 @@ function ServiceIcon({ service }) {
 const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 
 // Bookmarks panel
+const RANDOM_COLORS = [
+  '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899',
+  '#f43f5e', '#ef4444', '#f97316', '#f59e0b', '#eab308',
+  '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4',
+  '#0ea5e9', '#3b82f6', '#6366f1',
+];
+const randomColor = () => RANDOM_COLORS[Math.floor(Math.random() * RANDOM_COLORS.length)];
+
 function BookmarksPanel() {
   const [data, setData] = useState({ categories: [] });
   const [loading, setLoading] = useState(true);
@@ -553,7 +561,7 @@ function BookmarksPanel() {
   const [addingTo, setAddingTo] = useState(null); // categoryId for add form
   const [newCatName, setNewCatName] = useState('');
   const [showAddCat, setShowAddCat] = useState(false);
-  const [form, setForm] = useState({ name: '', url: '', icon: 'default', color: '#6366f1' });
+  const [form, setForm] = useState({ name: '', url: '', icon: 'default', color: randomColor() });
 
   const fetchBookmarks = async () => {
     try {
@@ -593,7 +601,7 @@ function BookmarksPanel() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, url }),
     });
-    setForm({ name: '', url: '', icon: 'default', color: '#6366f1' });
+    setForm({ name: '', url: '', icon: 'default', color: randomColor() });
     setAddingTo(null);
     fetchBookmarks();
   };
@@ -650,7 +658,7 @@ function BookmarksPanel() {
             <div className="bm-category-actions">
               {editMode && (
                 <>
-                  <button className="bm-icon-btn" onClick={() => { setAddingTo(cat.id); setForm({ name: '', url: '', icon: 'default', color: '#6366f1' }); }} title="Add bookmark">
+                  <button className="bm-icon-btn" onClick={() => { setAddingTo(cat.id); setForm({ name: '', url: '', icon: 'default', color: randomColor() }); }} title="Add bookmark">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   </button>
                   <button className="bm-icon-btn bm-icon-btn-danger" onClick={() => deleteCategory(cat.id)} title="Delete category">
@@ -701,6 +709,35 @@ function BookmarksPanel() {
         </div>
       ))}
     </div>
+  );
+}
+
+function SearchBar() {
+  const [query, setQuery] = useState('');
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(query.trim())}`, '_blank');
+    setQuery('');
+  };
+  return (
+    <form className="search-bar" onSubmit={handleSearch}>
+      <svg className="search-bar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        className="search-bar-input"
+        type="text"
+        placeholder="Search Google..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      {query && (
+        <button type="button" className="search-bar-clear" onClick={() => setQuery('')}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      )}
+    </form>
   );
 }
 
@@ -931,6 +968,7 @@ function App() {
       {/* Main Clock */}
       <main className="main-content">
         <Clock />
+        <SearchBar />
       </main>
 
       {/* Bottom Left - Todo Preview */}
