@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.11.0...v1.12.0) (2026-03-01)
+
+
+### Features
+
+* add trackpad/touch swipe navigation to Notes panel ([819430d](https://github.com/seonNoh/seonology-clock-page/commit/819430d15b3e956e6c238d2ba426772d04649b56))
+
 # [1.11.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.10.0...v1.11.0) (2026-03-01)
 
 
