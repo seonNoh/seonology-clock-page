@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.15.0...v1.15.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* Quick Links 패널 열 때 날씨바/푸터 겹침 수정 ([e8b1fd6](https://github.com/seonNoh/seonology-clock-page/commit/e8b1fd61a7d938e84f3df2a77c91e412dc9f9b1c))
+
 # [1.15.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.14.1...v1.15.0) (2026-03-01)
 
 
