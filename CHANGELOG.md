@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.16.0...v1.16.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* Chrome 북마크 동기화 하위 폴더 재귀 탐색 지원 ([09ea454](https://github.com/seonNoh/seonology-clock-page/commit/09ea4546f484f033a4fe1a197618ccead528fe9d))
+
 # [1.16.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.15.1...v1.16.0) (2026-03-01)
 
 
