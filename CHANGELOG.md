@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.6.0...v1.7.0) (2026-03-01)
+
+
+### Features
+
+* add Google search bar & random bookmark colors ([2e36951](https://github.com/seonNoh/seonology-clock-page/commit/2e369515a5dcf13612a95b626646a3ae4913319b))
+
 # [1.6.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.5.0...v1.6.0) (2026-03-01)
 
 
