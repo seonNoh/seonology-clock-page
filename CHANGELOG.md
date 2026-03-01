@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.5.0...v1.6.0) (2026-03-01)
+
+
+### Features
+
+* add bookmarks feature with PVC persistence (v1.5.0) ([a52315a](https://github.com/seonNoh/seonology-clock-page/commit/a52315a66b1c159f99967c81b78b6e7a926e3aa5))
+
 # [1.5.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.4.1...v1.5.0) (2026-03-01)
 
 
