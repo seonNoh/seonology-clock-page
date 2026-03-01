@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.14.1...v1.15.0) (2026-03-01)
+
+
+### Features
+
+* Quick Links 사이드 패널 추가 (왼쪽 push 슬라이드) ([89c6ff8](https://github.com/seonNoh/seonology-clock-page/commit/89c6ff8bde413a8dafeb1e98ab9a49aa21f93bcc))
+
 ## [1.14.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.14.0...v1.14.1) (2026-03-01)
 
 
