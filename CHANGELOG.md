@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.18.0...v1.18.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* BrowserStats 위젯 위치를 우측 상단으로 변경 ([c674d1d](https://github.com/seonNoh/seonology-clock-page/commit/c674d1da287979c84974e7881397cd239e3fc8a2))
+
 # [1.18.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.17.0...v1.18.0) (2026-03-01)
 
 
