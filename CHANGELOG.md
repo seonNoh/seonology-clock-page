@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.12.0...v1.12.1) (2026-03-01)
+
+
+### Bug Fixes
+
+* stack bottom-right buttons vertically to prevent overlap ([ffb0ff3](https://github.com/seonNoh/seonology-clock-page/commit/ffb0ff364280ff31bc022a03d689a71c000311e8))
+
 # [1.12.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.11.0...v1.12.0) (2026-03-01)
 
 
