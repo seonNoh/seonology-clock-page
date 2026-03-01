@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.15.1...v1.16.0) (2026-03-01)
+
+
+### Features
+
+* Chrome 즐겨찾기 동기화 확장 프로그램 추가 ([6a5dba3](https://github.com/seonNoh/seonology-clock-page/commit/6a5dba34721a39761e151cf8ec49263096ee2717))
+
 ## [1.15.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.15.0...v1.15.1) (2026-03-01)
 
 
