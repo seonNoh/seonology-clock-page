@@ -148,6 +148,7 @@
   background: linear-gradient(180deg, #3d3d45 0%, #2d2d35 100%);
   animation: flipTop 0.4s cubic-bezier(0.33, 0, 0.67, 1) forwards;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  z-index: 3;
 }
 
 .flip-top span {
@@ -163,10 +164,40 @@
   animation: flipBottom 0.4s cubic-bezier(0.33, 1, 0.67, 1) 0.2s forwards;
   transform: rotateX(90deg);
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 2;
 }
 
 .flip-bottom span {
   transform: translateY(-50%);
+}
+
+/* Cover for bottom half during flip - shows old digit */
+.flip-bottom-cover {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+  background: linear-gradient(180deg, #28282f 0%, #1a1a20 100%);
+  border-radius: 0 0 16px 16px;
+  z-index: 1;
+}
+
+.flip-bottom-cover span {
+  font-size: 7.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(-50%);
+}
+
+/* Embedded mode (no padding when inside Clock component) */
+.flip-clock-embedded {
+  padding: 0;
 }
 
 @keyframes flipTop {
@@ -225,7 +256,8 @@
 
   .card-face span,
   .flip-top span,
-  .flip-bottom span {
+  .flip-bottom span,
+  .flip-bottom-cover span {
     font-size: 6rem;
   }
 
@@ -242,7 +274,8 @@
 
   .card-face span,
   .flip-top span,
-  .flip-bottom span {
+  .flip-bottom span,
+  .flip-bottom-cover span {
     font-size: 4rem;
   }
 
@@ -273,7 +306,8 @@
   }
 
   .card-bottom,
-  .flip-bottom {
+  .flip-bottom,
+  .flip-bottom-cover {
     border-radius: 0 0 10px 10px;
   }
 }
@@ -286,7 +320,8 @@
 
   .card-face span,
   .flip-top span,
-  .flip-bottom span {
+  .flip-bottom span,
+  .flip-bottom-cover span {
     font-size: 2.8rem;
   }
 

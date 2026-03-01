@@ -4,22 +4,28 @@ import './FlipClock.css';
 function FlipCard({ digit, prevDigit, isFlipping }) {
   return (
     <div className="flip-card">
-      {/* Current (static) display */}
+      {/* Static base - always shows CURRENT digit */}
       <div className="flip-card-inner">
         <div className="card-face card-top">
           <span>{digit}</span>
         </div>
         <div className="card-face card-bottom">
-          <span>{prevDigit}</span>
+          <span>{digit}</span>
         </div>
       </div>
 
       {/* Animated flip overlay */}
       {isFlipping && (
         <div className="flip-animation">
+          {/* Covers bottom half with old digit during animation */}
+          <div className="flip-bottom-cover">
+            <span>{prevDigit}</span>
+          </div>
+          {/* Top flap: shows old digit, folds away to reveal new */}
           <div className="flip-top">
             <span>{prevDigit}</span>
           </div>
+          {/* Bottom flap: shows new digit, unfolds into view */}
           <div className="flip-bottom">
             <span>{digit}</span>
           </div>
@@ -29,18 +35,13 @@ function FlipCard({ digit, prevDigit, isFlipping }) {
   );
 }
 
-// Custom hook to track previous value - necessary for flip animation
+// Custom hook to track previous value
 function usePrevious(value) {
   const ref = useRef(value);
-  const prev = useRef(value);
-
   useEffect(() => {
-    prev.current = ref.current;
     ref.current = value;
-  }, [value]);
-
-  // eslint-disable-next-line react-hooks/refs
-  return prev.current;
+  });
+  return ref.current;
 }
 
 function FlipUnit({ value, prevValue, label }) {
@@ -49,7 +50,6 @@ function FlipUnit({ value, prevValue, label }) {
 
   useEffect(() => {
     if (value !== prevValue) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsFlipping(true);
 
       if (timeoutRef.current) {
@@ -88,16 +88,18 @@ function FlipUnit({ value, prevValue, label }) {
   );
 }
 
-function FlipClock() {
-  const [time, setTime] = useState(new Date());
+function FlipClock({ time: externalTime, embedded = false }) {
+  const [internalTime, setInternalTime] = useState(new Date());
 
   useEffect(() => {
+    if (externalTime !== undefined) return;
     const timer = setInterval(() => {
-      setTime(new Date());
+      setInternalTime(new Date());
     }, 1000);
-
     return () => clearInterval(timer);
-  }, []);
+  }, [externalTime]);
+
+  const time = externalTime || internalTime;
 
   const hours = time.getHours();
   const minutes = time.getMinutes();
@@ -108,7 +110,7 @@ function FlipClock() {
   const prevSeconds = usePrevious(seconds);
 
   return (
-    <div className="flip-clock">
+    <div className={`flip-clock${embedded ? ' flip-clock-embedded' : ''}`}>
       <div className="flip-clock-inner">
         <FlipUnit value={hours} prevValue={prevHours} label="HOURS" />
         <div className="flip-clock-separator">

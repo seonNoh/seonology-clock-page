@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sun, CloudSun, Cloud, CloudRain, CloudSnow, CloudLightning, CloudFog } from 'lucide-react';
 import Clock from './components/Clock';
+import CursorCanvas from './components/CursorCanvas';
 import Weather from './components/Weather';
 import TodoList from './components/TodoList';
 import Calendar from './components/Calendar';
@@ -605,8 +606,45 @@ function Footer() {
   );
 }
 
+const CURSOR_EFFECTS = [
+  { id: 'indigo', name: 'Indigo', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(99, 102, 241, 0.15) 0%, rgba(129, 140, 248, 0.06) 30%, transparent 70%)` },
+  { id: 'aurora', name: 'Aurora', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(56, 189, 248, 0.12) 0%, rgba(167, 139, 250, 0.08) 25%, rgba(251, 113, 133, 0.05) 50%, transparent 70%)` },
+  { id: 'spotlight', name: 'Spotlight', gradient: (x, y) => `radial-gradient(350px circle at ${x}% ${y}%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 40%, transparent 60%)` },
+  { id: 'warm', name: 'Warm', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(251, 146, 60, 0.14) 0%, rgba(245, 158, 11, 0.05) 30%, transparent 70%)` },
+  { id: 'neon', name: 'Neon', gradient: (x, y) => `radial-gradient(500px circle at ${x}% ${y}%, rgba(0, 255, 65, 0.12) 0%, rgba(0, 255, 65, 0.04) 30%, transparent 65%)` },
+  { id: 'ocean', name: 'Ocean', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(6, 182, 212, 0.14) 0%, rgba(59, 130, 246, 0.06) 35%, transparent 70%)` },
+  { id: 'sunset', name: 'Sunset', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(249, 115, 22, 0.13) 0%, rgba(236, 72, 153, 0.07) 30%, transparent 70%)` },
+  { id: 'rose', name: 'Rose', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(244, 63, 94, 0.14) 0%, rgba(251, 113, 133, 0.05) 30%, transparent 70%)` },
+  { id: 'emerald', name: 'Emerald', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(16, 185, 129, 0.14) 0%, rgba(52, 211, 153, 0.05) 30%, transparent 70%)` },
+  { id: 'cosmic', name: 'Cosmic', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(139, 92, 246, 0.16) 0%, rgba(88, 28, 135, 0.06) 30%, transparent 70%)` },
+  { id: 'fire', name: 'Fire', gradient: (x, y) => `radial-gradient(500px circle at ${x}% ${y}%, rgba(239, 68, 68, 0.14) 0%, rgba(249, 115, 22, 0.07) 25%, rgba(234, 179, 8, 0.03) 50%, transparent 65%)` },
+  { id: 'ice', name: 'Ice', gradient: (x, y) => `radial-gradient(600px circle at ${x}% ${y}%, rgba(165, 243, 252, 0.14) 0%, rgba(103, 232, 249, 0.05) 30%, transparent 70%)` },
+  { id: 'glow-none', name: 'None', gradient: () => 'none' },
+];
+
+const ANIM_EFFECTS = [
+  { id: 'none', name: 'None', color: 'transparent' },
+  { id: 'trail', name: 'Trail', color: '#818cf8' },
+  { id: 'comet', name: 'Comet', color: '#f59e0b' },
+  { id: 'particles', name: 'Particles', color: '#ec4899' },
+  { id: 'ripple', name: 'Ripple', color: '#6366f1' },
+  { id: 'fireflies', name: 'Fireflies', color: '#fbbf24' },
+  { id: 'bubbles', name: 'Bubbles', color: '#38bdf8' },
+  { id: 'stardust', name: 'Stardust', color: '#c084fc' },
+  { id: 'snow', name: 'Snow', color: '#e2e8f0' },
+  { id: 'magnetic', name: 'Magnetic', color: '#6366f1' },
+  { id: 'constellation', name: 'Constellation', color: '#818cf8' },
+  { id: 'wave', name: 'Wave', color: '#06b6d4' },
+  { id: 'spotlight', name: 'Spotlight', color: '#ffffff' },
+];
+
 function App() {
   const [activeModal, setActiveModal] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
+  const [cursorAnim, setCursorAnim] = useState(() => localStorage.getItem('clock-cursor-anim') || 'none');
+  const [showGlowPicker, setShowGlowPicker] = useState(false);
+  const [showAnimPicker, setShowAnimPicker] = useState(false);
 
   const openModal = (name) => setActiveModal(name);
   const closeModal = () => setActiveModal(null);
@@ -619,12 +657,97 @@ function App() {
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
+  useEffect(() => { localStorage.setItem('clock-cursor-effect', cursorEffect); }, [cursorEffect]);
+  useEffect(() => { localStorage.setItem('clock-cursor-anim', cursorAnim); }, [cursorAnim]);
+
+  useEffect(() => {
+    let raf;
+    const handleMouse = (e) => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        setMousePos({
+          x: (e.clientX / window.innerWidth) * 100,
+          y: (e.clientY / window.innerHeight) * 100,
+        });
+        raf = null;
+      });
+    };
+    window.addEventListener('mousemove', handleMouse);
+    return () => {
+      window.removeEventListener('mousemove', handleMouse);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  const currentEffect = CURSOR_EFFECTS.find(e => e.id === cursorEffect) || CURSOR_EFFECTS[0];
+
   return (
     <div className="dashboard">
-      {/* Top Left - SEONOLOGY Button */}
+      <div
+        className="cursor-glow"
+        style={{
+          background: currentEffect.gradient(mousePos.x, mousePos.y),
+        }}
+      />
+      <CursorCanvas effect={cursorAnim} />
+
+      {/* Bottom Right - Cursor Effect Pickers */}
+      <div className="glow-picker-area">
+        <div className="glow-picker-buttons">
+          <button className="glow-picker-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor animation">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+            </svg>
+          </button>
+          <button className="glow-picker-btn" onClick={() => { setShowGlowPicker(!showGlowPicker); setShowAnimPicker(false); }} title="Glow color">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+          </button>
+        </div>
+        {showGlowPicker && (
+          <div className="glow-picker-dropdown">
+            <div className="glow-picker-label">Glow Color</div>
+            {CURSOR_EFFECTS.map(e => (
+              <button
+                key={e.id}
+                className={`glow-option${cursorEffect === e.id ? ' active' : ''}`}
+                onClick={() => { setCursorEffect(e.id); setShowGlowPicker(false); }}
+              >
+                <span className={`glow-swatch glow-swatch-${e.id}`} />
+                <span>{e.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {showAnimPicker && (
+          <div className="glow-picker-dropdown">
+            <div className="glow-picker-label">Animation</div>
+            {ANIM_EFFECTS.map(e => (
+              <button
+                key={e.id}
+                className={`glow-option${cursorAnim === e.id ? ' active' : ''}`}
+                onClick={() => { setCursorAnim(e.id); setShowAnimPicker(false); }}
+              >
+                <span className="glow-swatch" style={{ background: e.color, border: e.id === 'none' ? '1px solid rgba(255,255,255,0.2)' : 'none' }} />
+                <span>{e.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {/* Top Left - SEONOLOGY Title */}
       <div className="top-left-bar">
         <button className="seonology-btn" onClick={() => openModal('services')}>
-          SEONOLOGY
+          <span className="seonology-accent" />
+          <span className="seonology-text">SEONOLOGY</span>
+          <span className="seonology-sub">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+            </svg>
+            Services
+          </span>
         </button>
       </div>
 
