@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.12.1...v1.12.2) (2026-03-01)
+
+
+### Bug Fixes
+
+* Google suggest encoding & suggestions dropdown direction ([db19a27](https://github.com/seonNoh/seonology-clock-page/commit/db19a27d37ed9606eacddcc84994c226cd755692))
+
 ## [1.12.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.12.0...v1.12.1) (2026-03-01)
 
 
