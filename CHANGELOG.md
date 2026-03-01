@@ -1,3 +1,10 @@
+## [1.16.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.16.1...v1.16.2) (2026-03-01)
+
+
+### Bug Fixes
+
+* Chrome 북마크 동기화 중복 생성 버그 수정 ([448947a](https://github.com/seonNoh/seonology-clock-page/commit/448947a81db5b149c6490da826534bd5d42d871e))
+
 ## [1.16.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.16.0...v1.16.1) (2026-03-01)
 
 
