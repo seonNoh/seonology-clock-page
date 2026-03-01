@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.8.0...v1.9.0) (2026-03-01)
+
+
+### Features
+
+* persist todos via server API with PVC storage ([f523ffd](https://github.com/seonNoh/seonology-clock-page/commit/f523ffd86d91378f8f873f18f97232c59e706558))
+
 # [1.8.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.7.0...v1.8.0) (2026-03-01)
 
 
