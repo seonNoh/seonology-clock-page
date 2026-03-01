@@ -1,3 +1,6 @@
+# 기존 clock-mtls TLSOption (deprecated)
+# 새로운 공용 TLSOption은 kube-system/seonology-mtls 사용
+# 이 파일은 참조용으로 유지 (IngressRoute는 더 이상 이 TLSOption을 참조하지 않음)
 apiVersion: traefik.io/v1alpha1
 kind: TLSOption
 metadata:
@@ -7,4 +10,4 @@ spec:
   clientAuth:
     secretNames:
       - clock-mtls-ca
-    clientAuthType: RequireAndVerifyClientCert
+    clientAuthType: VerifyClientCertIfGiven

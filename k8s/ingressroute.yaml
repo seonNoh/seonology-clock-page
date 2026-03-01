@@ -12,8 +12,13 @@ spec:
       services:
         - name: seonology-clock-page
           port: 80
+      middlewares:
+        - name: pass-tls-client-cert
+          namespace: kube-system
+        - name: cert-or-oidc-auth
+          namespace: kube-system
   tls:
     secretName: seonology-clock-page-tls
     options:
-      name: clock-mtls
-      namespace: seonology-apps
+      name: seonology-mtls
+      namespace: kube-system
