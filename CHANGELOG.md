@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.16.2...v1.17.0) (2026-03-01)
+
+
+### Features
+
+* 브라우저 탭/메모리 상태 위젯 추가 ([9df626f](https://github.com/seonNoh/seonology-clock-page/commit/9df626fcacb85bf851357929a4c6a177f02b65dd))
+
 ## [1.16.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.16.1...v1.16.2) (2026-03-01)
 
 
