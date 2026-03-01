@@ -476,7 +476,19 @@ app.get('/api/suggest', async (req, res) => {
       http.get(url, (resp) => {
         const chunks = [];
         resp.on('data', chunk => chunks.push(chunk));
-        resp.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        resp.on('end', () => {
+          const buf = Buffer.concat(chunks);
+          // Google returns charset=EUC-KR for Korean queries; detect from Content-Type
+          const contentType = resp.headers['content-type'] || '';
+          const charsetMatch = contentType.match(/charset=([^\s;]+)/i);
+          const charset = charsetMatch ? charsetMatch[1] : 'utf-8';
+          try {
+            const decoder = new TextDecoder(charset);
+            resolve(decoder.decode(buf));
+          } catch {
+            resolve(buf.toString('utf8'));
+          }
+        });
       }).on('error', reject);
     });
     const parsed = JSON.parse(response);
