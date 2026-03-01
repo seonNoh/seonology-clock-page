@@ -384,10 +384,64 @@ chrome.bookmarks.onRemoved.addListener(onBookmarkRemoved);
 chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
 chrome.bookmarks.onMoved.addListener(onBookmarkMoved);
 
+// ===== Browser Stats Collection =====
+async function collectAndSendStats() {
+  try {
+    const config = await getConfig();
+
+    // Get all tabs across all windows
+    const tabs = await chrome.tabs.query({});
+    const windows = await chrome.windows.getAll({ windowTypes: ['normal'] });
+
+    // Group tabs by window
+    const tabsByWindow = {};
+    for (const tab of tabs) {
+      if (!tabsByWindow[tab.windowId]) tabsByWindow[tab.windowId] = 0;
+      tabsByWindow[tab.windowId]++;
+    }
+
+    // Get system memory info
+    let memoryInfo = null;
+    if (chrome.system && chrome.system.memory) {
+      memoryInfo = await new Promise(resolve => {
+        chrome.system.memory.getInfo(info => resolve(info));
+      });
+    }
+
+    const stats = {
+      tabs: {
+        total: tabs.length,
+        byWindow: Object.entries(tabsByWindow).map(([winId, count]) => ({ windowId: Number(winId), count })),
+      },
+      windows: windows.length,
+      memory: memoryInfo ? {
+        totalBytes: memoryInfo.capacity,
+        availableBytes: memoryInfo.availableCapacity,
+        usedPercent: Math.round((1 - memoryInfo.availableCapacity / memoryInfo.capacity) * 100),
+      } : null,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Send to API
+    await fetch(`${config.apiUrl}/api/browser-stats`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(stats),
+    });
+
+    console.log(`[Seonology Stats] ${tabs.length} tabs, ${windows.length} windows, mem ${stats.memory?.usedPercent}%`);
+  } catch (err) {
+    console.error('[Seonology Stats] Error:', err.message);
+  }
+}
+
 // ===== Periodic full sync via alarms =====
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'periodicSync') {
     await fullSync();
+  }
+  if (alarm.name === 'browserStats') {
+    await collectAndSendStats();
   }
 });
 
@@ -397,6 +451,10 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.alarms.create('periodicSync', {
     periodInMinutes: config.syncIntervalMin,
   });
+  // Browser stats every 30 seconds (minimum alarm interval is 1 min in MV3)
+  chrome.alarms.create('browserStats', { periodInMinutes: 0.5 });
+  // Collect stats immediately
+  collectAndSendStats();
   console.log('[Seonology Sync] Extension installed');
 });
 
@@ -405,6 +463,8 @@ chrome.runtime.onStartup.addListener(async () => {
   chrome.alarms.create('periodicSync', {
     periodInMinutes: config.syncIntervalMin,
   });
+  chrome.alarms.create('browserStats', { periodInMinutes: 0.5 });
+  collectAndSendStats();
 });
 
 // ===== Message handler (from popup) =====
@@ -424,5 +484,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       periodInMinutes: message.intervalMin || 5,
     });
     sendResponse({ success: true });
+  }
+  if (message.type === 'getBrowserStats') {
+    collectAndSendStats().then(() => sendResponse({ success: true }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+    return true;
   }
 });

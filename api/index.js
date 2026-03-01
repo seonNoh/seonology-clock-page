@@ -499,6 +499,40 @@ app.get('/api/suggest', async (req, res) => {
     res.json([]);
   }
 });
+
+// ===== BROWSER STATS API =====
+// In-memory store for browser stats from Chrome Extension
+let browserStats = null;
+
+// POST browser stats (from Chrome Extension)
+app.post('/api/browser-stats', (req, res) => {
+  try {
+    browserStats = {
+      ...req.body,
+      receivedAt: new Date().toISOString(),
+    };
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error saving browser stats:', err);
+    res.status(500).json({ error: 'Failed to save browser stats' });
+  }
+});
+
+// GET browser stats (for frontend)
+app.get('/api/browser-stats', (req, res) => {
+  if (!browserStats) {
+    return res.json({ available: false });
+  }
+  // Consider stale if older than 2 minutes
+  const age = Date.now() - new Date(browserStats.receivedAt).getTime();
+  res.json({
+    available: age < 120000,
+    stale: age >= 120000,
+    ...browserStats,
+  });
+});
+
+// ===== TODOS API =====
 const TODOS_FILE = path.join(BOOKMARKS_DIR, 'todos.json');
 
 const DEFAULT_TODOS = { todos: [] };

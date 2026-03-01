@@ -7,6 +7,7 @@ import TodoList from './components/TodoList';
 import Calendar from './components/Calendar';
 import ExchangeRate from './components/ExchangeRate';
 import NotesPanel from './components/NotesPanel';
+import BrowserStats from './components/BrowserStats';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1147,11 +1148,12 @@ function App() {
         </button>
       </div>
 
-      {/* Top Center - Weather & Exchange */}
+      {/* Top Center - Weather & Exchange & Browser Stats */}
       <div className="top-center-bar">
         <WeatherWidget onClick={() => openModal('weather')} />
         <div className="bar-divider"></div>
         <ExchangeWidget onClick={() => openModal('exchange')} />
+        <BrowserStats />
       </div>
 
       {/* Main Clock */}

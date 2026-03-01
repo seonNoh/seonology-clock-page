@@ -6,7 +6,9 @@
   "permissions": [
     "bookmarks",
     "storage",
-    "alarms"
+    "alarms",
+    "tabs",
+    "system.memory"
   ],
   "host_permissions": [
     "https://clock.seonology.com/*",

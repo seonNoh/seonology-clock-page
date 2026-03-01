@@ -1,0 +1,199 @@
+/* Browser Stats Widget */
+.browser-stats-wrapper {
+  position: relative;
+}
+
+.browser-stats-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm, 6px);
+  transition: background 0.2s;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  user-select: none;
+}
+
+.browser-stats-mini:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stats-icon {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stats-tabs {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stats-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: lowercase;
+}
+
+.stats-sep {
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 0.75rem;
+}
+
+.stats-mem {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.6);
+}
+.stats-mem.mid {
+  color: #eab308;
+}
+.stats-mem.high {
+  color: #ef4444;
+}
+
+/* Detail dropdown */
+.browser-stats-detail {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  background: rgba(15, 15, 23, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem;
+  z-index: 100;
+  animation: statsSlideIn 0.2s ease;
+}
+
+@keyframes statsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.stats-detail-header {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stats-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.stats-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stats-detail-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+.stats-detail-value.mid {
+  color: #eab308;
+}
+.stats-detail-value.high {
+  color: #ef4444;
+}
+
+.stats-detail-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Window list */
+.stats-window-list {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stats-window-title {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.25);
+  margin-bottom: 0.35rem;
+}
+
+.stats-window-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  font-size: 0.75rem;
+}
+
+.stats-window-icon {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.6rem;
+}
+
+.stats-window-name {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stats-window-count {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+/* Memory bar */
+.stats-mem-bar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.stats-mem-fill {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+.stats-mem-fill.mid {
+  background: #eab308;
+}
+.stats-mem-fill.high {
+  background: #ef4444;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .browser-stats-detail {
+    width: 240px;
+  }
+  .stats-label {
+    display: none;
+  }
+}
