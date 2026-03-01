@@ -555,7 +555,7 @@ function BookmarksPanel() {
   const [addingTo, setAddingTo] = useState(null); // categoryId for add form
   const [newCatName, setNewCatName] = useState('');
   const [showAddCat, setShowAddCat] = useState(false);
-  const [form, setForm] = useState({ name: '', url: '', icon: 'default', color: randomColor() });
+  const [form, setForm] = useState({ name: '', url: '', icon: 'default', color: randomColor(), quickLink: false });
 
   const fetchBookmarks = async () => {
     try {
@@ -595,13 +595,21 @@ function BookmarksPanel() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, url }),
     });
-    setForm({ name: '', url: '', icon: 'default', color: randomColor() });
+    setForm({ name: '', url: '', icon: 'default', color: randomColor(), quickLink: false });
     setAddingTo(null);
     fetchBookmarks();
   };
 
   const deleteBookmark = async (catId, bmId) => {
     await fetch(`${API_BASE}/api/bookmarks/categories/${catId}/bookmarks/${bmId}`, { method: 'DELETE' });
+    fetchBookmarks();
+  };
+
+  const toggleQuickLink = async (catId, bm) => {
+    await fetch(`${API_BASE}/api/bookmarks/categories/${catId}/bookmarks/${bm.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quickLink: !bm.quickLink }),
+    });
     fetchBookmarks();
   };
 
@@ -652,7 +660,7 @@ function BookmarksPanel() {
             <div className="bm-category-actions">
               {editMode && (
                 <>
-                  <button className="bm-icon-btn" onClick={() => { setAddingTo(cat.id); setForm({ name: '', url: '', icon: 'default', color: randomColor() }); }} title="Add bookmark">
+                  <button className="bm-icon-btn" onClick={() => { setAddingTo(cat.id); setForm({ name: '', url: '', icon: 'default', color: randomColor(), quickLink: false }); }} title="Add bookmark">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   </button>
                   <button className="bm-icon-btn bm-icon-btn-danger" onClick={() => deleteCategory(cat.id)} title="Delete category">
@@ -670,6 +678,11 @@ function BookmarksPanel() {
               <div className="bm-form-row">
                 <label className="bm-label">Color</label>
                 <input type="color" className="bm-color-input" value={form.color} onChange={e => setForm({...form, color: e.target.value})} />
+                <label className="bm-quicklink-check">
+                  <input type="checkbox" checked={form.quickLink} onChange={e => setForm({...form, quickLink: e.target.checked})} />
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  Quick Link
+                </label>
                 <button className="bm-btn-save" onClick={() => addBookmark(cat.id)}>Add</button>
                 <button className="bm-btn-cancel" onClick={() => setAddingTo(null)}>Cancel</button>
               </div>
@@ -679,7 +692,7 @@ function BookmarksPanel() {
           {cat.bookmarks.length > 0 ? (
             <div className="bm-grid">
               {cat.bookmarks.map(bm => (
-                <div key={bm.id} className="bm-card" style={{ '--bm-color': bm.color }}>
+                <div key={bm.id} className={`bm-card${bm.quickLink ? ' bm-card-quicklink' : ''}`} style={{ '--bm-color': bm.color }}>
                   <a href={bm.url} target="_blank" rel="noopener noreferrer" className="bm-card-link">
                     <div className="bm-card-icon">
                       {getIconByName(bm.icon)}
@@ -689,10 +702,20 @@ function BookmarksPanel() {
                       <span className="bm-card-url">{bm.url.replace(/^https?:\/\//, '').slice(0, 30)}</span>
                     </div>
                   </a>
+                  {bm.quickLink && !editMode && (
+                    <span className="bm-quicklink-badge" title="Quick Link">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </span>
+                  )}
                   {editMode && (
-                    <button className="bm-delete-btn" onClick={() => deleteBookmark(cat.id, bm.id)} title="Delete">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
+                    <>
+                      <button className={`bm-quicklink-toggle${bm.quickLink ? ' active' : ''}`} onClick={() => toggleQuickLink(cat.id, bm)} title={bm.quickLink ? 'Remove from Quick Links' : 'Add to Quick Links'}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill={bm.quickLink ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      </button>
+                      <button className="bm-delete-btn" onClick={() => deleteBookmark(cat.id, bm.id)} title="Delete">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </>
                   )}
                 </div>
               ))}
@@ -702,6 +725,67 @@ function BookmarksPanel() {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+function QuickLinksPanel({ isOpen, onClose }) {
+  const [quickLinks, setQuickLinks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchQuickLinks = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/bookmarks`);
+      const data = await res.json();
+      const links = [];
+      (data.categories || []).forEach(cat => {
+        (cat.bookmarks || []).forEach(bm => {
+          if (bm.quickLink) links.push(bm);
+        });
+      });
+      setQuickLinks(links);
+    } catch (err) {
+      console.error('Failed to fetch quick links:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) fetchQuickLinks();
+  }, [isOpen]);
+
+  return (
+    <div className={`quicklinks-panel${isOpen ? ' open' : ''}`}>
+      <div className="quicklinks-header">
+        <div className="quicklinks-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Quick Links
+        </div>
+        <button className="quicklinks-close" onClick={onClose}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div className="quicklinks-list">
+        {loading && <div className="quicklinks-empty">Loading...</div>}
+        {!loading && quickLinks.length === 0 && (
+          <div className="quicklinks-empty">
+            No quick links yet.<br/>
+            <span className="quicklinks-hint">Mark bookmarks as Quick Link in the Bookmarks panel.</span>
+          </div>
+        )}
+        {quickLinks.map(bm => (
+          <a key={bm.id} href={bm.url} target="_blank" rel="noopener noreferrer" className="quicklink-item" style={{ '--ql-color': bm.color }}>
+            <div className="quicklink-icon">
+              {getIconByName(bm.icon)}
+            </div>
+            <div className="quicklink-info">
+              <span className="quicklink-name">{bm.name}</span>
+              <span className="quicklink-url">{bm.url.replace(/^https?:\/\//, '').slice(0, 28)}</span>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
@@ -916,6 +1000,7 @@ const ANIM_EFFECTS = [
 function App() {
   const [activeModal, setActiveModal] = useState(null);
   const [showNotes, setShowNotes] = useState(false);
+  const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
   const [cursorAnim, setCursorAnim] = useState(() => localStorage.getItem('clock-cursor-anim') || 'none');
@@ -928,7 +1013,8 @@ function App() {
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
-        if (showNotes) setShowNotes(false);
+        if (showQuickLinks) setShowQuickLinks(false);
+        else if (showNotes) setShowNotes(false);
         else closeModal();
       }
     };
@@ -961,6 +1047,8 @@ function App() {
   const currentEffect = CURSOR_EFFECTS.find(e => e.id === cursorEffect) || CURSOR_EFFECTS[0];
 
   return (
+    <div className={`dashboard-wrapper${showQuickLinks ? ' quicklinks-open' : ''}`}>
+      <QuickLinksPanel isOpen={showQuickLinks} onClose={() => setShowQuickLinks(false)} />
     <div className="dashboard">
       <div
         className="cursor-glow"
@@ -1053,6 +1141,10 @@ function App() {
             Services
           </span>
         </button>
+        <button className={`quicklinks-toggle${showQuickLinks ? ' active' : ''}`} onClick={() => setShowQuickLinks(!showQuickLinks)} title="Quick Links">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={showQuickLinks ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Quick Links</span>
+        </button>
       </div>
 
       {/* Top Center - Weather & Exchange */}
@@ -1099,6 +1191,7 @@ function App() {
 
       {/* Footer */}
       <Footer />
+    </div>
     </div>
   );
 }

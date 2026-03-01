@@ -410,12 +410,12 @@ app.delete('/api/bookmarks/categories/:categoryId', (req, res) => {
 // POST add a bookmark to a category
 app.post('/api/bookmarks/categories/:categoryId/bookmarks', (req, res) => {
   try {
-    const { name, url, icon, color } = req.body;
+    const { name, url, icon, color, quickLink } = req.body;
     if (!name || !url) return res.status(400).json({ error: 'Name and URL are required' });
     const data = readBookmarks();
     const cat = data.categories.find(c => c.id === req.params.categoryId);
     if (!cat) return res.status(404).json({ error: 'Category not found' });
-    const bookmark = { id: `bm-${Date.now()}`, name, url, icon: icon || 'default', color: color || '#6366f1' };
+    const bookmark = { id: `bm-${Date.now()}`, name, url, icon: icon || 'default', color: color || '#6366f1', quickLink: !!quickLink };
     cat.bookmarks.push(bookmark);
     writeBookmarks(data);
     res.json({ success: true, bookmark });
@@ -452,6 +452,7 @@ app.patch('/api/bookmarks/categories/:categoryId/bookmarks/:bookmarkId', (req, r
     if (req.body.url) bm.url = req.body.url;
     if (req.body.icon) bm.icon = req.body.icon;
     if (req.body.color) bm.color = req.body.color;
+    if (req.body.quickLink !== undefined) bm.quickLink = !!req.body.quickLink;
     writeBookmarks(data);
     res.json({ success: true, bookmark: bm });
   } catch (err) {

@@ -152,6 +152,7 @@
   top: 2rem;
   left: 2rem;
   z-index: 10;
+  transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Top Center Bar - Weather & Exchange */
@@ -353,7 +354,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--transition), left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: 'JetBrains Mono', 'SF Mono', monospace;
   min-width: 200px;
   z-index: 10;
@@ -1345,4 +1346,288 @@
   .seonology-text {
     font-size: 0.95rem;
   }
+}
+
+/* ===== Dashboard Wrapper & Quick Links Push Layout ===== */
+.dashboard-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  transition: padding-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-wrapper.quicklinks-open {
+  padding-left: 280px;
+}
+
+.dashboard-wrapper.quicklinks-open .top-left-bar {
+  left: calc(280px + 2rem);
+}
+
+.dashboard-wrapper.quicklinks-open .todo-preview {
+  left: calc(280px + 2rem);
+}
+
+/* ===== Quick Links Panel ===== */
+.quicklinks-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: rgba(10, 10, 20, 0.95);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border-color);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.quicklinks-panel.open {
+  transform: translateX(0);
+}
+
+.quicklinks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.quicklinks-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+}
+
+.quicklinks-title svg {
+  color: var(--accent-primary);
+}
+
+.quicklinks-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quicklinks-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.quicklinks-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quicklinks-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.quicklinks-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.quicklinks-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.quicklink-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.quicklink-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--ql-color);
+}
+
+.quicklink-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ql-color);
+}
+
+.quicklink-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.quicklink-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.quicklink-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quicklink-url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quicklinks-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.quicklinks-hint {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+/* Quick Links Toggle Button */
+.quicklinks-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 6px;
+}
+
+.quicklinks-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.quicklinks-toggle.active {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+/* Bookmark Quick Link Checkbox (in add form) */
+.bm-quicklink-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.bm-quicklink-check:hover {
+  color: var(--text-primary);
+}
+
+.bm-quicklink-check input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+  margin: 0;
+}
+
+.bm-quicklink-check svg {
+  color: var(--accent-primary);
+}
+
+/* Bookmark Card Quick Link badge */
+.bm-card-quicklink {
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.bm-quicklink-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  opacity: 0.7;
+}
+
+/* Bookmark Quick Link toggle (edit mode) */
+.bm-quicklink-toggle {
+  position: absolute;
+  top: 4px;
+  right: 28px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bm-quicklink-toggle:hover {
+  background: rgba(99, 102, 241, 0.25);
+  color: var(--accent-primary);
+}
+
+.bm-quicklink-toggle.active {
+  background: rgba(99, 102, 241, 0.25);
+  color: var(--accent-primary);
 }
