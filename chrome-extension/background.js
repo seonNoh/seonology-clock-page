@@ -47,14 +47,15 @@ async function apiCall(config, method, path, body) {
 }
 
 // ===== Get Chrome bookmark tree for selected folders =====
+// Deduplicates: if a parent folder is selected, skip its child folders
 async function getSelectedBookmarks(config) {
   const tree = await chrome.bookmarks.getTree();
-  const folders = [];
+  const allFound = [];
 
   function findFolders(nodes, selectedIds) {
     for (const node of nodes) {
       if (selectedIds.includes(node.id)) {
-        folders.push(node);
+        allFound.push(node);
       }
       if (node.children) {
         findFolders(node.children, selectedIds);
@@ -65,7 +66,29 @@ async function getSelectedBookmarks(config) {
   if (config.syncFolders.length > 0) {
     findFolders(tree, config.syncFolders);
   }
-  return folders;
+
+  // Remove child folders whose ancestor is already in the list
+  const selectedIdSet = new Set(allFound.map(f => f.id));
+  function hasAncestorInSet(node) {
+    // Walk up using the tree to check if any ancestor folder is also selected
+    for (const other of allFound) {
+      if (other.id === node.id) continue;
+      if (isDescendantOf(node, other)) return true;
+    }
+    return false;
+  }
+  function isDescendantOf(child, parent) {
+    function search(nodes) {
+      for (const n of nodes) {
+        if (n.id === child.id) return true;
+        if (n.children && search(n.children)) return true;
+      }
+      return false;
+    }
+    return parent.children ? search(parent.children) : false;
+  }
+
+  return allFound.filter(f => !hasAncestorInSet(f));
 }
 
 // ===== Flatten folder tree: collect all subfolders with their path =====
@@ -120,18 +143,38 @@ async function fullSync() {
     const chromeFolders = await getSelectedBookmarks(config);
 
     // 3. For each Chrome folder → flatten subfolders, ensure categories, sync bookmarks
+    // Build a name→category lookup from existing Clock Page data for dedup
+    const clockCatByName = new Map();
+    for (const cat of clockData.categories) {
+      // Store the first matching category for each name
+      if (!clockCatByName.has(cat.name)) {
+        clockCatByName.set(cat.name, cat);
+      }
+    }
+
     for (const folder of chromeFolders) {
       const flatList = flattenFolders(folder);
 
       for (const entry of flatList) {
         const categoryName = `${config.categoryPrefix ? config.categoryPrefix + ' · ' : ''}${entry.title}`;
 
-        // Find or create category
+        // Find category: 1) by syncMap ID, 2) by name match, 3) create new
         let categoryId = syncMap.categories[entry.id];
         let existingCat = categoryId
           ? clockData.categories.find(c => c.id === categoryId)
           : null;
 
+        // Fallback: find by name if syncMap lost the mapping
+        if (!existingCat) {
+          existingCat = clockCatByName.get(categoryName) || null;
+          if (existingCat) {
+            categoryId = existingCat.id;
+            syncMap.categories[entry.id] = categoryId;
+            console.log(`[Seonology Sync] Relinked category by name: ${categoryName}`);
+          }
+        }
+
+        // Create only if truly not found
         if (!existingCat) {
           const result = await apiCall(config, 'POST', '/api/bookmarks/categories', {
             name: categoryName,
@@ -139,6 +182,9 @@ async function fullSync() {
           categoryId = result.category.id;
           syncMap.categories[entry.id] = categoryId;
           existingCat = result.category;
+          // Add to lookup so subsequent entries don't create duplicates
+          clockCatByName.set(categoryName, existingCat);
+          console.log(`[Seonology Sync] Created category: ${categoryName}`);
         }
 
         // 4. Sync bookmarks in this subfolder
@@ -148,7 +194,7 @@ async function fullSync() {
         const existingUrls = new Set(existingBookmarks.map(b => b.url));
         const chromeUrls = new Set(chromeBookmarks.map(b => b.url));
 
-        // Add new bookmarks from Chrome
+        // Add new bookmarks from Chrome (skip if URL already exists)
         for (const cb of chromeBookmarks) {
           if (!existingUrls.has(cb.url)) {
             const result = await apiCall(config, 'POST',
@@ -159,6 +205,7 @@ async function fullSync() {
                 color: '#6366f1',
               });
             syncMap.bookmarks[cb.id] = result.bookmark.id;
+            existingUrls.add(cb.url); // Track to prevent within-batch duplicates
             console.log(`[Seonology Sync] Added: ${cb.title}`);
           }
         }
@@ -213,6 +260,14 @@ async function onBookmarkCreated(id, bookmark) {
   }
 
   try {
+    // Check if URL already exists in this category to prevent duplicates
+    const clockData = await apiCall(config, 'GET', '/api/bookmarks');
+    const cat = clockData.categories.find(c => c.id === categoryId);
+    if (cat && cat.bookmarks.some(b => b.url === bookmark.url)) {
+      console.log(`[Seonology Sync] Skip duplicate: ${bookmark.title}`);
+      return;
+    }
+
     const result = await apiCall(config, 'POST',
       `/api/bookmarks/categories/${categoryId}/bookmarks`, {
         name: bookmark.title || bookmark.url,
