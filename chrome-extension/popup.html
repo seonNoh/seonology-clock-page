@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 380px;
+      min-height: 200px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f0f17;
+      color: #e0e0e0;
+      padding: 16px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .header svg { flex-shrink: 0; }
+    .header h1 {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+    .header .version {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      margin-left: auto;
+    }
+
+    /* Toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .toggle-label { font-size: 13px; font-weight: 500; }
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      cursor: pointer;
+    }
+    .toggle input { display: none; }
+    .toggle .slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.1);
+      border-radius: 11px;
+      transition: 0.2s;
+    }
+    .toggle .slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #666;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .toggle input:checked + .slider { background: #6366f1; }
+    .toggle input:checked + .slider::before {
+      transform: translateX(18px);
+      background: #fff;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 8px;
+    }
+
+    /* API URL input */
+    .input-group {
+      display: flex;
+      gap: 6px;
+    }
+    .input-group input {
+      flex: 1;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+    }
+    .input-group input:focus {
+      border-color: #6366f1;
+    }
+
+    /* Folder list */
+    .folder-list {
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .folder-list::-webkit-scrollbar { width: 4px; }
+    .folder-list::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px;
+    }
+    .folder-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 12px;
+    }
+    .folder-item:hover { background: rgba(255,255,255,0.05); }
+    .folder-item input[type="checkbox"] {
+      accent-color: #6366f1;
+      width: 14px;
+      height: 14px;
+    }
+    .folder-item .folder-icon {
+      color: rgba(255,255,255,0.4);
+      flex-shrink: 0;
+    }
+    .folder-item .folder-name { flex: 1; }
+    .folder-item .folder-count {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.05);
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    /* Interval */
+    .interval-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .interval-row select {
+      padding: 6px 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+    }
+    .interval-row select option { background: #1a1a2e; }
+
+    /* Buttons */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #6366f1;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #5558e8; }
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.08); }
+
+    /* Status */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.active { background: #22c55e; }
+    .status-dot.inactive { background: #ef4444; }
+    .status-dot.syncing {
+      background: #eab308;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .spacer { height: 8px; }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: rgba(255,255,255,0.3);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+    <h1>Seonology Sync</h1>
+    <span class="version">v1.0.0</span>
+  </div>
+
+  <!-- Enable toggle -->
+  <div class="toggle-row">
+    <span class="toggle-label">동기화 활성화</span>
+    <label class="toggle">
+      <input type="checkbox" id="enabled">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <!-- API URL -->
+  <div class="section">
+    <div class="section-title">API 서버</div>
+    <div class="input-group">
+      <input type="text" id="apiUrl" placeholder="https://clock.seonology.com">
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Folder selection -->
+  <div class="section">
+    <div class="section-title">동기화할 폴더 선택</div>
+    <div class="folder-list" id="folderList">
+      <div class="loading">폴더 목록 불러오는 중...</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Sync interval -->
+  <div class="section">
+    <div class="section-title">동기화 주기</div>
+    <div class="interval-row">
+      <span>전체 동기화 주기:</span>
+      <select id="syncInterval">
+        <option value="1">1분</option>
+        <option value="5" selected>5분</option>
+        <option value="10">10분</option>
+        <option value="30">30분</option>
+        <option value="60">1시간</option>
+      </select>
+      <span style="color: rgba(255,255,255,0.3)">+ 실시간 감지</span>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Sync button -->
+  <button class="btn btn-primary" id="syncNow" disabled>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/>
+      <polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+    지금 동기화
+  </button>
+
+  <div class="spacer"></div>
+
+  <!-- Status -->
+  <div class="status" id="status">
+    <span class="status-dot inactive" id="statusDot"></span>
+    <span id="statusText">동기화 비활성화</span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
