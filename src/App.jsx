@@ -7,6 +7,7 @@ import TodoList from './components/TodoList';
 import Calendar from './components/Calendar';
 import ExchangeRate from './components/ExchangeRate';
 import NotesPanel from './components/NotesPanel';
+import ChatPanel from './components/ChatPanel';
 import BrowserStats from './components/BrowserStats';
 import './App.css';
 
@@ -1001,6 +1002,7 @@ const ANIM_EFFECTS = [
 function App() {
   const [activeModal, setActiveModal] = useState(null);
   const [showNotes, setShowNotes] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
@@ -1014,14 +1016,15 @@ function App() {
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
-        if (showQuickLinks) setShowQuickLinks(false);
+        if (showChat) setShowChat(false);
+        else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
       }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [showNotes]);
+  }, [showNotes, showChat]);
 
   useEffect(() => { localStorage.setItem('clock-cursor-effect', cursorEffect); }, [cursorEffect]);
   useEffect(() => { localStorage.setItem('clock-cursor-anim', cursorAnim); }, [cursorAnim]);
@@ -1079,6 +1082,16 @@ function App() {
           </svg>
         </span>
         Notes
+      </button>
+
+      {/* Chat trigger */}
+      <button className="chat-trigger" onClick={() => setShowChat(true)}>
+        <span className="chat-trigger-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </span>
+        AI Chat
       </button>
 
       {/* Cursor Effect Pickers */}
@@ -1171,6 +1184,9 @@ function App() {
 
       {/* Notes Panel */}
       <NotesPanel isOpen={showNotes} onClose={() => setShowNotes(false)} />
+
+      {/* Chat Panel */}
+      <ChatPanel isOpen={showChat} onClose={() => setShowChat(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">

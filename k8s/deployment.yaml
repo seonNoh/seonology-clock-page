@@ -27,6 +27,18 @@ spec:
         env:
         - name: BOOKMARKS_DIR
           value: /data
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: clock-page-secrets
+              key: github-token
+              optional: true
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: clock-page-secrets
+              key: gemini-api-key
+              optional: true
         volumeMounts:
         - name: bookmarks-data
           mountPath: /data

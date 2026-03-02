@@ -6,6 +6,10 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// AI Chat configuration
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+
 // CORS configuration
 app.use(cors());
 app.use(express.json());
@@ -702,8 +706,219 @@ app.delete('/api/notes/:id', (req, res) => {
   }
 });
 
+// ===== AI CHAT API =====
+
+// GET available models
+app.get('/api/chat/models', (req, res) => {
+  const models = [];
+  if (GITHUB_TOKEN) {
+    models.push(
+      { id: 'gpt-4o', name: 'GPT-4o', provider: 'github' },
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'github' },
+    );
+  }
+  if (GEMINI_API_KEY) {
+    models.push(
+      { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'gemini' },
+      { id: 'gemini-2.5-pro-preview-05-06', name: 'Gemini 2.5 Pro', provider: 'gemini' },
+    );
+  }
+  res.json({ models, hasGithub: !!GITHUB_TOKEN, hasGemini: !!GEMINI_API_KEY });
+});
+
+// POST chat via GitHub Models
+app.post('/api/chat/github', async (req, res) => {
+  if (!GITHUB_TOKEN) return res.status(503).json({ error: 'GitHub Token not configured' });
+
+  const { messages, model = 'gpt-4o' } = req.body;
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'messages array required' });
+  }
+
+  try {
+    const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+      },
+      body: JSON.stringify({ model, messages, max_tokens: 4096 }),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error('GitHub Models API error:', response.status, err);
+      return res.status(response.status).json({ error: err });
+    }
+
+    const data = await response.json();
+    res.json({
+      content: data.choices[0]?.message?.content || '',
+      model: data.model,
+      usage: data.usage,
+    });
+  } catch (err) {
+    console.error('GitHub Models error:', err);
+    res.status(500).json({ error: 'Failed to call GitHub Models' });
+  }
+});
+
+// POST chat via Google Gemini
+app.post('/api/chat/gemini', async (req, res) => {
+  if (!GEMINI_API_KEY) return res.status(503).json({ error: 'Gemini API Key not configured' });
+
+  const { messages, model = 'gemini-2.0-flash' } = req.body;
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'messages array required' });
+  }
+
+  // Convert OpenAI-style messages to Gemini format
+  const systemInstruction = messages.find(m => m.role === 'system');
+  const contents = messages
+    .filter(m => m.role !== 'system')
+    .map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    const body = { contents };
+    if (systemInstruction) {
+      body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error('Gemini API error:', response.status, err);
+      return res.status(response.status).json({ error: err });
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    res.json({
+      content: text,
+      model: model,
+      usage: data.usageMetadata,
+    });
+  } catch (err) {
+    console.error('Gemini error:', err);
+    res.status(500).json({ error: 'Failed to call Gemini' });
+  }
+});
+
+// ===== CHAT HISTORY API =====
+const CHAT_HISTORY_FILE = path.join(BOOKMARKS_DIR, 'chat-history.json');
+const MAX_CONVERSATIONS = 50;
+
+const DEFAULT_CHAT_HISTORY = { conversations: [] };
+
+function readChatHistory() {
+  try {
+    ensureDir(BOOKMARKS_DIR);
+    if (!fs.existsSync(CHAT_HISTORY_FILE)) {
+      fs.writeFileSync(CHAT_HISTORY_FILE, JSON.stringify(DEFAULT_CHAT_HISTORY, null, 2));
+      return DEFAULT_CHAT_HISTORY;
+    }
+    return JSON.parse(fs.readFileSync(CHAT_HISTORY_FILE, 'utf8'));
+  } catch (err) {
+    console.error('Error reading chat history:', err);
+    return DEFAULT_CHAT_HISTORY;
+  }
+}
+
+function writeChatHistory(data) {
+  ensureDir(BOOKMARKS_DIR);
+  // Trim to max conversations
+  if (data.conversations.length > MAX_CONVERSATIONS) {
+    data.conversations = data.conversations.slice(0, MAX_CONVERSATIONS);
+  }
+  fs.writeFileSync(CHAT_HISTORY_FILE, JSON.stringify(data, null, 2));
+}
+
+// GET chat history list (without messages for performance)
+app.get('/api/chat/history', (req, res) => {
+  try {
+    const data = readChatHistory();
+    const list = data.conversations.map(c => ({
+      id: c.id,
+      title: c.title,
+      model: c.model,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+      messageCount: c.messages.length,
+    }));
+    res.json({ conversations: list });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read chat history' });
+  }
+});
+
+// GET single conversation
+app.get('/api/chat/history/:id', (req, res) => {
+  try {
+    const data = readChatHistory();
+    const conv = data.conversations.find(c => c.id === req.params.id);
+    if (!conv) return res.status(404).json({ error: 'Conversation not found' });
+    res.json(conv);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read conversation' });
+  }
+});
+
+// POST save/update conversation
+app.post('/api/chat/history', (req, res) => {
+  try {
+    const { id, title, model, messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: 'messages array required' });
+    }
+    const data = readChatHistory();
+    const existing = data.conversations.find(c => c.id === id);
+    if (existing) {
+      existing.title = title || existing.title;
+      existing.model = model || existing.model;
+      existing.messages = messages;
+      existing.updatedAt = new Date().toISOString();
+    } else {
+      const conv = {
+        id: id || `chat-${Date.now()}`,
+        title: title || (messages[0]?.content?.slice(0, 40) || 'New Chat'),
+        model: model || '',
+        messages,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      data.conversations.unshift(conv);
+    }
+    writeChatHistory(data);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save chat history' });
+  }
+});
+
+// DELETE conversation
+app.delete('/api/chat/history/:id', (req, res) => {
+  try {
+    const data = readChatHistory();
+    data.conversations = data.conversations.filter(c => c.id !== req.params.id);
+    writeChatHistory(data);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete conversation' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Running in cluster: ${isInCluster}`);
   console.log(`Bookmarks file: ${BOOKMARKS_FILE}`);
+  console.log(`AI Chat: GitHub=${!!GITHUB_TOKEN}, Gemini=${!!GEMINI_API_KEY}`);
 });
