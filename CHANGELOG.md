@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.19.1...v1.20.0) (2026-03-02)
+
+
+### Features
+
+* expand AI model list with descriptions and usage display ([9588434](https://github.com/seonNoh/seonology-clock-page/commit/9588434cd52a0c8ca00dc4c8a168bf43cd52f84f))
+
 ## [1.19.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.19.0...v1.19.1) (2026-03-02)
 
 
