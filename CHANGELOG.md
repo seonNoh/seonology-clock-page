@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.21.0...v1.22.0) (2026-03-02)
+
+
+### Features
+
+* Enhance Orbit clock with bold digits, AM/PM colors, and hourly pulse effect ([2585723](https://github.com/seonNoh/seonology-clock-page/commit/25857232aa19249ee83789b1585300dba3e86b67))
+
 # [1.21.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.20.0...v1.21.0) (2026-03-02)
 
 
