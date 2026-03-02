@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.20.0...v1.21.0) (2026-03-02)
+
+
+### Features
+
+* Add Claude & Gemini external link buttons to AI Chat modal ([1a66b62](https://github.com/seonNoh/seonology-clock-page/commit/1a66b62f59b63d4bcaa74e34939b5b023c1ee2d7))
+
 # [1.20.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.19.1...v1.20.0) (2026-03-02)
 
 
