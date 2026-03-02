@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.18.1...v1.19.0) (2026-03-02)
+
+
+### Features
+
+* add AI Chat feature with GitHub Models & Gemini ([be6a9be](https://github.com/seonNoh/seonology-clock-page/commit/be6a9bef7af3884036d89133bd47904216fe9acb))
+
 ## [1.18.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.18.0...v1.18.1) (2026-03-01)
 
 
