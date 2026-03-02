@@ -174,17 +174,37 @@ function Clock() {
   );
 
   /* ===== 2. ORBIT ===== */
+  const [orbitHourPulse, setOrbitHourPulse] = useState(false);
+  const lastHourRef = useRef(time.getHours());
+
+  useEffect(() => {
+    const currentHour = time.getHours();
+    const currentMin = time.getMinutes();
+    const currentSec = time.getSeconds();
+    if (currentMin === 0 && currentSec === 0 && currentHour !== lastHourRef.current) {
+      lastHourRef.current = currentHour;
+      setOrbitHourPulse(true);
+      const timer = setTimeout(() => setOrbitHourPulse(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [time]);
+
   const renderAnalog = () => {
     const h = time.getHours() % 12, m = time.getMinutes(), s = time.getSeconds(), ms = time.getMilliseconds();
+    const isAM = time.getHours() < 12;
     const size = 350, cx = 175;
+    const amColors = { h: '#60a5fa', m: '#3b82f6', s: '#93c5fd' };
+    const pmColors = { h: '#f87171', m: '#ef4444', s: '#fca5a5' };
+    const colors = isAM ? amColors : pmColors;
     const orbits = [
-      { label: 'H', value: h + m / 60, max: 12, r: 140, color: '#818cf8', dotSize: 14, trailOpacity: 0.15 },
-      { label: 'M', value: m + s / 60, max: 60, r: 110, color: '#6366f1', dotSize: 11, trailOpacity: 0.12 },
-      { label: 'S', value: s + ms / 1000, max: 60, r: 80, color: '#a78bfa', dotSize: 8, trailOpacity: 0.10 },
+      { label: 'H', value: h + m / 60, max: 12, r: 140, color: colors.h, dotSize: 14, trailOpacity: 0.15 },
+      { label: 'M', value: m + s / 60, max: 60, r: 110, color: colors.m, dotSize: 11, trailOpacity: 0.12 },
+      { label: 'S', value: s + ms / 1000, max: 60, r: 80, color: colors.s, dotSize: 8, trailOpacity: 0.10 },
     ];
+    const timeColor = isAM ? '#60a5fa' : '#f87171';
     return (
       <>
-        <div className="orbit-clock">
+        <div className={`orbit-clock${orbitHourPulse ? ' orbit-hour-pulse' : ''}`}>
           <svg viewBox={`0 0 ${size} ${size}`} className="orbit-svg">
             {orbits.map((o, i) => {
               const ang = ((o.value / o.max) * 360 - 90) * (Math.PI / 180);
@@ -217,9 +237,11 @@ function Clock() {
             </defs>
           </svg>
           <div className="orbit-center">
-            <div className="orbit-time">{hours}:{minutes}</div>
+            <div className="orbit-time" style={{ color: timeColor }}>{hours}:{minutes}</div>
             <div className="orbit-seconds">{seconds}</div>
+            <div className="orbit-ampm" style={{ color: timeColor }}>{isAM ? 'AM' : 'PM'}</div>
           </div>
+          {orbitHourPulse && <div className="orbit-pulse-ring" style={{ borderColor: timeColor }} />}
         </div>
         <div className="clock-date orbit-date">{formatDate(time)}</div>
       </>
