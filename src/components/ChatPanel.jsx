@@ -294,7 +294,7 @@ function ChatPanel({ isOpen, onClose }) {
           </div>
         )}
 
-        {/* Presets */}
+        {/* Presets + External Links */}
         <div className="chat-presets">
           {PRESETS.map(p => (
             <button
@@ -305,6 +305,9 @@ function ChatPanel({ isOpen, onClose }) {
               {p.label}
             </button>
           ))}
+          <span className="chat-preset-divider" />
+          <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className="chat-ext-link claude">Claude</a>
+          <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="chat-ext-link gemini">Gemini</a>
         </div>
 
         {/* Messages */}
