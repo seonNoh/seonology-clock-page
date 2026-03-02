@@ -28,6 +28,12 @@ const PRESETS = [
   },
 ];
 
+function formatNumber(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+  return String(n);
+}
+
 function ChatPanel({ isOpen, onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -37,6 +43,8 @@ function ChatPanel({ isOpen, onClose }) {
   const [activePreset, setActivePreset] = useState('general');
   const [copiedIdx, setCopiedIdx] = useState(null);
   const [conversationId, setConversationId] = useState(null);
+  const [rateLimit, setRateLimit] = useState(null);
+  const [showModelInfo, setShowModelInfo] = useState(false);
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
@@ -119,6 +127,11 @@ function ChatPanel({ isOpen, onClose }) {
       const updatedMessages = [...newMessages, assistantMessage];
       setMessages(updatedMessages);
 
+      // Update rate limit info from GitHub responses
+      if (data.rateLimit) {
+        setRateLimit(data.rateLimit);
+      }
+
       // Save to history
       saveHistory(updatedMessages);
     } catch (err) {
@@ -165,6 +178,7 @@ function ChatPanel({ isOpen, onClose }) {
   const newChat = () => {
     setMessages([]);
     setConversationId(null);
+    setRateLimit(null);
     setInput('');
     if (textareaRef.current) textareaRef.current.focus();
   };
@@ -177,6 +191,8 @@ function ChatPanel({ isOpen, onClose }) {
     modelsByProvider[m.provider].push(m);
   });
 
+  const currentModel = availableModels.find(m => m.id === selectedModel);
+
   return (
     <div className="chat-overlay" onClick={onClose}>
       <div className="chat-panel" ref={panelRef} onClick={(e) => e.stopPropagation()}>
@@ -184,19 +200,30 @@ function ChatPanel({ isOpen, onClose }) {
         <div className="chat-header">
           <span className="chat-title">AI Chat</span>
           <div className="chat-header-actions">
-            <select
-              className="chat-model-select"
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-            >
-              {Object.entries(modelsByProvider).map(([provider, models]) => (
-                <optgroup key={provider} label={provider === 'github' ? 'GitHub Models' : 'Google Gemini'}>
-                  {models.map(m => (
-                    <option key={m.id} value={m.id}>{m.name}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
+            <div className="chat-model-wrapper">
+              <select
+                className="chat-model-select"
+                value={selectedModel}
+                onChange={(e) => { setSelectedModel(e.target.value); setRateLimit(null); }}
+              >
+                {Object.entries(modelsByProvider).map(([provider, models]) => (
+                  <optgroup key={provider} label={provider === 'github' ? 'GitHub Models' : 'Google Gemini'}>
+                    {models.map(m => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <button
+                className={`chat-info-btn${showModelInfo ? ' active' : ''}`}
+                onClick={() => setShowModelInfo(!showModelInfo)}
+                title="Model info"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              </button>
+            </div>
             <button className="chat-action-btn" onClick={newChat} title="New Chat">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -204,6 +231,68 @@ function ChatPanel({ isOpen, onClose }) {
             </button>
           </div>
         </div>
+
+        {/* Model Info Dropdown */}
+        {showModelInfo && currentModel && (
+          <div className="chat-model-info">
+            <div className="chat-model-info-row">
+              <span className="chat-model-info-label">Model</span>
+              <span className="chat-model-info-value">{currentModel.name}</span>
+            </div>
+            <div className="chat-model-info-row">
+              <span className="chat-model-info-label">Provider</span>
+              <span className="chat-model-info-value">{currentModel.provider === 'github' ? 'GitHub Models' : 'Google Gemini'}</span>
+            </div>
+            {currentModel.desc && (
+              <div className="chat-model-info-row">
+                <span className="chat-model-info-label">Description</span>
+                <span className="chat-model-info-value">{currentModel.desc}</span>
+              </div>
+            )}
+            <div className="chat-model-info-row">
+              <span className="chat-model-info-label">ID</span>
+              <span className="chat-model-info-value chat-model-info-mono">{currentModel.id}</span>
+            </div>
+            {rateLimit && currentModel.provider === 'github' && (
+              <>
+                <div className="chat-model-info-divider" />
+                <div className="chat-model-info-row">
+                  <span className="chat-model-info-label">Requests</span>
+                  <span className="chat-model-info-value">
+                    {formatNumber(rateLimit.remainingRequests)} / {formatNumber(rateLimit.limitRequests)}
+                  </span>
+                </div>
+                <div className="chat-usage-bar">
+                  <div
+                    className="chat-usage-fill"
+                    style={{ width: `${(rateLimit.remainingRequests / rateLimit.limitRequests) * 100}%` }}
+                  />
+                </div>
+                <div className="chat-model-info-row">
+                  <span className="chat-model-info-label">Tokens</span>
+                  <span className="chat-model-info-value">
+                    {formatNumber(rateLimit.remainingTokens)} / {formatNumber(rateLimit.limitTokens)}
+                  </span>
+                </div>
+                <div className="chat-usage-bar">
+                  <div
+                    className="chat-usage-fill"
+                    style={{ width: `${(rateLimit.remainingTokens / rateLimit.limitTokens) * 100}%` }}
+                  />
+                </div>
+              </>
+            )}
+            {currentModel.provider === 'gemini' && (
+              <>
+                <div className="chat-model-info-divider" />
+                <div className="chat-model-info-row">
+                  <span className="chat-model-info-label">Quota</span>
+                  <span className="chat-model-info-value">15 RPM / 1,500 req/day (Flash)</span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Presets */}
         <div className="chat-presets">

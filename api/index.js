@@ -713,17 +713,65 @@ app.get('/api/chat/models', (req, res) => {
   const models = [];
   if (GITHUB_TOKEN) {
     models.push(
-      { id: 'gpt-4o', name: 'GPT-4o', provider: 'github' },
-      { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'github' },
+      { id: 'gpt-4.1', name: 'GPT-4.1', provider: 'github', desc: 'OpenAI 최신 플래그십' },
+      { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', provider: 'github', desc: 'GPT-4.1 경량 버전' },
+      { id: 'gpt-4o', name: 'GPT-4o', provider: 'github', desc: 'OpenAI 멀티모달' },
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'github', desc: 'GPT-4o 경량 버전' },
+      { id: 'DeepSeek-R1', name: 'DeepSeek R1', provider: 'github', desc: '추론 특화 오픈소스' },
+      { id: 'Llama-3.3-70B-Instruct', name: 'Llama 3.3 70B', provider: 'github', desc: 'Meta 오픈소스 대형' },
+      { id: 'Phi-4', name: 'Phi-4', provider: 'github', desc: 'MS 경량 고성능' },
+      { id: 'Codestral-2501', name: 'Codestral', provider: 'github', desc: 'Mistral 코딩 특화' },
     );
   }
   if (GEMINI_API_KEY) {
     models.push(
-      { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'gemini' },
-      { id: 'gemini-2.5-pro-preview-05-06', name: 'Gemini 2.5 Pro', provider: 'gemini' },
+      { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'gemini', desc: 'Google 최신 프리미엄' },
+      { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'gemini', desc: 'Google 빠른 응답' },
+      { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'gemini', desc: 'Google 안정 버전' },
+      { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', provider: 'gemini', desc: 'Google 차세대 (Preview)' },
     );
   }
   res.json({ models, hasGithub: !!GITHUB_TOKEN, hasGemini: !!GEMINI_API_KEY });
+});
+
+// GET rate limit / usage info for GitHub Models
+app.get('/api/chat/usage', async (req, res) => {
+  const usage = {};
+
+  if (GITHUB_TOKEN) {
+    try {
+      const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: 'hi' }],
+          max_tokens: 1,
+        }),
+      });
+      usage.github = {
+        limitRequests: parseInt(response.headers.get('x-ratelimit-limit-requests') || '0'),
+        remainingRequests: parseInt(response.headers.get('x-ratelimit-remaining-requests') || '0'),
+        limitTokens: parseInt(response.headers.get('x-ratelimit-limit-tokens') || '0'),
+        remainingTokens: parseInt(response.headers.get('x-ratelimit-remaining-tokens') || '0'),
+      };
+    } catch (err) {
+      console.error('GitHub usage check error:', err);
+      usage.github = null;
+    }
+  }
+
+  if (GEMINI_API_KEY) {
+    // Gemini doesn't expose usage via headers easily; return static info
+    usage.gemini = {
+      note: 'Free tier: 15 RPM, 1500 req/day (Flash), 50 req/day (Pro)',
+    };
+  }
+
+  res.json(usage);
 });
 
 // POST chat via GitHub Models
@@ -756,6 +804,12 @@ app.post('/api/chat/github', async (req, res) => {
       content: data.choices[0]?.message?.content || '',
       model: data.model,
       usage: data.usage,
+      rateLimit: {
+        limitRequests: parseInt(response.headers.get('x-ratelimit-limit-requests') || '0'),
+        remainingRequests: parseInt(response.headers.get('x-ratelimit-remaining-requests') || '0'),
+        limitTokens: parseInt(response.headers.get('x-ratelimit-limit-tokens') || '0'),
+        remainingTokens: parseInt(response.headers.get('x-ratelimit-remaining-tokens') || '0'),
+      },
     });
   } catch (err) {
     console.error('GitHub Models error:', err);
