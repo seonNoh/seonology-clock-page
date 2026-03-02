@@ -1,3 +1,10 @@
+## [1.19.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.19.0...v1.19.1) (2026-03-02)
+
+
+### Bug Fixes
+
+* remove secret.yaml from ArgoCD management ([cf065fd](https://github.com/seonNoh/seonology-clock-page/commit/cf065fd4f590c64e7be2bae5cadc49d9844aa12c))
+
 # [1.19.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.18.1...v1.19.0) (2026-03-02)
 
 
