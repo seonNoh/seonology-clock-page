@@ -189,19 +189,57 @@ function Clock() {
     }
   }, [time]);
 
+  /* ── Orbit time-of-day color system ── */
+  const TIME_PHASES = [
+    { start: 0,  label: 'DEEP NIGHT', h: [129,140,248], m: [99,102,241],  s: [165,180,252] },  // 00-03 indigo
+    { start: 4,  label: 'DAWN',       h: [192,132,252], m: [168,85,247],  s: [216,180,254] },  // 04-06 purple→pink
+    { start: 7,  label: 'MORNING',    h: [56,189,248],  m: [14,165,233],  s: [125,211,252] },  // 07-09 sky blue
+    { start: 10, label: 'MIDDAY',     h: [45,212,191],  m: [20,184,166],  s: [94,234,212] },   // 10-12 teal
+    { start: 13, label: 'AFTERNOON',  h: [251,191,36],  m: [245,158,11],  s: [252,211,77] },   // 13-15 warm yellow
+    { start: 16, label: 'GOLDEN',     h: [251,146,60],  m: [249,115,22],  s: [253,186,116] },  // 16-18 amber/orange
+    { start: 19, label: 'SUNSET',     h: [251,113,133], m: [244,63,94],   s: [253,164,175] },  // 19-21 coral/rose
+    { start: 22, label: 'NIGHT',      h: [148,163,184], m: [100,116,139], s: [203,213,225] },  // 22-23 slate blue
+  ];
+
+  const lerpColor = (a, b, t) => {
+    const r = Math.round(a[0] + (b[0] - a[0]) * t);
+    const g = Math.round(a[1] + (b[1] - a[1]) * t);
+    const bl = Math.round(a[2] + (b[2] - a[2]) * t);
+    return `rgb(${r},${g},${bl})`;
+  };
+
+  const getOrbitColors = (hour24, minute) => {
+    let curIdx = 0;
+    for (let i = TIME_PHASES.length - 1; i >= 0; i--) {
+      if (hour24 >= TIME_PHASES[i].start) { curIdx = i; break; }
+    }
+    const nextIdx = (curIdx + 1) % TIME_PHASES.length;
+    const cur = TIME_PHASES[curIdx];
+    const next = TIME_PHASES[nextIdx];
+    const curStart = cur.start;
+    const nextStart = next.start > curStart ? next.start : next.start + 24;
+    const nowHour = hour24 >= curStart ? hour24 : hour24 + 24;
+    const span = nextStart - curStart;
+    const t = Math.min(1, Math.max(0, ((nowHour - curStart) + minute / 60) / span));
+    return {
+      h: lerpColor(cur.h, next.h, t),
+      m: lerpColor(cur.m, next.m, t),
+      s: lerpColor(cur.s, next.s, t),
+      main: lerpColor(cur.h, next.h, t),
+      label: cur.label,
+    };
+  };
+
   const renderAnalog = () => {
     const h = time.getHours() % 12, m = time.getMinutes(), s = time.getSeconds(), ms = time.getMilliseconds();
-    const isAM = time.getHours() < 12;
+    const hour24 = time.getHours();
     const size = 350, cx = 175;
-    const amColors = { h: '#60a5fa', m: '#3b82f6', s: '#93c5fd' };
-    const pmColors = { h: '#f87171', m: '#ef4444', s: '#fca5a5' };
-    const colors = isAM ? amColors : pmColors;
+    const colors = getOrbitColors(hour24, m);
     const orbits = [
       { label: 'H', value: h + m / 60, max: 12, r: 140, color: colors.h, dotSize: 14, trailOpacity: 0.15 },
       { label: 'M', value: m + s / 60, max: 60, r: 110, color: colors.m, dotSize: 11, trailOpacity: 0.12 },
       { label: 'S', value: s + ms / 1000, max: 60, r: 80, color: colors.s, dotSize: 8, trailOpacity: 0.10 },
     ];
-    const timeColor = isAM ? '#60a5fa' : '#f87171';
     return (
       <>
         <div className={`orbit-clock${orbitHourPulse ? ' orbit-hour-pulse' : ''}`}>
@@ -237,11 +275,11 @@ function Clock() {
             </defs>
           </svg>
           <div className="orbit-center">
-            <div className="orbit-time" style={{ color: timeColor }}>{hours}:{minutes}</div>
+            <div className="orbit-time" style={{ color: colors.main }}>{hours}:{minutes}</div>
             <div className="orbit-seconds">{seconds}</div>
-            <div className="orbit-ampm" style={{ color: timeColor }}>{isAM ? 'AM' : 'PM'}</div>
+            <div className="orbit-ampm" style={{ color: colors.main }}>{colors.label}</div>
           </div>
-          {orbitHourPulse && <div className="orbit-pulse-ring" style={{ borderColor: timeColor }} />}
+          {orbitHourPulse && <div className="orbit-pulse-ring" style={{ borderColor: colors.main }} />}
         </div>
         <div className="clock-date orbit-date">{formatDate(time)}</div>
       </>
