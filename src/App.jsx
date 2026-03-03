@@ -558,6 +558,8 @@ function BookmarksPanel() {
   const [newCatName, setNewCatName] = useState('');
   const [showAddCat, setShowAddCat] = useState(false);
   const [form, setForm] = useState({ name: '', url: '', icon: 'default', color: randomColor(), quickLink: false });
+  const [editingBm, setEditingBm] = useState(null); // { catId, bmId }
+  const [editForm, setEditForm] = useState({ name: '', url: '', color: '', quickLink: false });
 
   const fetchBookmarks = async () => {
     try {
@@ -613,6 +615,27 @@ function BookmarksPanel() {
       body: JSON.stringify({ quickLink: !bm.quickLink }),
     });
     fetchBookmarks();
+  };
+
+  const startEditing = (catId, bm) => {
+    setEditingBm({ catId, bmId: bm.id });
+    setEditForm({ name: bm.name, url: bm.url, color: bm.color || '#6366f1', quickLink: !!bm.quickLink });
+  };
+
+  const saveEdit = async () => {
+    if (!editingBm || !editForm.name.trim() || !editForm.url.trim()) return;
+    let url = editForm.url.trim();
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    await fetch(`${API_BASE}/api/bookmarks/categories/${editingBm.catId}/bookmarks/${editingBm.bmId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editForm.name.trim(), url, color: editForm.color, quickLink: editForm.quickLink }),
+    });
+    setEditingBm(null);
+    fetchBookmarks();
+  };
+
+  const cancelEdit = () => {
+    setEditingBm(null);
   };
 
   if (loading) return <div className="services-loading">Loading bookmarks...</div>;
@@ -694,6 +717,25 @@ function BookmarksPanel() {
           {cat.bookmarks.length > 0 ? (
             <div className="bm-grid">
               {cat.bookmarks.map(bm => (
+                editingBm && editingBm.catId === cat.id && editingBm.bmId === bm.id ? (
+                  <div key={bm.id} className="bm-card bm-card-editing" style={{ '--bm-color': editForm.color }}>
+                    <div className="bm-edit-form">
+                      <input className="bm-input bm-edit-input" placeholder="Name" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} autoFocus />
+                      <input className="bm-input bm-edit-input" placeholder="URL" value={editForm.url} onChange={e => setEditForm({...editForm, url: e.target.value})} onKeyDown={e => e.key === 'Enter' && saveEdit()} />
+                      <div className="bm-form-row">
+                        <label className="bm-label">Color</label>
+                        <input type="color" className="bm-color-input" value={editForm.color} onChange={e => setEditForm({...editForm, color: e.target.value})} />
+                        <label className="bm-quicklink-check">
+                          <input type="checkbox" checked={editForm.quickLink} onChange={e => setEditForm({...editForm, quickLink: e.target.checked})} />
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                          Quick Link
+                        </label>
+                        <button className="bm-btn-save" onClick={saveEdit}>Save</button>
+                        <button className="bm-btn-cancel" onClick={cancelEdit}>Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                 <div key={bm.id} className={`bm-card${bm.quickLink ? ' bm-card-quicklink' : ''}`} style={{ '--bm-color': bm.color }}>
                   <a href={bm.url} target="_blank" rel="noopener noreferrer" className="bm-card-link">
                     <div className="bm-card-icon">
@@ -711,6 +753,9 @@ function BookmarksPanel() {
                   )}
                   {editMode && (
                     <>
+                      <button className="bm-edit-btn" onClick={() => startEditing(cat.id, bm)} title="Edit">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      </button>
                       <button className={`bm-quicklink-toggle${bm.quickLink ? ' active' : ''}`} onClick={() => toggleQuickLink(cat.id, bm)} title={bm.quickLink ? 'Remove from Quick Links' : 'Add to Quick Links'}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill={bm.quickLink ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                       </button>
@@ -720,6 +765,7 @@ function BookmarksPanel() {
                     </>
                   )}
                 </div>
+                )
               ))}
             </div>
           ) : (

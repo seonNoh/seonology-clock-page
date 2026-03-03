@@ -1234,6 +1234,45 @@
   background: rgba(239, 68, 68, 0.3);
 }
 
+.bm-edit-btn {
+  position: absolute;
+  top: 4px;
+  right: 50px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bm-edit-btn:hover {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.bm-card-editing {
+  grid-column: 1 / -1;
+  border-color: var(--bm-color);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bm-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+}
+
+.bm-edit-input {
+  font-size: 0.8rem !important;
+  padding: 6px 8px !important;
+}
+
 .bm-empty, .bm-empty-cat {
   text-align: center;
   padding: 1.5rem;
