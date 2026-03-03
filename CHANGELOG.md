@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.22.0...v1.23.0) (2026-03-03)
+
+
+### Features
+
+* add bookmark inline edit for name, URL, color, and quick link ([7a8df02](https://github.com/seonNoh/seonology-clock-page/commit/7a8df02e111b8dab1596ffa83b76f7673d82f1f7))
+
 # [1.22.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.21.0...v1.22.0) (2026-03-02)
 
 
