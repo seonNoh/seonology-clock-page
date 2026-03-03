@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.23.0...v1.24.0) (2026-03-03)
+
+
+### Features
+
+* enhance Orbit clock with 8-phase time-of-day color gradient and smooth interpolation ([b086c05](https://github.com/seonNoh/seonology-clock-page/commit/b086c05705873440c9452287ad637d86c827994e))
+
 # [1.23.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.22.0...v1.23.0) (2026-03-03)
 
 
