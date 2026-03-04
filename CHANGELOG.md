@@ -1,3 +1,10 @@
+## [1.24.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.24.0...v1.24.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* resolve Orbit hour pulse cleanup bug causing label display issues at the top of hour ([8ade1f2](https://github.com/seonNoh/seonology-clock-page/commit/8ade1f2777b7a5f93f7f0ea86b7d0af14e148fe7))
+
 # [1.24.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.23.0...v1.24.0) (2026-03-03)
 
 
