@@ -1,3 +1,10 @@
+## [1.25.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.25.0...v1.25.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* [#24](https://github.com/seonNoh/seonology-clock-page/issues/24) 앱 아이콘 그리드 오른쪽 중앙 재배치 ([842d570](https://github.com/seonNoh/seonology-clock-page/commit/842d57000451049b6e95f7f452f50e92f27a5ef8))
+
 # [1.25.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.24.1...v1.25.0) (2026-03-04)
 
 
