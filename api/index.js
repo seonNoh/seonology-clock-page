@@ -10,6 +10,10 @@ const PORT = process.env.PORT || 3001;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
+// Sapporo Events configuration
+const DOORKEEPER_TOKEN = process.env.DOORKEEPER_TOKEN || 'asKpciBVWtQbHPMyW1EM';
+const CONNPASS_API_KEY = process.env.CONNPASS_API_KEY || '';
+
 // CORS configuration
 app.use(cors());
 app.use(express.json());
@@ -970,9 +974,783 @@ app.delete('/api/chat/history/:id', (req, res) => {
   }
 });
 
+// ========== Sapporo Events API ==========
+
+// In-memory cache for events
+const sapporoEventsCache = {
+  doorkeeper: { data: null, fetchedAt: null },
+  connpass: { data: null, fetchedAt: null },
+};
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+// Helper: fetch JSON from HTTPS URL
+function fetchJSON(url, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const urlObj = new URL(url);
+    const options = {
+      hostname: urlObj.hostname,
+      port: 443,
+      path: urlObj.pathname + urlObj.search,
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        ...headers,
+      },
+    };
+    https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve({ status: res.statusCode, data: JSON.parse(data) });
+        } catch (e) {
+          reject(new Error(`Invalid JSON: ${data.slice(0, 200)}`));
+        }
+      });
+    }).on('error', reject).end();
+  });
+}
+
+// GET /api/sapporo-events/doorkeeper — Doorkeeper IT events proxy
+app.get('/api/sapporo-events/doorkeeper', async (req, res) => {
+  try {
+    const { since, until, keyword, refresh } = req.query;
+
+    // Use cache unless force refresh
+    const cache = sapporoEventsCache.doorkeeper;
+    const cacheKey = `${since || ''}_${until || ''}_${keyword || ''}`;
+    if (!refresh && cache.data && cache.cacheKey === cacheKey && cache.fetchedAt && (Date.now() - cache.fetchedAt < CACHE_TTL)) {
+      return res.json({ source: 'cache', fetchedAt: cache.fetchedAt, events: cache.data });
+    }
+
+    // Build query params
+    const params = new URLSearchParams();
+    params.set('prefecture', 'hokkaido');
+    params.set('sort', 'starts_at');
+    if (keyword) params.set('q', keyword);
+    else params.set('q', '札幌');
+    if (since) params.set('since', since);
+    if (until) params.set('until', until);
+
+    const url = `https://api.doorkeeper.jp/events?${params.toString()}`;
+    const result = await fetchJSON(url, { 'Authorization': `Bearer ${DOORKEEPER_TOKEN}` });
+
+    if (result.status !== 200) {
+      return res.status(result.status).json({ error: 'Doorkeeper API error', details: result.data });
+    }
+
+    // Normalize events
+    const events = (result.data || []).map(item => {
+      const e = item.event || item;
+      return {
+        id: `dk-${e.id}`,
+        source: 'doorkeeper',
+        title: e.title,
+        description: e.description ? e.description.slice(0, 200) : '',
+        startsAt: e.starts_at,
+        endsAt: e.ends_at,
+        venue: e.venue_name || '',
+        address: e.address || '',
+        url: e.public_url || e.event_url || '',
+        participants: e.participants || 0,
+        waitlisted: e.waitlisted || 0,
+        limit: e.ticket_limit || 0,
+        groupName: e.group?.title || '',
+      };
+    });
+
+    // Update cache
+    sapporoEventsCache.doorkeeper = { data: events, fetchedAt: Date.now(), cacheKey };
+    res.json({ source: 'api', fetchedAt: Date.now(), events });
+  } catch (err) {
+    console.error('Doorkeeper fetch error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch Doorkeeper events', message: err.message });
+  }
+});
+
+// GET /api/sapporo-events/connpass — connpass IT events proxy (requires API key)
+app.get('/api/sapporo-events/connpass', async (req, res) => {
+  if (!CONNPASS_API_KEY) {
+    return res.status(503).json({ error: 'connpass API key not configured', available: false });
+  }
+
+  try {
+    const { ym, keyword, refresh } = req.query;
+    const yearMonth = ym || (() => { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}`; })();
+
+    // Use cache unless force refresh
+    const cache = sapporoEventsCache.connpass;
+    const cacheKey = `${yearMonth}_${keyword || ''}`;
+    if (!refresh && cache.data && cache.cacheKey === cacheKey && cache.fetchedAt && (Date.now() - cache.fetchedAt < CACHE_TTL)) {
+      return res.json({ source: 'cache', fetchedAt: cache.fetchedAt, events: cache.data });
+    }
+
+    const params = new URLSearchParams();
+    params.set('prefecture', 'hokkaido');
+    params.set('ym', yearMonth);
+    params.set('order', 'date');
+    params.set('count', '50');
+    if (keyword) params.set('keyword', keyword);
+    else params.set('keyword', '札幌');
+
+    const url = `https://connpass.com/api/v2/events/?${params.toString()}`;
+    const result = await fetchJSON(url, { 'X-API-Key': CONNPASS_API_KEY });
+
+    if (result.status !== 200) {
+      return res.status(result.status).json({ error: 'connpass API error', details: result.data });
+    }
+
+    const events = (result.data?.events || []).map(e => ({
+      id: `cp-${e.event_id}`,
+      source: 'connpass',
+      title: e.title,
+      description: e.catch ? e.catch.slice(0, 200) : '',
+      startsAt: e.started_at,
+      endsAt: e.ended_at,
+      venue: e.place || '',
+      address: e.address || '',
+      url: e.event_url || '',
+      participants: e.accepted || 0,
+      waitlisted: e.waiting || 0,
+      limit: e.limit || 0,
+      groupName: e.series?.title || '',
+    }));
+
+    sapporoEventsCache.connpass = { data: events, fetchedAt: Date.now(), cacheKey };
+    res.json({ source: 'api', fetchedAt: Date.now(), events });
+  } catch (err) {
+    console.error('connpass fetch error:', err.message);
+    res.status(500).json({ error: 'Failed to fetch connpass events', message: err.message });
+  }
+});
+
+// ============================================================================
+// Sapporo Events Web Scraper System
+// ============================================================================
+
+const SCRAPE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+const SCRAPE_TIMEOUT = 15000; // 15s per request
+
+// Scraped events store
+const scrapedEventsStore = {
+  tourism: [],   // Array of event objects with absolute dates
+  culture: [],
+  fetchedAt: null,
+  errors: [],
+  lastAttempt: null,
+};
+
+// Helper: Fetch HTML from URL with timeout + redirect support
+async function fetchHTML(url, timeoutMs = SCRAPE_TIMEOUT) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,*/*',
+        'Accept-Language': 'ja,en;q=0.9',
+      },
+      redirect: 'follow',
+    });
+    const html = await response.text();
+    return { status: response.status, html, url: response.url };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// Helper: Format date string
+function fmtDate(year, month, day) {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+// Helper: Extract Japanese date ranges from text
+// Matches multiple date patterns found on Sapporo event websites
+function extractJapaneseDateRanges(text) {
+  const results = [];
+  let m;
+
+  // Pattern 1: YYYY年MM月DD日...～(MM月)?DD日 (standard Japanese)
+  const rx1 = /(\d{4})年(\d{1,2})月(\d{1,2})日[^〜～~\n]{0,20}[〜～~]\s*(?:(\d{1,2})月)?(\d{1,2})日/g;
+  while ((m = rx1.exec(text)) !== null) {
+    results.push({
+      year: parseInt(m[1]),
+      startMonth: parseInt(m[2]), startDay: parseInt(m[3]),
+      endMonth: m[4] ? parseInt(m[4]) : parseInt(m[2]),
+      endDay: parseInt(m[5]),
+    });
+  }
+
+  // Pattern 2: Compact YYYYMM.DD[DAY]~YYYYMM.DD[DAY] (sapporo.travel format)
+  // e.g. 202609.11[FRI]~202610.03[SAT]
+  const rx2 = /(\d{4})(\d{2})\.(\d{1,2})\[[^\]]*\][^~\-〜～\n]{0,5}[~\-〜～]\s*(\d{4})(\d{2})\.(\d{1,2})\[[^\]]*\]/g;
+  while ((m = rx2.exec(text)) !== null) {
+    const yr = parseInt(m[1]);
+    const sm = parseInt(m[2]);
+    const sd = parseInt(m[3]);
+    if (!results.some(r => r.year === yr && r.startMonth === sm && r.startDay === sd)) {
+      results.push({ year: yr, startMonth: sm, startDay: sd, endMonth: parseInt(m[5]), endDay: parseInt(m[6]) });
+    }
+  }
+
+  // Pattern 3: YYYY/M/D(曜)～M/D or YYYY/M/D～YYYY/M/D
+  const rx3 = /(\d{4})\/(\d{1,2})\/(\d{1,2})[^〜～~\n]{0,15}[〜～~]\s*(?:(\d{4})\/)?(?:(\d{1,2})\/)?(\d{1,2})/g;
+  while ((m = rx3.exec(text)) !== null) {
+    const yr = m[4] ? parseInt(m[4]) : parseInt(m[1]);
+    const sm = parseInt(m[2]);
+    const sd = parseInt(m[3]);
+    const em = m[5] ? parseInt(m[5]) : sm;
+    const ed = parseInt(m[6]);
+    if (!results.some(r => r.year === parseInt(m[1]) && r.startMonth === sm && r.startDay === sd)) {
+      results.push({ year: parseInt(m[1]), startMonth: sm, startDay: sd, endMonth: em, endDay: ed });
+    }
+  }
+
+  return results;
+}
+
+// Helper: Filter dates by expected month range and deduplicate by year (keep first per year)
+function filterSeasonalDates(dates, minMonth, maxMonth) {
+  const seen = new Set();
+  return dates
+    .filter(d => d.startMonth >= minMonth && d.startMonth <= maxMonth)
+    .filter(d => {
+      if (seen.has(d.year)) return false;
+      seen.add(d.year);
+      return true;
+    });
+}
+
+// ─── Individual Scrapers ───────────────────────────────────────
+
+// 🎿 Snow Festival (snowfes.com) — expected: Jan~Feb
+async function scrapeSnowFestival() {
+  const { html } = await fetchHTML('https://www.snowfes.com/');
+  const dates = filterSeasonalDates(extractJapaneseDateRanges(html), 1, 3);
+  return dates.map(d => ({
+    id: 'tour-1', source: 'tourism', scraped: true, scrapedFrom: 'snowfes.com',
+    title: 'さっぽろ雪まつり', titleKo: '삿포로 눈축제', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '大通公園・すすきの・つどーむ',
+    description: '世界的に有名な冬のイベント。大雪像や氷像が展示される',
+    color: '#60A5FA', url: 'https://www.snowfes.com/',
+  }));
+}
+
+// 💃 YOSAKOI Soran Festival (yosakoi-soran.jp) — expected: Jun
+async function scrapeYosakoi() {
+  const { html } = await fetchHTML('https://www.yosakoi-soran.jp/');
+  const allDates = extractJapaneseDateRanges(html);
+  // Also try YYYY.MM.DD pattern (some years use dots)
+  const dotRx = /(\d{4})\.(\d{1,2})\.(\d{1,2})[^〜～~\n]{0,20}[〜～~]\s*(?:(\d{1,2})\.)?(\d{1,2})/g;
+  let m;
+  while ((m = dotRx.exec(html)) !== null) {
+    const year = parseInt(m[1]);
+    if (!allDates.some(d => d.year === year)) {
+      allDates.push({
+        year, startMonth: parseInt(m[2]), startDay: parseInt(m[3]),
+        endMonth: m[4] ? parseInt(m[4]) : parseInt(m[2]), endDay: parseInt(m[5]),
+      });
+    }
+  }
+  const dates = filterSeasonalDates(allDates, 5, 7);
+  return dates.map(d => ({
+    id: 'tour-3', source: 'tourism', scraped: true, scrapedFrom: 'yosakoi-soran.jp',
+    title: 'YOSAKOIソーラン祭り', titleKo: 'YOSAKOI 소란축제', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '大通公園周辺',
+    description: '約300チームが参加する日本最大級のYOSAKOI祭り',
+    color: '#F472B6', url: 'https://www.yosakoi-soran.jp/',
+  }));
+}
+
+// 🌸 Lilac Festival (sapporo.travel) — expected: May
+async function scrapeLilacFestival() {
+  const { html } = await fetchHTML('https://www.sapporo.travel/lilacfes/');
+  const dates = filterSeasonalDates(extractJapaneseDateRanges(html), 5, 6);
+  return dates.map(d => ({
+    id: 'tour-2', source: 'tourism', scraped: true, scrapedFrom: 'sapporo.travel/lilacfes',
+    title: 'さっぽろライラックまつり', titleKo: '삿포로 라일락축제', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '大通公園',
+    description: 'ライラックが咲き誇る春の祭り。ワインガーデンも人気',
+    color: '#C084FC', url: 'https://www.sapporo.travel/find/event/lilac_festival/',
+  }));
+}
+
+// 🍂 Autumn Fest (sapporo.travel) — expected: Sep~Oct
+async function scrapeAutumnFest() {
+  const { html } = await fetchHTML('https://www.sapporo.travel/autumnfest/');
+  const dates = filterSeasonalDates(extractJapaneseDateRanges(html), 9, 10);
+  return dates.map(d => ({
+    id: 'tour-7', source: 'tourism', scraped: true, scrapedFrom: 'sapporo.travel/autumnfest',
+    title: 'さっぽろオータムフェスト', titleKo: '삿포로 오텀페스트', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '大通公園',
+    description: '北海道の食の祭典。道内各地のグルメが集結',
+    color: '#FB923C', url: 'https://www.sapporo-autumnfest.jp/',
+  }));
+}
+
+// ✨ White Illumination (sapporo.travel) — expected: Nov~Dec
+async function scrapeWhiteIllumination() {
+  const { html } = await fetchHTML('https://www.sapporo.travel/white-illumination/');
+  const dates = filterSeasonalDates(extractJapaneseDateRanges(html), 10, 12);
+  return dates.slice(0, 1).map(d => ({
+    id: 'tour-8', source: 'tourism', scraped: true, scrapedFrom: 'sapporo.travel/white-illumination',
+    title: 'さっぽろホワイトイルミネーション', titleKo: '삿포로 화이트 일루미네이션', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '大通公園・駅前通・南一条通',
+    description: '日本初のイルミネーションイベント。約80万個のLED',
+    color: '#93C5FD', url: 'https://white-illumination.jp/',
+  }));
+}
+
+// 🏃 Hokkaido Marathon (hokkaido-marathon.com)
+async function scrapeHokkaidoMarathon() {
+  const { html } = await fetchHTML('https://www.hokkaido-marathon.com/');
+  // Try standard date patterns
+  let dates = extractJapaneseDateRanges(html);
+  // Also check for single date: YYYY年MM月DD日
+  const singleRx = /(\d{4})年(\d{1,2})月(\d{1,2})日/g;
+  let m;
+  while ((m = singleRx.exec(html)) !== null) {
+    const yr = parseInt(m[1]);
+    const mo = parseInt(m[2]);
+    const dy = parseInt(m[3]);
+    if (!dates.some(d => d.year === yr && d.startMonth === mo && d.startDay === dy)) {
+      dates.push({ year: yr, startMonth: mo, startDay: dy, endMonth: mo, endDay: dy });
+    }
+  }
+  // Also try countdown: "Days NNN" or "あと NNN 日" pattern to calculate
+  if (dates.length === 0) {
+    const countdownMatch = html.match(/Days\s*(\d+)/i) || html.match(/あと\s*(\d+)\s*日/);
+    if (countdownMatch) {
+      const daysLeft = parseInt(countdownMatch[1]);
+      const eventDate = new Date(Date.now() + daysLeft * 86400000);
+      dates.push({
+        year: eventDate.getFullYear(),
+        startMonth: eventDate.getMonth() + 1, startDay: eventDate.getDate(),
+        endMonth: eventDate.getMonth() + 1, endDay: eventDate.getDate(),
+      });
+    }
+  }
+  return dates.filter(d => d.startMonth >= 7 && d.startMonth <= 9).slice(0, 1).map(d => ({
+    id: 'tour-6', source: 'tourism', scraped: true, scrapedFrom: 'hokkaido-marathon.com',
+    title: '北海道マラソン', titleKo: '홋카이도 마라톤', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '大通公園 (発着)',
+    description: '夏の北海道を走るフルマラソン大会',
+    color: '#34D399', url: 'https://www.hokkaido-marathon.com/',
+  }));
+}
+
+// 🎶 PMF - Pacific Music Festival (pmf.or.jp)
+async function scrapePMF() {
+  // Try current year's info page first
+  const year = new Date().getFullYear();
+  let html;
+  try {
+    const result = await fetchHTML(`https://www.pmf.or.jp/jp/news/information/pmf${year}.html`);
+    html = result.html;
+  } catch {
+    // Fallback to next year
+    try {
+      const result2 = await fetchHTML(`https://www.pmf.or.jp/jp/news/information/pmf${year + 1}.html`);
+      html = result2.html;
+    } catch {
+      // Try main page
+      const result3 = await fetchHTML('https://www.pmf.or.jp/');
+      html = result3.html;
+    }
+  }
+  if (!html) return [];
+  const dates = extractJapaneseDateRanges(html);
+  return dates.filter(d => d.startMonth >= 6 && d.startMonth <= 8).slice(0, 1).map(d => ({
+    id: 'cult-1', source: 'culture', category: 'music', scraped: true, scrapedFrom: 'pmf.or.jp',
+    title: 'PMF（パシフィック・ミュージック・フェスティバル）',
+    titleKo: 'PMF (퍼시픽 뮤직 페스티벌)', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '札幌コンサートホールKitara・芸術の森',
+    description: 'バーンスタインが創設した国際教育音楽祭。世界中の若手音楽家が集う',
+    url: 'https://www.pmf.or.jp/',
+  }));
+}
+
+// 🎷 Sapporo City Jazz
+async function scrapeCityJazz() {
+  const { html } = await fetchHTML('https://sapporocityjazz.jp/');
+  const dates = extractJapaneseDateRanges(html);
+  return dates.filter(d => d.startMonth >= 6 && d.startMonth <= 8).slice(0, 1).map(d => ({
+    id: 'cult-2', source: 'culture', category: 'music', scraped: true, scrapedFrom: 'sapporocityjazz.jp',
+    title: 'サッポロ・シティ・ジャズ', titleKo: '삿포로 시티 재즈', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '芸術の森・大通公園',
+    description: '国内最大級の野外ジャズフェスティバル。エゾ・グルーヴを感じる夏',
+    url: 'https://sapporocityjazz.jp/',
+  }));
+}
+
+// 🎸 RISING SUN ROCK FESTIVAL
+async function scrapeRisingSun() {
+  const { html } = await fetchHTML('https://rfrfes.com/');
+  const dates = extractJapaneseDateRanges(html);
+  return dates.filter(d => d.startMonth >= 7 && d.startMonth <= 9).slice(0, 1).map(d => ({
+    id: 'cult-3', source: 'culture', category: 'music', scraped: true, scrapedFrom: 'rfrfes.com',
+    title: 'RISING SUN ROCK FESTIVAL', titleKo: '라이징 선 록 페스티벌', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '石狩湾新港樽川ふ頭横野外特設ステージ',
+    description: '北海道最大のロックフェス。オールナイトで音楽を楽しむ',
+    url: 'https://rfrfes.com/',
+  }));
+}
+
+// 🎬 Sapporo Short Film Festival
+async function scrapeShortFilmFest() {
+  const { html } = await fetchHTML('https://sapporoshortfest.jp/');
+  const dates = extractJapaneseDateRanges(html);
+  return dates.filter(d => d.startMonth >= 9 && d.startMonth <= 11).slice(0, 1).map(d => ({
+    id: 'cult-4', source: 'culture', category: 'music', scraped: true, scrapedFrom: 'sapporoshortfest.jp',
+    title: '札幌国際短編映画祭', titleKo: '삿포로 국제 단편영화제', year: d.year,
+    startsAt: `${fmtDate(d.year, d.startMonth, d.startDay)}T00:00:00+09:00`,
+    endsAt: `${fmtDate(d.year, d.endMonth, d.endDay)}T23:59:59+09:00`,
+    venue: '札幌プラザ2・5',
+    description: 'アジア最大級の短編映画祭。世界各地の短編作品を上映',
+    url: 'https://sapporoshortfest.jp/',
+  }));
+}
+
+// ─── Scraper Orchestrator ──────────────────────────────────────
+
+async function scrapeAllEvents() {
+  console.log('[Scraper] Starting periodic event scrape...');
+  const errors = [];
+  const tourismEvents = [];
+  const cultureEvents = [];
+
+  // NOTE: sapporo.travel pages (lilac, autumnfest, illumination) are JavaScript-rendered SPAs
+  // whose dates cannot be extracted via fetch(). They use verified fallback data instead.
+  const scrapers = [
+    // Tourism (SSR sites that work with fetch + regex)
+    { fn: scrapeSnowFestival, target: tourismEvents, name: 'snowfes' },
+    { fn: scrapeYosakoi, target: tourismEvents, name: 'yosakoi' },
+    { fn: scrapeHokkaidoMarathon, target: tourismEvents, name: 'marathon' },
+    // Culture (SSR sites)
+    { fn: scrapePMF, target: cultureEvents, name: 'pmf' },
+    { fn: scrapeCityJazz, target: cultureEvents, name: 'cityjazz' },
+    { fn: scrapeRisingSun, target: cultureEvents, name: 'risingsun' },
+    { fn: scrapeShortFilmFest, target: cultureEvents, name: 'shortfest' },
+  ];
+
+  await Promise.allSettled(scrapers.map(async ({ fn, target, name }) => {
+    try {
+      const events = await fn();
+      if (events.length > 0) {
+        target.push(...events);
+        console.log(`[Scraper] ${name}: ${events.length} event(s) found`);
+      } else {
+        console.log(`[Scraper] ${name}: no dates found on page`);
+      }
+    } catch (e) {
+      errors.push({ scraper: name, error: e.message });
+      console.error(`[Scraper] ${name} failed:`, e.message);
+    }
+  }));
+
+  scrapedEventsStore.tourism = tourismEvents;
+  scrapedEventsStore.culture = cultureEvents;
+  scrapedEventsStore.fetchedAt = Date.now();
+  scrapedEventsStore.errors = errors;
+  scrapedEventsStore.lastAttempt = new Date().toISOString();
+
+  console.log(`[Scraper] Done: tourism=${tourismEvents.length}, culture=${cultureEvents.length}, errors=${errors.length}`);
+}
+
+// Start periodic scraping (after 5s delay for server startup, then every 24h)
+setTimeout(() => {
+  scrapeAllEvents();
+  setInterval(scrapeAllEvents, SCRAPE_INTERVAL);
+}, 5000);
+
+// ─── Fallback Static Data (confirmed 2026 dates from official sites) ───
+
+// Dates verified 2025-06 from official websites. Used when scraping fails.
+const TOURISM_FALLBACK = [
+  { id: 'tour-1', source: 'tourism', title: 'さっぽろ雪まつり', titleKo: '삿포로 눈축제', startsAt: '-02-04', endsAt: '-02-11', venue: '大通公園・すすきの・つどーむ', description: '世界的に有名な冬のイベント。大雪像や氷像が展示される', color: '#60A5FA', url: 'https://www.snowfes.com/' },
+  { id: 'tour-2', source: 'tourism', title: 'さっぽろライラックまつり', titleKo: '삿포로 라일락축제', startsAt: '-05-20', endsAt: '-05-31', venue: '大通公園', description: 'ライラックが咲き誇る春の祭り。ワインガーデンも人気', color: '#C084FC', url: 'https://www.sapporo.travel/find/event/lilac_festival/' },
+  { id: 'tour-3', source: 'tourism', title: 'YOSAKOIソーラン祭り', titleKo: 'YOSAKOI 소란축제', startsAt: '-06-10', endsAt: '-06-14', venue: '大通公園周辺', description: '約300チームが参加する日本最大級のYOSAKOI祭り', color: '#F472B6', url: 'https://www.yosakoi-soran.jp/' },
+  { id: 'tour-4', source: 'tourism', title: 'さっぽろ夏まつり', titleKo: '삿포로 여름축제', startsAt: '-07-19', endsAt: '-08-16', venue: '大通公園', description: 'ビアガーデンや盆踊りなど夏の風物詩', color: '#FBBF24', url: 'https://www.sapporo.travel/find/event/summer_festival/' },
+  { id: 'tour-5', source: 'tourism', title: '大通ビアガーデン', titleKo: '오도리 비어가든', startsAt: '-07-19', endsAt: '-08-14', venue: '大通公園 5〜11丁目', description: '日本最大級のビアガーデン。約1万3千席', color: '#F59E0B', url: 'https://www.sapporo.travel/find/event/odori_beer_garden/' },
+  { id: 'tour-6', source: 'tourism', title: '北海道マラソン', titleKo: '홋카이도 마라톤', startsAt: '-08-30', endsAt: '-08-30', venue: '大通公園 (発着)', description: '夏の北海道を走るフルマラソン大会', color: '#34D399', url: 'https://www.hokkaido-marathon.com/' },
+  { id: 'tour-7', source: 'tourism', title: 'さっぽろオータムフェスト', titleKo: '삿포로 오텀페스트', startsAt: '-09-11', endsAt: '-10-03', venue: '大通公園', description: '北海道の食の祭典。道内各地のグルメが集結', color: '#FB923C', url: 'https://www.sapporo-autumnfest.jp/' },
+  { id: 'tour-8', source: 'tourism', title: 'さっぽろホワイトイルミネーション', titleKo: '삿포로 화이트 일루미네이션', startsAt: '-11-21', endsAt: '-12-25', venue: '大通公園・駅前通・南一条通', description: '日本初のイルミネーションイベント。約80万個のLED', color: '#93C5FD', url: 'https://white-illumination.jp/' },
+  { id: 'tour-9', source: 'tourism', title: 'ミュンヘン・クリスマス市', titleKo: '뮌헨 크리스마스 마켓', startsAt: '-11-21', endsAt: '-12-25', venue: '大通公園2丁目', description: '姉妹都市ミュンヘンにちなんだクリスマスマーケット', color: '#F87171', url: 'https://www.sapporo.travel/find/event/munich_christmas/' },
+  { id: 'tour-10', source: 'tourism', title: '初詣（北海道神宮）', titleKo: '새해 첫 참배 (홋카이도 신궁)', startsAt: '-01-01', endsAt: '-01-03', venue: '北海道神宮', description: '毎年約80万人が訪れる北海道最大の初詣スポット', color: '#FCA5A5', url: 'https://www.hokkaidojingu.or.jp/' },
+];
+
+const CULTURE_FALLBACK = [
+  // 🎵 Music & Performing Arts
+  { id: 'cult-1', source: 'culture', category: 'music', title: 'PMF（パシフィック・ミュージック・フェスティバル）', titleKo: 'PMF (퍼시픽 뮤직 페스티벌)', startsAt: '-07-07', endsAt: '-07-27', venue: '札幌コンサートホールKitara・芸術の森', description: 'バーンスタインが創設した国際教育音楽祭。世界中の若手音楽家が集う', url: 'https://www.pmf.or.jp/' },
+  { id: 'cult-2', source: 'culture', category: 'music', title: 'サッポロ・シティ・ジャズ', titleKo: '삿포로 시티 재즈', startsAt: '-07-05', endsAt: '-07-27', venue: '芸術の森・大通公園', description: '国内最大級の野外ジャズフェスティバル。エゾ・グルーヴを感じる夏', url: 'https://sapporocityjazz.jp/' },
+  { id: 'cult-3', source: 'culture', category: 'music', title: 'RISING SUN ROCK FESTIVAL', titleKo: '라이징 선 록 페스티벌', startsAt: '-08-15', endsAt: '-08-16', venue: '石狩湾新港樽川ふ頭横野外特設ステージ', description: '北海道最大のロックフェス。オールナイトで音楽を楽しむ', url: 'https://rfrfes.com/' },
+  { id: 'cult-4', source: 'culture', category: 'music', title: '札幌国際短編映画祭', titleKo: '삿포로 국제 단편영화제', startsAt: '-10-15', endsAt: '-10-20', venue: '札幌プラザ2・5', description: 'アジア最大級の短編映画祭。世界各地の短編作品を上映', url: 'https://sapporoshortfest.jp/' },
+  // 🎨 Art & Exhibition
+  { id: 'cult-5', source: 'culture', category: 'exhibition', title: '札幌芸術の森 野外美術館', titleKo: '삿포로 예술의 숲 야외미술관', startsAt: '-04-29', endsAt: '-11-03', venue: '札幌芸術の森', description: '7.5haの敷地に74点の彫刻作品。自然とアートが融合する美術館', url: 'https://artpark.or.jp/' },
+  { id: 'cult-6', source: 'culture', category: 'exhibition', title: '北海道立近代美術館 特別展', titleKo: '홋카이도 근대미술관 특별전', startsAt: '-04-15', endsAt: '-06-15', venue: '北海道立近代美術館', description: '北海道ゆかりの美術を中心に国内外の近現代美術を展示', url: 'https://artmuseum.pref.hokkaido.lg.jp/knb/' },
+  { id: 'cult-7', source: 'culture', category: 'exhibition', title: 'さっぽろアートステージ', titleKo: '삿포로 아트 스테이지', startsAt: '-11-01', endsAt: '-11-23', venue: '札幌市内各所', description: '演劇・音楽・映画など複合的な芸術祭。500円で楽しめるシアターZOO', url: 'https://s-artstage.com/' },
+  { id: 'cult-8', source: 'culture', category: 'exhibition', title: 'モエレ沼公園 ガラスのピラミッド企画展', titleKo: '모에레누마공원 유리 피라미드 기획전', startsAt: '-05-01', endsAt: '-09-30', venue: 'モエレ沼公園 ガラスのピラミッド', description: 'イサム・ノグチ設計の公園内ガラスのピラミッドで開催される企画展', url: 'https://moerenumapark.jp/' },
+  // 🏮 Seasonal & Cultural
+  { id: 'cult-9', source: 'culture', category: 'seasonal', title: '北海道神宮例祭（札幌まつり）', titleKo: '홋카이도 신궁 예대제 (삿포로 마쓰리)', startsAt: '-06-14', endsAt: '-06-16', venue: '北海道神宮〜中島公園', description: '100年以上の歴史を持つ札幌の伝統祭り。神輿渡御と露店が賑わう', url: 'https://www.hokkaidojingu.or.jp/' },
+  { id: 'cult-10', source: 'culture', category: 'seasonal', title: '定山渓温泉 渓流鯉のぼり', titleKo: '조잔케이 온천 잉어깃발', startsAt: '-04-01', endsAt: '-05-05', venue: '定山渓温泉街', description: '400匹以上の鯉のぼりが温泉街の渓谷を彩る春の風物詩', url: 'https://jozankei.jp/' },
+  { id: 'cult-11', source: 'culture', category: 'seasonal', title: '定山渓ネイチャールミナリエ', titleKo: '조잔케이 네이처 루미나리에', startsAt: '-07-01', endsAt: '-10-31', venue: '定山渓温泉 二見公園', description: '温泉街の渓谷をライトアップ。自然とアートのイルミネーション', url: 'https://jozankei.jp/' },
+  { id: 'cult-12', source: 'culture', category: 'seasonal', title: 'モエレ沼芸術花火', titleKo: '모에레누마 예술 불꽃놀이', startsAt: '-09-06', endsAt: '-09-06', venue: 'モエレ沼公園', description: '音楽とシンクロした芸術的な花火大会。イサム・ノグチの公園で開催', url: 'https://moerenumapark.jp/' },
+  // 🛍️ Markets & Lifestyle
+  { id: 'cult-13', source: 'culture', category: 'lifestyle', title: '大通公園 とうきびワゴン', titleKo: '오도리 공원 옥수수 왜건', startsAt: '-04-20', endsAt: '-10-07', venue: '大通公園', description: '札幌の春〜秋の風物詩。焼きとうきびの香りが大通公園を包む', url: 'https://www.sapporo.travel/' },
+  { id: 'cult-14', source: 'culture', category: 'lifestyle', title: 'サッポロファクトリー クリスマス', titleKo: '삿포로 팩토리 크리스마스', startsAt: '-11-03', endsAt: '-12-25', venue: 'サッポロファクトリー', description: '高さ約15mの巨大クリスマスツリーが吹き抜け空間に登場', url: 'https://sapporofactory.jp/' },
+  { id: 'cult-15', source: 'culture', category: 'lifestyle', title: '北海道フードフェスティバル', titleKo: '홋카이도 푸드 페스티벌', startsAt: '-09-13', endsAt: '-09-15', venue: '大通公園周辺', description: '北海道各地の名産品が集結するグルメイベント', url: 'https://www.sapporo.travel/' },
+];
+
+// ─── Resolve Functions (scraped data → fallback) ───────────────
+
+// Resolve event dates for a given year from fallback static data
+function resolveStaticEvents(events, year) {
+  return events.map(event => ({
+    ...event,
+    scraped: false,
+    startsAt: `${year}${event.startsAt}T00:00:00+09:00`,
+    endsAt: `${year}${event.endsAt}T23:59:59+09:00`,
+  }));
+}
+
+// Merge scraped + fallback: scraped data overrides fallback by ID
+function mergeScrapedWithFallback(scrapedList, fallbackList, year) {
+  const staticEvents = resolveStaticEvents(fallbackList, year);
+  const merged = [...staticEvents];
+  for (const se of scrapedList.filter(e => e.year === year)) {
+    const idx = merged.findIndex(e => e.id === se.id);
+    if (idx >= 0) {
+      merged[idx] = { ...se }; // Override with scraped version
+    } else {
+      merged.push(se); // New event from scraping
+    }
+  }
+  return merged;
+}
+
+function resolveTourismEvents(year) {
+  return mergeScrapedWithFallback(scrapedEventsStore.tourism, TOURISM_FALLBACK, year);
+}
+
+function resolveCultureEvents(year) {
+  return mergeScrapedWithFallback(scrapedEventsStore.culture, CULTURE_FALLBACK, year);
+}
+
+// GET /api/sapporo-events/scraper-status — Check scraper health
+app.get('/api/sapporo-events/scraper-status', (req, res) => {
+  res.json({
+    lastAttempt: scrapedEventsStore.lastAttempt,
+    fetchedAt: scrapedEventsStore.fetchedAt ? new Date(scrapedEventsStore.fetchedAt).toISOString() : null,
+    scrapedCounts: {
+      tourism: scrapedEventsStore.tourism.length,
+      culture: scrapedEventsStore.culture.length,
+    },
+    errors: scrapedEventsStore.errors,
+    nextScrapeIn: scrapedEventsStore.fetchedAt
+      ? Math.max(0, Math.round((scrapedEventsStore.fetchedAt + SCRAPE_INTERVAL - Date.now()) / 60000)) + ' minutes'
+      : 'pending',
+    scrapedEvents: {
+      tourism: scrapedEventsStore.tourism.map(e => ({ id: e.id, title: e.titleKo || e.title, year: e.year, from: e.scrapedFrom })),
+      culture: scrapedEventsStore.culture.map(e => ({ id: e.id, title: e.titleKo || e.title, year: e.year, from: e.scrapedFrom })),
+    },
+  });
+})
+
+// GET /api/sapporo-events/tourism — Sapporo tourism events (scraped + fallback)
+app.get('/api/sapporo-events/tourism', (req, res) => {
+  const year = parseInt(req.query.year) || new Date().getFullYear();
+  const events = resolveTourismEvents(year);
+  const scrapedCount = events.filter(e => e.scraped).length;
+  res.json({ source: scrapedCount > 0 ? 'scraped+fallback' : 'fallback', scrapedAt: scrapedEventsStore.fetchedAt, scrapedCount, events });
+});
+
+// GET /api/sapporo-events/culture — Sapporo culture events (scraped + fallback)
+app.get('/api/sapporo-events/culture', (req, res) => {
+  const year = parseInt(req.query.year) || new Date().getFullYear();
+  const category = req.query.category;
+  let events = resolveCultureEvents(year);
+  if (category) {
+    events = events.filter(e => e.category === category);
+  }
+  const scrapedCount = events.filter(e => e.scraped).length;
+  res.json({ source: scrapedCount > 0 ? 'scraped+fallback' : 'fallback', scrapedAt: scrapedEventsStore.fetchedAt, scrapedCount, events });
+});
+
+// GET /api/sapporo-events/scrape — Force scrape now
+app.get('/api/sapporo-events/scrape', async (req, res) => {
+  await scrapeAllEvents();
+  res.json({
+    message: 'Scrape completed',
+    fetchedAt: new Date(scrapedEventsStore.fetchedAt).toISOString(),
+    tourism: scrapedEventsStore.tourism.length,
+    culture: scrapedEventsStore.culture.length,
+    errors: scrapedEventsStore.errors,
+  });
+});
+
+// GET /api/sapporo-events/all — Combined endpoint (all sources)
+app.get('/api/sapporo-events/all', async (req, res) => {
+  const { year, month, refresh } = req.query;
+  const y = parseInt(year) || new Date().getFullYear();
+  const m = month ? parseInt(month) : new Date().getMonth() + 1;
+
+  // Compute date range for the month
+  const since = `${y}-${String(m).padStart(2, '0')}-01`;
+  const lastDay = new Date(y, m, 0).getDate();
+  const until = `${y}-${String(m).padStart(2, '0')}-${lastDay}`;
+
+  const results = { doorkeeper: [], connpass: [], tourism: [], culture: [], errors: [] };
+
+  // Fetch Doorkeeper
+  try {
+    const params = new URLSearchParams();
+    params.set('prefecture', 'hokkaido');
+    params.set('sort', 'starts_at');
+    params.set('q', '札幌');
+    params.set('since', since);
+    params.set('until', until);
+
+    const cache = sapporoEventsCache.doorkeeper;
+    const cacheKey = `${since}_${until}_all`;
+    let events;
+
+    if (!refresh && cache.data && cache.cacheKey === cacheKey && cache.fetchedAt && (Date.now() - cache.fetchedAt < CACHE_TTL)) {
+      events = cache.data;
+    } else {
+      const url = `https://api.doorkeeper.jp/events?${params.toString()}`;
+      const result = await fetchJSON(url, { 'Authorization': `Bearer ${DOORKEEPER_TOKEN}` });
+      if (result.status === 200) {
+        events = (result.data || []).map(item => {
+          const e = item.event || item;
+          return {
+            id: `dk-${e.id}`,
+            source: 'doorkeeper',
+            title: e.title,
+            description: e.description ? e.description.slice(0, 200) : '',
+            startsAt: e.starts_at,
+            endsAt: e.ends_at,
+            venue: e.venue_name || '',
+            address: e.address || '',
+            url: e.public_url || e.event_url || '',
+            participants: e.participants || 0,
+            waitlisted: e.waitlisted || 0,
+            limit: e.ticket_limit || 0,
+            groupName: e.group?.title || '',
+          };
+        });
+        sapporoEventsCache.doorkeeper = { data: events, fetchedAt: Date.now(), cacheKey };
+      } else {
+        results.errors.push({ source: 'doorkeeper', status: result.status });
+        events = [];
+      }
+    }
+    results.doorkeeper = events;
+  } catch (err) {
+    results.errors.push({ source: 'doorkeeper', message: err.message });
+  }
+
+  // Fetch connpass (if key is configured)
+  if (CONNPASS_API_KEY) {
+    try {
+      const ym = `${y}${String(m).padStart(2, '0')}`;
+      const cache = sapporoEventsCache.connpass;
+      const cacheKey = `${ym}_all`;
+      let events;
+
+      if (!refresh && cache.data && cache.cacheKey === cacheKey && cache.fetchedAt && (Date.now() - cache.fetchedAt < CACHE_TTL)) {
+        events = cache.data;
+      } else {
+        const params = new URLSearchParams();
+        params.set('prefecture', 'hokkaido');
+        params.set('ym', ym);
+        params.set('order', 'date');
+        params.set('count', '50');
+        params.set('keyword', '札幌');
+
+        const url = `https://connpass.com/api/v2/events/?${params.toString()}`;
+        const result = await fetchJSON(url, { 'X-API-Key': CONNPASS_API_KEY });
+        if (result.status === 200) {
+          events = (result.data?.events || []).map(e => ({
+            id: `cp-${e.event_id}`,
+            source: 'connpass',
+            title: e.title,
+            description: e.catch ? e.catch.slice(0, 200) : '',
+            startsAt: e.started_at,
+            endsAt: e.ended_at,
+            venue: e.place || '',
+            address: e.address || '',
+            url: e.event_url || '',
+            participants: e.accepted || 0,
+            waitlisted: e.waiting || 0,
+            limit: e.limit || 0,
+            groupName: e.series?.title || '',
+          }));
+          sapporoEventsCache.connpass = { data: events, fetchedAt: Date.now(), cacheKey };
+        } else {
+          results.errors.push({ source: 'connpass', status: result.status });
+          events = [];
+        }
+      }
+      results.connpass = events;
+    } catch (err) {
+      results.errors.push({ source: 'connpass', message: err.message });
+    }
+  }
+
+  // Tourism events
+  const filterByMonth = (events) => events.filter(e => {
+    const eMonth = new Date(e.startsAt).getMonth() + 1;
+    const eEndMonth = new Date(e.endsAt).getMonth() + 1;
+    return eMonth === m || eEndMonth === m || (eMonth < m && eEndMonth > m);
+  });
+  results.tourism = filterByMonth(resolveTourismEvents(y));
+
+  // Culture events
+  results.culture = filterByMonth(resolveCultureEvents(y));
+
+  const allEvents = [...results.doorkeeper, ...results.connpass, ...results.tourism, ...results.culture];
+  allEvents.sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
+
+  res.json({
+    year: y,
+    month: m,
+    fetchedAt: Date.now(),
+    total: allEvents.length,
+    sources: {
+      doorkeeper: results.doorkeeper.length,
+      connpass: results.connpass.length,
+      tourism: results.tourism.length,
+      culture: results.culture.length,
+    },
+    errors: results.errors,
+    events: allEvents,
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Running in cluster: ${isInCluster}`);
   console.log(`Bookmarks file: ${BOOKMARKS_FILE}`);
   console.log(`AI Chat: GitHub=${!!GITHUB_TOKEN}, Gemini=${!!GEMINI_API_KEY}`);
+  console.log(`Sapporo Events: Doorkeeper=${!!DOORKEEPER_TOKEN}, connpass=${!!CONNPASS_API_KEY}`);
 });

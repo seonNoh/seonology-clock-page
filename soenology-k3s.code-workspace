@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "../soenology-k3s"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}

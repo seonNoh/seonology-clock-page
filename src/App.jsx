@@ -8,6 +8,22 @@ import Calendar from './components/Calendar';
 import ExchangeRate from './components/ExchangeRate';
 import NotesPanel from './components/NotesPanel';
 import ChatPanel from './components/ChatPanel';
+import MarkdownPreview from './components/MarkdownPreview';
+import UnitConverter from './components/UnitConverter';
+import Base64Tool from './components/Base64Tool';
+import JsonFormatter from './components/JsonFormatter';
+import IpLookup from './components/IpLookup';
+import PasswordGenerator from './components/PasswordGenerator';
+import ColorPicker from './components/ColorPicker';
+import CronEditor from './components/CronEditor';
+import SubnetVisualizer from './components/SubnetVisualizer';
+import SloCalculator from './components/SloCalculator';
+import CiCdVisualizer from './components/CiCdVisualizer';
+import ExcelToMarkdown from './components/ExcelToMarkdown';
+import RbacVisualizer from './components/RbacVisualizer';
+import TerraformParser from './components/TerraformParser';
+import GitlabToGithub from './components/GitlabToGithub';
+import ArchIconSearch from './components/ArchIconSearch';
 import BrowserStats from './components/BrowserStats';
 import './App.css';
 
@@ -1049,6 +1065,22 @@ function App() {
   const [activeModal, setActiveModal] = useState(null);
   const [showNotes, setShowNotes] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showMarkdown, setShowMarkdown] = useState(false);
+  const [showUnitConverter, setShowUnitConverter] = useState(false);
+  const [showBase64, setShowBase64] = useState(false);
+  const [showJsonFormatter, setShowJsonFormatter] = useState(false);
+  const [showIpLookup, setShowIpLookup] = useState(false);
+  const [showPasswordGen, setShowPasswordGen] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showCronEditor, setShowCronEditor] = useState(false);
+  const [showSubnetViz, setShowSubnetViz] = useState(false);
+  const [showSloCalc, setShowSloCalc] = useState(false);
+  const [showCiCd, setShowCiCd] = useState(false);
+  const [showExcelMd, setShowExcelMd] = useState(false);
+  const [showRbac, setShowRbac] = useState(false);
+  const [showTfState, setShowTfState] = useState(false);
+  const [showGl2Gh, setShowGl2Gh] = useState(false);
+  const [showArchIcon, setShowArchIcon] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
@@ -1063,6 +1095,22 @@ function App() {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
         if (showChat) setShowChat(false);
+        else if (showMarkdown) setShowMarkdown(false);
+        else if (showUnitConverter) setShowUnitConverter(false);
+        else if (showBase64) setShowBase64(false);
+        else if (showJsonFormatter) setShowJsonFormatter(false);
+        else if (showIpLookup) setShowIpLookup(false);
+        else if (showPasswordGen) setShowPasswordGen(false);
+        else if (showColorPicker) setShowColorPicker(false);
+        else if (showCronEditor) setShowCronEditor(false);
+        else if (showSubnetViz) setShowSubnetViz(false);
+        else if (showSloCalc) setShowSloCalc(false);
+        else if (showCiCd) setShowCiCd(false);
+        else if (showExcelMd) setShowExcelMd(false);
+        else if (showRbac) setShowRbac(false);
+        else if (showTfState) setShowTfState(false);
+        else if (showGl2Gh) setShowGl2Gh(false);
+        else if (showArchIcon) setShowArchIcon(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1070,7 +1118,7 @@ function App() {
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [showNotes, showChat]);
+  }, [showNotes, showChat, showMarkdown, showUnitConverter, showBase64, showJsonFormatter, showIpLookup, showPasswordGen, showColorPicker, showCronEditor, showSubnetViz, showSloCalc, showCiCd, showExcelMd, showRbac, showTfState, showGl2Gh, showArchIcon]);
 
   useEffect(() => { localStorage.setItem('clock-cursor-effect', cursorEffect); }, [cursorEffect]);
   useEffect(() => { localStorage.setItem('clock-cursor-anim', cursorAnim); }, [cursorAnim]);
@@ -1111,50 +1159,232 @@ function App() {
       {/* Bottom Right Stack */}
       <div className="bottom-right-stack">
 
-      {/* Calendar */}
-      <div className="ambient-info">
-        <CalendarIcon onClick={() => openModal('calendar')} />
-      </div>
+      {/* App Icon Grid */}
+      <div className="app-icon-grid">
+        <button className="app-icon-btn" onClick={() => openModal('calendar')} title="Calendar">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Calendar</span>
+        </button>
 
-      {/* Notes trigger */}
-      <button className="notes-trigger" onClick={() => setShowNotes(true)}>
-        <span className="notes-trigger-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-            <polyline points="10 9 9 9 8 9" />
-          </svg>
-        </span>
-        Notes
-      </button>
+        <button className="app-icon-btn" onClick={() => setShowNotes(true)} title="Notes">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Notes</span>
+        </button>
 
-      {/* Chat trigger */}
-      <button className="chat-trigger" onClick={() => setShowChat(true)}>
-        <span className="chat-trigger-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </span>
-        AI Chat
-      </button>
+        <button className="app-icon-btn" onClick={() => setShowMarkdown(true)} title="Markdown">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Markdown</span>
+        </button>
 
-      {/* Cursor Effect Pickers */}
-      <div className="glow-picker-area">
-        <div className="glow-picker-buttons">
-          <button className="glow-picker-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor animation">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <button className="app-icon-btn" onClick={() => setShowChat(true)} title="AI Chat">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </span>
+          <span className="app-icon-label">AI Chat</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowUnitConverter(true)} title="Unit Converter">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
+              <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Converter</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowBase64(true)} title="Base64">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M7 15h0M2 9.5h20" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Base64</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowJsonFormatter(true)} title="JSON Formatter">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1" />
+              <path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1" />
+            </svg>
+          </span>
+          <span className="app-icon-label">JSON</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowIpLookup(true)} title="IP Lookup">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+          </span>
+          <span className="app-icon-label">IP</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowPasswordGen(true)} title="Password Generator">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </span>
+          <span className="app-icon-label">PW</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowColorPicker(true)} title="Color Picker">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="13.5" cy="6.5" r="2.5" />
+              <path d="M17.545 11.009A8 8 0 1 1 12.68 3.027" />
+              <circle cx="7" cy="13" r="1.5" fill="currentColor" />
+              <circle cx="11" cy="17" r="1.5" fill="currentColor" />
+              <circle cx="16" cy="14.5" r="1.5" fill="currentColor" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Color</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowCronEditor(true)} title="Cron Editor">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Cron</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowSubnetViz(true)} title="CIDR / Subnet Visualizer">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="3" width="20" height="4" rx="1" />
+              <path d="M12 7v4" />
+              <path d="M6 11h12" />
+              <path d="M6 11v4" />
+              <path d="M18 11v4" />
+              <path d="M12 11v4" />
+              <rect x="2" y="15" width="6" height="4" rx="1" />
+              <rect x="9" y="15" width="6" height="4" rx="1" />
+              <rect x="16" y="15" width="6" height="4" rx="1" />
+            </svg>
+          </span>
+          <span className="app-icon-label">CIDR</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowSloCalc(true)} title="SLO / SLI Calculator">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
+            </svg>
+          </span>
+          <span className="app-icon-label">SLO</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowCiCd(true)} title="CI/CD Pipeline Visualizer">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 3v6M12 15v6M3 12h6M15 12h6" />
+              <path d="M5.636 5.636l4.243 4.243M14.121 14.121l4.243 4.243" />
+            </svg>
+          </span>
+          <span className="app-icon-label">CI/CD</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowExcelMd(true)} title="Excel → Markdown Table">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Excel→MD</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowRbac(true)} title="RBAC Visualizer">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+          </span>
+          <span className="app-icon-label">RBAC</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowTfState(true)} title="Terraform State Parser">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Terraform</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowGl2Gh(true)} title="GitLab CI → GitHub Actions">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
+              <line x1="12" y1="22" x2="12" y2="15.5" />
+              <polyline points="22 8.5 12 15.5 2 8.5" />
+            </svg>
+          </span>
+          <span className="app-icon-label">GL→GH</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => setShowArchIcon(true)} title="Architecture Icon Search">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Arch Icons</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor Animation">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
             </svg>
-          </button>
-          <button className="glow-picker-btn" onClick={() => { setShowGlowPicker(!showGlowPicker); setShowAnimPicker(false); }} title="Glow color">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          </span>
+          <span className="app-icon-label">Effect</span>
+        </button>
+
+        <button className="app-icon-btn" onClick={() => { setShowGlowPicker(!showGlowPicker); setShowAnimPicker(false); }} title="Glow Color">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="4" />
               <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
             </svg>
-          </button>
-        </div>
+          </span>
+          <span className="app-icon-label">Glow</span>
+        </button>
+      </div>
+
+      {/* Picker Dropdowns */}
+      <div className="glow-picker-area">
         {showGlowPicker && (
           <div className="glow-picker-dropdown">
             <div className="glow-picker-label">Glow Color</div>
@@ -1233,6 +1463,54 @@ function App() {
 
       {/* Chat Panel */}
       <ChatPanel isOpen={showChat} onClose={() => setShowChat(false)} />
+
+      {/* Markdown Preview */}
+      <MarkdownPreview isOpen={showMarkdown} onClose={() => setShowMarkdown(false)} />
+
+      {/* Unit Converter */}
+      <UnitConverter isOpen={showUnitConverter} onClose={() => setShowUnitConverter(false)} />
+
+      {/* Base64 Tool */}
+      <Base64Tool isOpen={showBase64} onClose={() => setShowBase64(false)} />
+
+      {/* JSON Formatter */}
+      <JsonFormatter isOpen={showJsonFormatter} onClose={() => setShowJsonFormatter(false)} />
+
+      {/* IP Lookup */}
+      <IpLookup isOpen={showIpLookup} onClose={() => setShowIpLookup(false)} />
+
+      {/* Password Generator */}
+      <PasswordGenerator isOpen={showPasswordGen} onClose={() => setShowPasswordGen(false)} />
+
+      {/* Color Picker */}
+      <ColorPicker isOpen={showColorPicker} onClose={() => setShowColorPicker(false)} />
+
+      {/* Cron Editor */}
+      <CronEditor isOpen={showCronEditor} onClose={() => setShowCronEditor(false)} />
+
+      {/* Subnet Visualizer */}
+      <SubnetVisualizer isOpen={showSubnetViz} onClose={() => setShowSubnetViz(false)} />
+
+      {/* SLO Calculator */}
+      <SloCalculator isOpen={showSloCalc} onClose={() => setShowSloCalc(false)} />
+
+      {/* CI/CD Visualizer */}
+      <CiCdVisualizer isOpen={showCiCd} onClose={() => setShowCiCd(false)} />
+
+      {/* Excel to Markdown */}
+      <ExcelToMarkdown isOpen={showExcelMd} onClose={() => setShowExcelMd(false)} />
+
+      {/* RBAC Visualizer */}
+      <RbacVisualizer isOpen={showRbac} onClose={() => setShowRbac(false)} />
+
+      {/* Terraform State Parser */}
+      <TerraformParser isOpen={showTfState} onClose={() => setShowTfState(false)} />
+
+      {/* GitLab CI → GitHub Actions */}
+      <GitlabToGithub isOpen={showGl2Gh} onClose={() => setShowGl2Gh(false)} />
+
+      {/* Architecture Icon Search */}
+      <ArchIconSearch isOpen={showArchIcon} onClose={() => setShowArchIcon(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">

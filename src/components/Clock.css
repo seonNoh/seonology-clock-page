@@ -1084,3 +1084,246 @@
     width: 12px;
   }
 }
+
+/* ===== DATE TEXT SHIMMER EFFECT ===== */
+.clock-date,
+.orbit-date,
+.ring-date,
+.typo-date,
+.analog-date {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    var(--text-secondary) 0%,
+    var(--text-secondary) 40%,
+    rgba(255, 255, 255, 0.95) 50%,
+    var(--text-secondary) 60%,
+    var(--text-secondary) 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: date-shimmer 8s ease-in-out infinite;
+}
+
+.clock-date::before,
+.orbit-date::before,
+.ring-date::before,
+.typo-date::before,
+.analog-date::before,
+.clock-date::after,
+.orbit-date::after,
+.ring-date::after,
+.typo-date::after,
+.analog-date::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  animation: date-flare 8s ease-in-out infinite;
+}
+
+/* Horizontal ray */
+.clock-date::before,
+.orbit-date::before,
+.ring-date::before,
+.typo-date::before,
+.analog-date::before {
+  right: 0;
+  top: 0;
+  width: 40px;
+  height: 2px;
+  transform: translate(50%, 0);
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+}
+
+/* Vertical ray */
+.clock-date::after,
+.orbit-date::after,
+.ring-date::after,
+.typo-date::after,
+.analog-date::after {
+  right: 0;
+  top: 0;
+  width: 2px;
+  height: 40px;
+  transform: translate(50%, -50%);
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+}
+
+.neon-date {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 240, 255, 0.5) 0%,
+    rgba(0, 240, 255, 0.5) 40%,
+    rgba(0, 240, 255, 1) 50%,
+    rgba(0, 240, 255, 0.5) 60%,
+    rgba(0, 240, 255, 0.5) 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: date-shimmer 8s ease-in-out infinite;
+}
+
+.neon-date::before,
+.neon-date::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+  animation: date-flare 8s ease-in-out infinite;
+}
+
+.neon-date::before {
+  width: 40px;
+  height: 2px;
+  transform: translate(50%, 0);
+  background: radial-gradient(ellipse at center, rgba(0,240,255,0.9) 0%, rgba(0,240,255,0) 70%);
+}
+
+.neon-date::after {
+  width: 2px;
+  height: 40px;
+  transform: translate(50%, -50%);
+  background: radial-gradient(ellipse at center, rgba(0,240,255,0.9) 0%, rgba(0,240,255,0) 70%);
+}
+
+.matrix-date,
+.dotmatrix-date {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 65, 0.5) 0%,
+    rgba(0, 255, 65, 0.5) 40%,
+    rgba(0, 255, 65, 1) 50%,
+    rgba(0, 255, 65, 0.5) 60%,
+    rgba(0, 255, 65, 0.5) 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: date-shimmer 8s ease-in-out infinite;
+}
+
+.matrix-date::before,
+.dotmatrix-date::before,
+.matrix-date::after,
+.dotmatrix-date::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+  animation: date-flare 8s ease-in-out infinite;
+}
+
+.matrix-date::before,
+.dotmatrix-date::before {
+  width: 40px;
+  height: 2px;
+  transform: translate(50%, 0);
+  background: radial-gradient(ellipse at center, rgba(0,255,65,0.9) 0%, rgba(0,255,65,0) 70%);
+}
+
+.matrix-date::after,
+.dotmatrix-date::after {
+  width: 2px;
+  height: 40px;
+  transform: translate(50%, -50%);
+  background: radial-gradient(ellipse at center, rgba(0,255,65,0.9) 0%, rgba(0,255,65,0) 70%);
+}
+
+@keyframes date-shimmer {
+  0%, 70% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes date-flare {
+  0%, 90% {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  95% {
+    opacity: 1;
+  }
+  98% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Override width/height animation per axis */
+.clock-date::before,
+.orbit-date::before,
+.ring-date::before,
+.typo-date::before,
+.analog-date::before,
+.neon-date::before,
+.matrix-date::before,
+.dotmatrix-date::before {
+  animation: date-flare-h 8s ease-in-out infinite;
+}
+
+.clock-date::after,
+.orbit-date::after,
+.ring-date::after,
+.typo-date::after,
+.analog-date::after,
+.neon-date::after,
+.matrix-date::after,
+.dotmatrix-date::after {
+  animation: date-flare-v 8s ease-in-out infinite;
+}
+
+@keyframes date-flare-h {
+  0%, 90% {
+    opacity: 0;
+    width: 0;
+  }
+  95% {
+    opacity: 1;
+    width: 50px;
+  }
+  98% {
+    opacity: 0.5;
+    width: 30px;
+  }
+  100% {
+    opacity: 0;
+    width: 0;
+  }
+}
+
+@keyframes date-flare-v {
+  0%, 90% {
+    opacity: 0;
+    height: 0;
+  }
+  95% {
+    opacity: 1;
+    height: 50px;
+  }
+  98% {
+    opacity: 0.5;
+    height: 30px;
+  }
+  100% {
+    opacity: 0;
+    height: 0;
+  }
+}

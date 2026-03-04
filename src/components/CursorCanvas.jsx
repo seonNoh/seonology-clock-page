@@ -68,6 +68,8 @@ const CursorCanvas = memo(function CursorCanvas({ effect }) {
           r: 1 + Math.random() * 3,
           speed: 0.3 + Math.random() * 1.2,
           wobble: Math.random() * Math.PI * 2,
+          shimmer: Math.random() * Math.PI * 2,
+          shimmerSpeed: 0.02 + Math.random() * 0.04,
         }));
       }
 
@@ -325,10 +327,61 @@ const CursorCanvas = memo(function CursorCanvas({ effect }) {
             if (p.x < -20) p.x = canvas.width + 10;
             if (p.x > canvas.width + 20) p.x = -10;
 
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(226, 232, 240, ${0.2 + p.r / 4 * 0.3})`;
-            ctx.fill();
+            // Shimmer animation
+            p.shimmer += p.shimmerSpeed;
+            const shimmerVal = Math.sin(p.shimmer);
+            const glowing = shimmerVal > 0.85;
+
+            // Draw snowflake crystal
+            const baseAlpha = 0.2 + p.r / 4 * 0.3;
+            const alpha = glowing ? Math.min(1, baseAlpha + (shimmerVal - 0.85) * 4 * 0.6) : baseAlpha;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.wobble * 0.5);
+
+            // Glow aura when shimmering
+            if (glowing) {
+              const glowIntensity = (shimmerVal - 0.85) / 0.15;
+              const glowR = p.r * (1.8 + glowIntensity * 1.2);
+              const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR);
+              grad.addColorStop(0, `rgba(200, 220, 255, ${glowIntensity * 0.35})`);
+              grad.addColorStop(1, 'rgba(200, 220, 255, 0)');
+              ctx.beginPath();
+              ctx.arc(0, 0, glowR, 0, Math.PI * 2);
+              ctx.fillStyle = grad;
+              ctx.fill();
+            }
+
+            ctx.strokeStyle = `rgba(226, 232, 240, ${alpha})`;
+            ctx.lineWidth = Math.max(0.5, p.r * 0.25);
+            ctx.lineCap = 'round';
+            const branches = 6;
+            const len = p.r;
+            for (let i = 0; i < branches; i++) {
+              const angle = (Math.PI * 2 / branches) * i;
+              const cos = Math.cos(angle);
+              const sin = Math.sin(angle);
+              // Main branch
+              ctx.beginPath();
+              ctx.moveTo(0, 0);
+              ctx.lineTo(cos * len, sin * len);
+              ctx.stroke();
+              // Side branches at 60% length
+              const bx = cos * len * 0.6;
+              const by = sin * len * 0.6;
+              const sideLen = len * 0.35;
+              const leftAngle = angle + Math.PI / 4;
+              const rightAngle = angle - Math.PI / 4;
+              ctx.beginPath();
+              ctx.moveTo(bx, by);
+              ctx.lineTo(bx + Math.cos(leftAngle) * sideLen, by + Math.sin(leftAngle) * sideLen);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(bx, by);
+              ctx.lineTo(bx + Math.cos(rightAngle) * sideLen, by + Math.sin(rightAngle) * sideLen);
+              ctx.stroke();
+            }
+            ctx.restore();
           });
           break;
         }
