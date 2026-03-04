@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.24.1...v1.25.0) (2026-03-04)
+
+
+### Features
+
+* [#22](https://github.com/seonNoh/seonology-clock-page/issues/22) 삿포로 문화·전시·라이프스타일 이벤트 + [#23](https://github.com/seonNoh/seonology-clock-page/issues/23) 웹 스크래핑 자동 갱신 시스템 ([38e3bd4](https://github.com/seonNoh/seonology-clock-page/commit/38e3bd4c592c3b4600fad8b0a5b95f56cc270cc2)), closes [#10B981](https://github.com/seonNoh/seonology-clock-page/issues/10B981)
+
 ## [1.24.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.24.0...v1.24.1) (2026-03-04)
 
 
