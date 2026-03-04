@@ -176,18 +176,35 @@ function Clock() {
   /* ===== 2. ORBIT ===== */
   const [orbitHourPulse, setOrbitHourPulse] = useState(false);
   const lastHourRef = useRef(time.getHours());
+  const pulseTimerRef = useRef(null);
 
   useEffect(() => {
     const currentHour = time.getHours();
     const currentMin = time.getMinutes();
     const currentSec = time.getSeconds();
-    if (currentMin === 0 && currentSec === 0 && currentHour !== lastHourRef.current) {
+
+    // Always track hour changes
+    if (currentHour !== lastHourRef.current) {
+      // Trigger pulse only at the top of the hour (min=0, sec=0)
+      // With 50ms interval, sec=0 window is reliable
+      if (currentMin === 0 && currentSec <= 1) {
+        if (pulseTimerRef.current) clearTimeout(pulseTimerRef.current);
+        setOrbitHourPulse(true);
+        pulseTimerRef.current = setTimeout(() => {
+          setOrbitHourPulse(false);
+          pulseTimerRef.current = null;
+        }, 2000);
+      }
       lastHourRef.current = currentHour;
-      setOrbitHourPulse(true);
-      const timer = setTimeout(() => setOrbitHourPulse(false), 2000);
-      return () => clearTimeout(timer);
     }
   }, [time]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pulseTimerRef.current) clearTimeout(pulseTimerRef.current);
+    };
+  }, []);
 
   /* ── Orbit time-of-day color system ── */
   const TIME_PHASES = [
