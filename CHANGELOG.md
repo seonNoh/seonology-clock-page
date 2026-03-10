@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.25.1...v1.26.0) (2026-03-10)
+
+
+### Features
+
+* 인터넷 속도 측정 기능 추가 (SpeedTest)\n\n- Cloudflare CDN 기반 속도 측정 (16 병렬 스트림, ramp-up 제외)\n- 반원 게이지 + 실시간 속도 표시\n- 상세 정보: 속도 그래프, Peak/Min, Loaded/Unloaded Latency, IP, 전송량\n- 시계 아래 미니 위젯 배치, ESC 닫기 지원" ([77cfefc](https://github.com/seonNoh/seonology-clock-page/commit/77cfefc42b78bd24da02fc5ffe78252d09b6c714))
+
 ## [1.25.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.25.0...v1.25.1) (2026-03-04)
 
 
