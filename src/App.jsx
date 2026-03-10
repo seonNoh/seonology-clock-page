@@ -25,6 +25,7 @@ import TerraformParser from './components/TerraformParser';
 import GitlabToGithub from './components/GitlabToGithub';
 import ArchIconSearch from './components/ArchIconSearch';
 import BrowserStats from './components/BrowserStats';
+import SpeedTest, { SpeedTestMini } from './components/SpeedTest';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1081,6 +1082,7 @@ function App() {
   const [showTfState, setShowTfState] = useState(false);
   const [showGl2Gh, setShowGl2Gh] = useState(false);
   const [showArchIcon, setShowArchIcon] = useState(false);
+  const [showSpeedTest, setShowSpeedTest] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
@@ -1111,6 +1113,7 @@ function App() {
         else if (showTfState) setShowTfState(false);
         else if (showGl2Gh) setShowGl2Gh(false);
         else if (showArchIcon) setShowArchIcon(false);
+        else if (showSpeedTest) setShowSpeedTest(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1450,6 +1453,7 @@ function App() {
       {/* Main Clock */}
       <main className="main-content">
         <Clock />
+        <SpeedTestMini onClick={() => setShowSpeedTest(true)} />
         <SearchBar />
       </main>
 
@@ -1511,6 +1515,9 @@ function App() {
 
       {/* Architecture Icon Search */}
       <ArchIconSearch isOpen={showArchIcon} onClose={() => setShowArchIcon(false)} />
+
+      {/* Speed Test */}
+      <SpeedTest isOpen={showSpeedTest} onClose={() => setShowSpeedTest(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">

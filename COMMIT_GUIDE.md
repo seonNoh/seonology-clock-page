@@ -567,10 +567,28 @@
 
 ---
 
-## 24. style: 앱 아이콘 그리드 오른쪽 중앙 재배치
+## 24. fix: 앱 아이콘 그리드 오른쪽 중앙 재배치
 **파일:** `src/App.css`
 - 앱 아이콘 그리드를 `bottom: 1.5rem` (우하단) → `top: 50%; transform: translateY(-50%)` (우측 중앙)으로 재배치
 - 그리드 컨테이너에 미세한 배경(`rgba(255,255,255,0.02)`) + 테두리 + `border-radius: 18px` 적용
 - 아이콘 크기 50px → 46px, gap 10px → 8px로 컴팩트화
 - `max-height: calc(100vh - 3rem)` + 스크롤바 숨김으로 소형 뷰포트 대응
 - 드롭다운(Glow/Effect 피커) 위치를 `right: calc(100% + 8px)`로 좌측 팝업 방식으로 변경
+
+---
+
+## 25. feat: 인터넷 속도 측정 기능 (SpeedTest)
+**파일:** `src/components/SpeedTest.jsx`, `src/components/SpeedTest.css`, `src/App.jsx`
+- Cloudflare CDN(`speed.cloudflare.com`)을 이용한 인터넷 속도 측정 컴포넌트 추가
+- 16개 병렬 TCP 스트림으로 대역폭 포화 (fast.com 수준 정확도)
+- Ramp-up 제외: 다운로드 3초, 업로드 2초 초기 구간을 측정에서 제외
+- 반원 게이지 SVG + 실시간 속도 표시
+- 측정 완료 후 상세 정보 표시:
+  - 다운로드/업로드 속도 변화 SVG 라인 그래프
+  - Peak / Min 속도
+  - Loaded / Unloaded Latency + Bufferbloat 감지 배지
+  - 클라이언트 IP (Cloudflare 1.1.1.1 trace)
+  - 서버 위치 (cf-ray 헤더)
+  - 총 전송 데이터량
+- 시계 아래, 검색바 위에 미니 위젯(`SpeedTestMini`) 배치
+- ESC 키로 모달 닫기 지원
