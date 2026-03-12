@@ -686,8 +686,13 @@
 @media (max-width: 768px) {
   .chat-panel {
     width: 100vw;
-    max-height: 90vh;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
     border-radius: 0;
+    background: rgba(20, 20, 25, 0.98);
+    backdrop-filter: blur(20px);
   }
 
   .chat-msg.user,

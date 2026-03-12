@@ -51,3 +51,27 @@ body {
   background: var(--accent-primary);
   color: white;
 }
+
+/* ===== Mobile: all overlay panels get opaque background ===== */
+@media (max-width: 768px) {
+  .slo-modal,
+  .gl2gh-container,
+  .archi-container,
+  .subnet-modal,
+  .uc-modal,
+  .md-modal,
+  .jf-modal,
+  .ip-modal,
+  .pwgen-modal,
+  .cpick-modal,
+  .cron-modal,
+  .cicd-container,
+  .e2m-container,
+  .b64-modal,
+  .rbac-container,
+  .tfp-container,
+  .speed-modal {
+    background: rgba(20, 20, 25, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+  }
+}

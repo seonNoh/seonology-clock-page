@@ -1084,14 +1084,22 @@ function App() {
   const [showArchIcon, setShowArchIcon] = useState(false);
   const [showSpeedTest, setShowSpeedTest] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const drawerRef = useRef(null);
+  const touchStartY = useRef(0);
+  const touchCurrentY = useRef(0);
+  const isDragging = useRef(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
   const [cursorAnim, setCursorAnim] = useState(() => localStorage.getItem('clock-cursor-anim') || 'none');
   const [showGlowPicker, setShowGlowPicker] = useState(false);
   const [showAnimPicker, setShowAnimPicker] = useState(false);
 
-  const openModal = (name) => setActiveModal(name);
+  const openModal = (name) => { setActiveModal(name); setMobileDrawerOpen(false); };
   const closeModal = () => setActiveModal(null);
+
+  // Close drawer when opening any panel
+  const openPanel = (setter) => { setter(true); setMobileDrawerOpen(false); };
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -1126,6 +1134,43 @@ function App() {
   useEffect(() => { localStorage.setItem('clock-cursor-effect', cursorEffect); }, [cursorEffect]);
   useEffect(() => { localStorage.setItem('clock-cursor-anim', cursorAnim); }, [cursorAnim]);
 
+  // Mobile drawer touch handlers
+  const handleDrawerTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+    touchCurrentY.current = e.touches[0].clientY;
+    isDragging.current = true;
+    if (drawerRef.current) drawerRef.current.style.transition = 'none';
+  };
+  const handleDrawerTouchMove = (e) => {
+    if (!isDragging.current) return;
+    touchCurrentY.current = e.touches[0].clientY;
+    const diff = touchStartY.current - touchCurrentY.current;
+    if (drawerRef.current) {
+      const drawerHeight = drawerRef.current.scrollHeight;
+      const peekHeight = 48;
+      const maxTranslate = drawerHeight - peekHeight;
+      let translate;
+      if (mobileDrawerOpen) {
+        translate = Math.max(0, Math.min(maxTranslate, -diff));
+      } else {
+        translate = Math.max(0, Math.min(maxTranslate, maxTranslate - diff));
+      }
+      drawerRef.current.style.transform = `translateY(${translate}px)`;
+    }
+  };
+  const handleDrawerTouchEnd = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const diff = touchStartY.current - touchCurrentY.current;
+    if (drawerRef.current) drawerRef.current.style.transition = '';
+    if (drawerRef.current) drawerRef.current.style.transform = '';
+    if (!mobileDrawerOpen && diff > 50) {
+      setMobileDrawerOpen(true);
+    } else if (mobileDrawerOpen && diff < -50) {
+      setMobileDrawerOpen(false);
+    }
+  };
+
   useEffect(() => {
     let raf;
     const handleMouse = (e) => {
@@ -1159,8 +1204,22 @@ function App() {
       />
       <CursorCanvas effect={cursorAnim} />
 
-      {/* Bottom Right Stack */}
-      <div className="bottom-right-stack">
+      {/* Mobile Drawer Overlay */}
+      {mobileDrawerOpen && <div className="mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)} />}
+
+      {/* Bottom Right Stack / Mobile Drawer */}
+      <div
+        className={`bottom-right-stack${mobileDrawerOpen ? ' drawer-open' : ''}`}
+        ref={drawerRef}
+        onTouchStart={handleDrawerTouchStart}
+        onTouchMove={handleDrawerTouchMove}
+        onTouchEnd={handleDrawerTouchEnd}
+      >
+
+      {/* Drawer Handle (mobile only) */}
+      <div className="mobile-drawer-handle" onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}>
+        <div className="drawer-handle-bar" />
+      </div>
 
       {/* App Icon Grid */}
       <div className="app-icon-grid">
@@ -1173,7 +1232,7 @@ function App() {
           <span className="app-icon-label">Calendar</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowNotes(true)} title="Notes">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowNotes)} title="Notes">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1184,7 +1243,7 @@ function App() {
           <span className="app-icon-label">Notes</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowMarkdown(true)} title="Markdown">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowMarkdown)} title="Markdown">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -1194,7 +1253,7 @@ function App() {
           <span className="app-icon-label">Markdown</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowChat(true)} title="AI Chat">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowChat)} title="AI Chat">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -1203,7 +1262,7 @@ function App() {
           <span className="app-icon-label">AI Chat</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowUnitConverter(true)} title="Unit Converter">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowUnitConverter)} title="Unit Converter">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
@@ -1213,7 +1272,7 @@ function App() {
           <span className="app-icon-label">Converter</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowBase64(true)} title="Base64">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowBase64)} title="Base64">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M7 15h0M2 9.5h20" />
@@ -1222,7 +1281,7 @@ function App() {
           <span className="app-icon-label">Base64</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowJsonFormatter(true)} title="JSON Formatter">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowJsonFormatter)} title="JSON Formatter">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1" />
@@ -1232,7 +1291,7 @@ function App() {
           <span className="app-icon-label">JSON</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowIpLookup(true)} title="IP Lookup">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowIpLookup)} title="IP Lookup">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" />
@@ -1242,7 +1301,7 @@ function App() {
           <span className="app-icon-label">IP</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowPasswordGen(true)} title="Password Generator">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowPasswordGen)} title="Password Generator">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -1252,7 +1311,7 @@ function App() {
           <span className="app-icon-label">PW</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowColorPicker(true)} title="Color Picker">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowColorPicker)} title="Color Picker">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="13.5" cy="6.5" r="2.5" />
@@ -1265,7 +1324,7 @@ function App() {
           <span className="app-icon-label">Color</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowCronEditor(true)} title="Cron Editor">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowCronEditor)} title="Cron Editor">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
@@ -1275,7 +1334,7 @@ function App() {
           <span className="app-icon-label">Cron</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowSubnetViz(true)} title="CIDR / Subnet Visualizer">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowSubnetViz)} title="CIDR / Subnet Visualizer">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="2" y="3" width="20" height="4" rx="1" />
@@ -1292,7 +1351,7 @@ function App() {
           <span className="app-icon-label">CIDR</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowSloCalc(true)} title="SLO / SLI Calculator">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowSloCalc)} title="SLO / SLI Calculator">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" />
@@ -1301,7 +1360,7 @@ function App() {
           <span className="app-icon-label">SLO</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowCiCd(true)} title="CI/CD Pipeline Visualizer">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowCiCd)} title="CI/CD Pipeline Visualizer">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
@@ -1312,7 +1371,7 @@ function App() {
           <span className="app-icon-label">CI/CD</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowExcelMd(true)} title="Excel → Markdown Table">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowExcelMd)} title="Excel → Markdown Table">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -1322,7 +1381,7 @@ function App() {
           <span className="app-icon-label">Excel→MD</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowRbac(true)} title="RBAC Visualizer">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowRbac)} title="RBAC Visualizer">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -1332,7 +1391,7 @@ function App() {
           <span className="app-icon-label">RBAC</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowTfState(true)} title="Terraform State Parser">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowTfState)} title="Terraform State Parser">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
@@ -1343,7 +1402,7 @@ function App() {
           <span className="app-icon-label">Terraform</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowGl2Gh(true)} title="GitLab CI → GitHub Actions">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowGl2Gh)} title="GitLab CI → GitHub Actions">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
@@ -1354,7 +1413,7 @@ function App() {
           <span className="app-icon-label">GL→GH</span>
         </button>
 
-        <button className="app-icon-btn" onClick={() => setShowArchIcon(true)} title="Architecture Icon Search">
+        <button className="app-icon-btn" onClick={() => openPanel(setShowArchIcon)} title="Architecture Icon Search">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1" />

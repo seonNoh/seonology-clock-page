@@ -213,14 +213,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .browser-stats-detail {
-    width: 280px;
-    max-height: 360px;
-  }
-  .stats-label {
-    display: none;
-  }
-  .stats-tab-domain {
-    display: none;
+  .browser-stats-widget {
+    display: none !important;
   }
 }
