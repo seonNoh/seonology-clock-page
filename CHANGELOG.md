@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.27.0...v1.28.0) (2026-03-12)
+
+
+### Features
+
+* 모바일 탑시트(날씨/환율/검색) + 시계 테마 버튼 수정 ([3c922a6](https://github.com/seonNoh/seonology-clock-page/commit/3c922a6d1a3a45e4a1a67675c52aad114a796429))
+
 # [1.27.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.26.0...v1.27.0) (2026-03-12)
 
 
