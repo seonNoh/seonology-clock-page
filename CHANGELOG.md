@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.26.0...v1.27.0) (2026-03-12)
+
+
+### Features
+
+* 모바일 최적화 - 스와이프 서랍 UI + 불투명 패널 ([ef29c90](https://github.com/seonNoh/seonology-clock-page/commit/ef29c900df018c9f1c1c9e88d6fc88fa255e3170))
+
 # [1.26.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.25.1...v1.26.0) (2026-03-10)
 
 
