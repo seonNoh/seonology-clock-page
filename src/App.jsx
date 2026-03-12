@@ -1085,10 +1085,14 @@ function App() {
   const [showSpeedTest, setShowSpeedTest] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
   const drawerRef = useRef(null);
+  const topSheetRef = useRef(null);
   const touchStartY = useRef(0);
   const touchCurrentY = useRef(0);
   const isDragging = useRef(false);
+  const topSheetTouchStartY = useRef(0);
+  const topSheetIsDragging = useRef(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [cursorEffect, setCursorEffect] = useState(() => localStorage.getItem('clock-cursor-effect') || 'indigo');
   const [cursorAnim, setCursorAnim] = useState(() => localStorage.getItem('clock-cursor-anim') || 'none');
@@ -1171,6 +1175,51 @@ function App() {
     }
   };
 
+  // Top sheet touch to close (swipe up)
+  const handleTopSheetTouchStart = (e) => {
+    topSheetTouchStartY.current = e.touches[0].clientY;
+    topSheetIsDragging.current = true;
+  };
+  const handleTopSheetTouchEnd = (e) => {
+    if (!topSheetIsDragging.current) return;
+    topSheetIsDragging.current = false;
+    const diff = e.changedTouches[0].clientY - topSheetTouchStartY.current;
+    if (diff < -50) {
+      setMobileTopSheetOpen(false);
+    }
+  };
+
+  // Global swipe-down detection for top sheet (mobile only)
+  useEffect(() => {
+    const isMobile = () => window.innerWidth <= 768;
+    let startY = 0;
+    let startX = 0;
+
+    const onTouchStart = (e) => {
+      if (!isMobile()) return;
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+    };
+
+    const onTouchEnd = (e) => {
+      if (!isMobile()) return;
+      const diffY = e.changedTouches[0].clientY - startY;
+      const diffX = Math.abs(e.changedTouches[0].clientX - startX);
+      // Swipe down from top half of screen, mostly vertical
+      if (diffY > 80 && diffX < 100 && startY < window.innerHeight * 0.4
+          && !mobileDrawerOpen && !mobileTopSheetOpen && !activeModal) {
+        setMobileTopSheetOpen(true);
+      }
+    };
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [mobileDrawerOpen, mobileTopSheetOpen, activeModal]);
+
   useEffect(() => {
     let raf;
     const handleMouse = (e) => {
@@ -1203,6 +1252,27 @@ function App() {
         }}
       />
       <CursorCanvas effect={cursorAnim} />
+
+      {/* Mobile Top Sheet - swipe down from top */}
+      {mobileTopSheetOpen && <div className="mobile-drawer-overlay" onClick={() => setMobileTopSheetOpen(false)} />}
+      <div
+        className={`mobile-top-sheet${mobileTopSheetOpen ? ' top-sheet-open' : ''}`}
+        ref={topSheetRef}
+        onTouchStart={handleTopSheetTouchStart}
+        onTouchEnd={handleTopSheetTouchEnd}
+      >
+        <div className="top-sheet-content">
+          <WeatherWidget onClick={() => { setMobileTopSheetOpen(false); openModal('weather'); }} />
+          <div className="bar-divider"></div>
+          <ExchangeWidget onClick={() => { setMobileTopSheetOpen(false); openModal('exchange'); }} />
+        </div>
+        <div className="top-sheet-search">
+          <SearchBar />
+        </div>
+        <div className="mobile-drawer-handle" onClick={() => setMobileTopSheetOpen(false)}>
+          <div className="drawer-handle-bar" />
+        </div>
+      </div>
 
       {/* Mobile Drawer Overlay */}
       {mobileDrawerOpen && <div className="mobile-drawer-overlay" onClick={() => setMobileDrawerOpen(false)} />}
