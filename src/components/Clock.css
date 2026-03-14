@@ -1003,8 +1003,8 @@
   }
 
   .theme-toggle {
-    top: -40px;
-    right: 0;
+    top: -10px;
+    right: 10px;
     width: 44px;
     height: 44px;
     opacity: 0.6;
@@ -1018,7 +1018,11 @@
     height: 20px;
   }
 
-  .orbit-clock,
+  .orbit-clock {
+    width: clamp(300px, 90vw, 500px);
+    height: clamp(300px, 90vw, 500px);
+  }
+
   .swiss-clock {
     width: clamp(250px, 60vw, 400px);
     height: clamp(250px, 60vw, 400px);

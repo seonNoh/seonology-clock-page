@@ -313,6 +313,11 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* Top sheet toggle button - hidden on desktop */
+.top-sheet-toggle-btn {
+  display: none !important;
+}
+
 /* Search Bar */
 .search-bar {
   display: flex;
@@ -841,9 +846,9 @@
     display: none !important;
   }
 
-  /* Keep CursorCanvas (snow/effects) visible above other content */
+  /* Hide CursorCanvas (snow/effects) on mobile */
   .dashboard canvas {
-    z-index: 10 !important;
+    display: none !important;
   }
 
   /* Mobile Top Sheet - swipe down */
@@ -924,6 +929,11 @@
 
   .quicklinks-toggle {
     display: none;
+  }
+
+  /* Show top-sheet toggle button on mobile */
+  .top-sheet-toggle-btn {
+    display: flex !important;
   }
 
   /* Mobile drawer overlay */

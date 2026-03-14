@@ -1208,12 +1208,6 @@ function App() {
       const diffX = Math.abs(touch.clientX - startX);
       if (diffX > 100) return; // not vertical
 
-      // Swipe DOWN from top half → open top sheet
-      if (diffY > 60 && startY < window.innerHeight * 0.5
-          && !mobileDrawerOpen && !mobileTopSheetOpen && !activeModal) {
-        setMobileTopSheetOpen(true);
-      }
-
       // Swipe UP from bottom half → open bottom drawer
       if (diffY < -60 && startY > window.innerHeight * 0.5
           && !mobileDrawerOpen && !mobileTopSheetOpen && !activeModal) {
@@ -1619,6 +1613,12 @@ function App() {
               <path d="M12 2v10l7 4" />
             </svg>
           </a>
+          <button className="shortcut-link top-sheet-toggle-btn" onClick={() => setMobileTopSheetOpen(!mobileTopSheetOpen)} title="Weather & Info">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2v2" /><path d="M12 20v2" /><path d="M4.93 4.93l1.41 1.41" /><path d="M17.66 17.66l1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="M6.34 17.66l-1.41 1.41" /><path d="M19.07 4.93l-1.41 1.41" />
+              <circle cx="12" cy="12" r="5" />
+            </svg>
+          </button>
         </div>
         <SpeedTestMini onClick={() => setShowSpeedTest(true)} />
         <SearchBar />
