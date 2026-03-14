@@ -1189,34 +1189,47 @@ function App() {
     }
   };
 
-  // Global swipe-down detection for top sheet (mobile only)
+  // Global swipe detection (top sheet + bottom drawer)
   useEffect(() => {
     const isMobile = () => window.innerWidth <= 768;
     let startY = 0;
     let startX = 0;
 
-    const onTouchStart = (e) => {
-      if (!isMobile()) return;
-      startY = e.touches[0].clientY;
-      startX = e.touches[0].clientX;
+    const onStart = (e) => {
+      const touch = e.touches ? e.touches[0] : e;
+      startY = touch.clientY;
+      startX = touch.clientX;
     };
 
-    const onTouchEnd = (e) => {
+    const onEnd = (e) => {
       if (!isMobile()) return;
-      const diffY = e.changedTouches[0].clientY - startY;
-      const diffX = Math.abs(e.changedTouches[0].clientX - startX);
-      // Swipe down from top half of screen, mostly vertical
-      if (diffY > 80 && diffX < 100 && startY < window.innerHeight * 0.4
+      const touch = e.changedTouches ? e.changedTouches[0] : e;
+      const diffY = touch.clientY - startY;
+      const diffX = Math.abs(touch.clientX - startX);
+      if (diffX > 100) return; // not vertical
+
+      // Swipe DOWN from top half → open top sheet
+      if (diffY > 60 && startY < window.innerHeight * 0.5
           && !mobileDrawerOpen && !mobileTopSheetOpen && !activeModal) {
         setMobileTopSheetOpen(true);
       }
+
+      // Swipe UP from bottom half → open bottom drawer
+      if (diffY < -60 && startY > window.innerHeight * 0.5
+          && !mobileDrawerOpen && !mobileTopSheetOpen && !activeModal) {
+        setMobileDrawerOpen(true);
+      }
     };
 
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchend', onEnd, { passive: true });
+    window.addEventListener('mousedown', onStart);
+    window.addEventListener('mouseup', onEnd);
     return () => {
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchend', onEnd);
+      window.removeEventListener('mousedown', onStart);
+      window.removeEventListener('mouseup', onEnd);
     };
   }, [mobileDrawerOpen, mobileTopSheetOpen, activeModal]);
 
@@ -1582,6 +1595,31 @@ function App() {
       {/* Main Clock */}
       <main className="main-content">
         <Clock />
+        <div className="quick-shortcuts">
+          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Gmail">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7l-10 7L2 7" />
+            </svg>
+          </a>
+          <a href="https://papago.naver.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Papago">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 8l6 6" /><path d="M4 14l6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" />
+              <path d="M22 22l-5-10-5 10" /><path d="M14 18h6" />
+            </svg>
+          </a>
+          <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Claude">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              <path d="M8 10h.01" /><path d="M12 10h.01" /><path d="M16 10h.01" />
+            </svg>
+          </a>
+          <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Gemini">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+              <path d="M12 2v10l7 4" />
+            </svg>
+          </a>
+        </div>
         <SpeedTestMini onClick={() => setShowSpeedTest(true)} />
         <SearchBar />
       </main>

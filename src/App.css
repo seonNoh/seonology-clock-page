@@ -289,6 +289,30 @@
   gap: 2rem;
 }
 
+/* Quick Shortcuts */
+.quick-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shortcut-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.shortcut-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* Search Bar */
 .search-bar {
   display: flex;
@@ -817,6 +841,11 @@
     display: none !important;
   }
 
+  /* Keep CursorCanvas (snow/effects) visible above other content */
+  .dashboard canvas {
+    z-index: 10 !important;
+  }
+
   /* Mobile Top Sheet - swipe down */
   .mobile-top-sheet {
     display: flex;
@@ -827,6 +856,7 @@
     left: 0;
     right: 0;
     transform: translateY(-100%);
+    touch-action: pan-y;
     padding: 1.5rem 1rem 0.5rem;
     padding-top: calc(1.5rem + env(safe-area-inset-top));
     background: rgba(15, 15, 20, 0.97);
@@ -945,6 +975,7 @@
     align-items: stretch;
     max-height: 60vh;
     overflow: hidden;
+    touch-action: pan-y;
     padding: 0;
     padding-bottom: env(safe-area-inset-bottom);
     background: rgba(15, 15, 20, 0.97);
@@ -1013,6 +1044,8 @@
     min-height: 100vh;
     min-height: 100dvh;
     padding-bottom: 48px;
+    overflow: visible;
+    touch-action: pan-y;
   }
 
   .main-content {
