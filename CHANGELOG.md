@@ -1,3 +1,10 @@
+# [1.29.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.28.0...v1.29.0) (2026-03-14)
+
+
+### Features
+
+* 모바일 UX 개선 - 바로가기 링크, 터치 이벤트 수정, 스와이프 영역 확대 ([3d94e08](https://github.com/seonNoh/seonology-clock-page/commit/3d94e08ca159da3f82bd8f64ebe6b725330cfec5))
+
 # [1.28.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.27.0...v1.28.0) (2026-03-12)
 
 
