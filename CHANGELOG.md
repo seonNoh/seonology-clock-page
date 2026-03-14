@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.29.0...v1.30.0) (2026-03-14)
+
+
+### Features
+
+* 모바일 UX 개선 - 눈효과 비활성, 탑시트 버튼화, orbit 시계 확대 ([8734ff4](https://github.com/seonNoh/seonology-clock-page/commit/8734ff46fd376de798a95e1b3433c4310248ede5))
+
 # [1.29.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.28.0...v1.29.0) (2026-03-14)
 
 
