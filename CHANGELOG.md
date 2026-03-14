@@ -1,3 +1,10 @@
+## [1.30.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.30.0...v1.30.1) (2026-03-14)
+
+
+### Bug Fixes
+
+* 탑시트 버튼 스타일 통일 + 태블릿(769~1024px) 레이아웃 추가 ([2caa47c](https://github.com/seonNoh/seonology-clock-page/commit/2caa47c653492412fe21054faa4292f68ba03918))
+
 # [1.30.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.29.0...v1.30.0) (2026-03-14)
 
 
