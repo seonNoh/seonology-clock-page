@@ -29,6 +29,7 @@ import SpeedTest, { SpeedTestMini } from './components/SpeedTest';
 import RegexTester from './components/RegexTester';
 import EpochConverter from './components/EpochConverter';
 import TextCounter from './components/TextCounter';
+import DnsLookup from './components/DnsLookup';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1089,6 +1090,7 @@ function App() {
   const [showRegex, setShowRegex] = useState(false);
   const [showEpoch, setShowEpoch] = useState(false);
   const [showTextCounter, setShowTextCounter] = useState(false);
+  const [showDns, setShowDns] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1135,6 +1137,7 @@ function App() {
         else if (showRegex) setShowRegex(false);
         else if (showEpoch) setShowEpoch(false);
         else if (showTextCounter) setShowTextCounter(false);
+        else if (showDns) setShowDns(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1541,6 +1544,17 @@ function App() {
           <span className="app-icon-label">TextCnt</span>
         </button>
 
+        <button className="app-icon-btn" onClick={() => openPanel(setShowDns)} title="DNS Lookup">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </span>
+          <span className="app-icon-label">DNS</span>
+        </button>
+
         <button className="app-icon-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor Animation">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1775,6 +1789,9 @@ function App() {
 
       {/* Text Counter */}
       <TextCounter isOpen={showTextCounter} onClose={() => setShowTextCounter(false)} />
+
+      {/* DNS Lookup */}
+      <DnsLookup isOpen={showDns} onClose={() => setShowDns(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">
