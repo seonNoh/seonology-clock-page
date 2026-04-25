@@ -1108,6 +1108,7 @@ function App() {
   const [cursorAnim, setCursorAnim] = useState(() => localStorage.getItem('clock-cursor-anim') || 'none');
   const [showGlowPicker, setShowGlowPicker] = useState(false);
   const [showAnimPicker, setShowAnimPicker] = useState(false);
+  const [toolsExpanded, setToolsExpanded] = useState(false);
 
   const openModal = (name) => { setActiveModal(name); setMobileDrawerOpen(false); };
   const closeModal = () => setActiveModal(null);
@@ -1313,8 +1314,23 @@ function App() {
         <div className="drawer-handle-bar" />
       </div>
 
+      {/* App Icon Grid Toggle */}
+      <button className={`tools-toggle-btn${toolsExpanded ? ' expanded' : ''}`} onClick={() => setToolsExpanded(!toolsExpanded)}>
+        <span className="tools-toggle-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+        </span>
+        <span className="tools-toggle-label">Tools</span>
+        <span className="tools-toggle-arrow">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </span>
+      </button>
+
       {/* App Icon Grid */}
-      <div className="app-icon-grid"
+      {(toolsExpanded || mobileDrawerOpen) && <div className="app-icon-grid"
         onMouseMove={(e) => {
           const grid = e.currentTarget;
           const btns = grid.querySelectorAll('.app-icon-btn');
@@ -1608,10 +1624,10 @@ function App() {
           </span>
           <span className="app-icon-label">Glow</span>
         </button>
-      </div>
+      </div>}
 
       {/* Picker Dropdowns */}
-      <div className="glow-picker-area">
+      {(toolsExpanded || mobileDrawerOpen) && <div className="glow-picker-area">
         {showGlowPicker && (
           <div className="glow-picker-dropdown">
             <div className="glow-picker-label">Glow Color</div>
@@ -1642,7 +1658,7 @@ function App() {
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
       </div>{/* end bottom-right-stack */}
 

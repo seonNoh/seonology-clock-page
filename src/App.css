@@ -38,6 +38,70 @@
 }
 
 /* ===== App Icon Grid ===== */
+/* Tools Toggle Button */
+.tools-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-secondary);
+}
+
+.tools-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.tools-toggle-btn.expanded {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.tools-toggle-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.tools-toggle-btn:hover .tools-toggle-icon {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tools-toggle-btn.expanded .tools-toggle-icon {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.tools-toggle-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.tools-toggle-arrow {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  transition: transform 0.25s ease;
+}
+
+.tools-toggle-btn.expanded .tools-toggle-arrow {
+  transform: rotate(-90deg);
+}
+
 .app-icon-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -46,6 +110,13 @@
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 18px;
+  animation: grid-expand 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top right;
+}
+
+@keyframes grid-expand {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .app-icon-btn {
@@ -870,7 +941,8 @@
   .app-footer,
   .cursor-glow,
   .history-ambient,
-  .main-content .search-bar-wrapper {
+  .main-content .search-bar-wrapper,
+  .tools-toggle-btn {
     display: none !important;
   }
 
