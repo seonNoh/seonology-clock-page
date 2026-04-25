@@ -1,3 +1,10 @@
+# [1.33.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.32.0...v1.33.0) (2026-04-25)
+
+
+### Features
+
+* upgrade Markdown Preview to full editor ([ddc419d](https://github.com/seonNoh/seonology-clock-page/commit/ddc419d4354d5daa5578110fc16cfcf981ad8e32))
+
 # [1.32.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.31.0...v1.32.0) (2026-04-25)
 
 
