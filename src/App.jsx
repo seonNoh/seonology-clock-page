@@ -1589,36 +1589,78 @@ function App() {
       {/* Main Clock */}
       <main className="main-content">
         <Clock />
-        <div className="quick-shortcuts">
-          <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Gmail">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7l-10 7L2 7" />
-            </svg>
-          </a>
-          <a href="https://papago.naver.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Papago">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 8l6 6" /><path d="M4 14l6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" />
-              <path d="M22 22l-5-10-5 10" /><path d="M14 18h6" />
-            </svg>
-          </a>
-          <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Claude">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              <path d="M8 10h.01" /><path d="M12 10h.01" /><path d="M16 10h.01" />
-            </svg>
-          </a>
-          <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Gemini">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-              <path d="M12 2v10l7 4" />
-            </svg>
-          </a>
-          <button className="shortcut-link top-sheet-toggle-btn" onClick={() => setMobileTopSheetOpen(!mobileTopSheetOpen)} title="Weather & Info">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v2" /><path d="M12 20v2" /><path d="M4.93 4.93l1.41 1.41" /><path d="M17.66 17.66l1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="M6.34 17.66l-1.41 1.41" /><path d="M19.07 4.93l-1.41 1.41" />
-              <circle cx="12" cy="12" r="5" />
-            </svg>
-          </button>
+        <div className="quick-shortcuts-wrapper">
+          <div className="quick-shortcuts">
+            <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Gmail">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 7l-10 7L2 7" />
+              </svg>
+            </a>
+            <a href="https://papago.naver.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Papago">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 8l6 6" /><path d="M4 14l6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" />
+                <path d="M22 22l-5-10-5 10" /><path d="M14 18h6" />
+              </svg>
+            </a>
+            <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Claude">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                <path d="M8 10h.01" /><path d="M12 10h.01" /><path d="M16 10h.01" />
+              </svg>
+            </a>
+            <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="Gemini">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                <path d="M12 2v10l7 4" />
+              </svg>
+            </a>
+            <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" className="shortcut-link" title="YouTube">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z" />
+                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
+              </svg>
+            </a>
+            <button className="shortcut-link top-sheet-toggle-btn" onClick={() => setMobileTopSheetOpen(!mobileTopSheetOpen)} title="Weather & Info">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v2" /><path d="M12 20v2" /><path d="M4.93 4.93l1.41 1.41" /><path d="M17.66 17.66l1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="M6.34 17.66l-1.41 1.41" /><path d="M19.07 4.93l-1.41 1.41" />
+                <circle cx="12" cy="12" r="5" />
+              </svg>
+            </button>
+          </div>
+          <div className="quick-shortcuts quick-shortcuts-apps">
+            <a href="vscode://" className="shortcut-link" title="VS Code">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16.5 2.5L8 11l-4.5-3.5L2 8.5v7l1.5 1 4.5-3.5 8.5 8.5 4-1.5v-16z" />
+                <path d="M20.5 3.5v17" />
+              </svg>
+            </a>
+            <a href="jetbrains://idea/" className="shortcut-link" title="IntelliJ IDEA">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M7 17h6" />
+                <path d="M7 7h2v6H7z" fill="currentColor" stroke="none" />
+                <path d="M12 7h2.5a2.5 2.5 0 0 1 0 5H12V7z" />
+              </svg>
+            </a>
+            <a href="notion://" className="shortcut-link" title="Notion">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h10l6 6v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z" />
+                <path d="M14 4v6h6" />
+                <path d="M8 13h8" /><path d="M8 17h5" />
+              </svg>
+            </a>
+            <a href="kiro://" className="shortcut-link" title="Kiro">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+            </a>
+            <a href="antigravity://" className="shortcut-link" title="Anti Gravity">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v8" /><path d="M8 12l4-4 4 4" />
+              </svg>
+            </a>
+          </div>
         </div>
         <SpeedTestMini onClick={() => setShowSpeedTest(true)} />
         <SearchBar />
