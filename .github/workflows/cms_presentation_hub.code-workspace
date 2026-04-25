@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "../../../../zeal/cms/cms_presentation_hub"
+		},
+		{
+			"path": "../../../../zeal/cms/svg-list"
+		},
+		{
+			"path": "../../../soenology-k3s"
+		},
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {
+	}
+}

@@ -26,6 +26,7 @@ import GitlabToGithub from './components/GitlabToGithub';
 import ArchIconSearch from './components/ArchIconSearch';
 import BrowserStats from './components/BrowserStats';
 import SpeedTest, { SpeedTestMini } from './components/SpeedTest';
+import RegexTester from './components/RegexTester';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1083,6 +1084,7 @@ function App() {
   const [showGl2Gh, setShowGl2Gh] = useState(false);
   const [showArchIcon, setShowArchIcon] = useState(false);
   const [showSpeedTest, setShowSpeedTest] = useState(false);
+  const [showRegex, setShowRegex] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1126,6 +1128,7 @@ function App() {
         else if (showGl2Gh) setShowGl2Gh(false);
         else if (showArchIcon) setShowArchIcon(false);
         else if (showSpeedTest) setShowSpeedTest(false);
+        else if (showRegex) setShowRegex(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1502,6 +1505,15 @@ function App() {
           <span className="app-icon-label">Arch Icons</span>
         </button>
 
+        <button className="app-icon-btn" onClick={() => openPanel(setShowRegex)} title="Regex Tester">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Regex</span>
+        </button>
+
         <button className="app-icon-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor Animation">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1727,6 +1739,9 @@ function App() {
 
       {/* Speed Test */}
       <SpeedTest isOpen={showSpeedTest} onClose={() => setShowSpeedTest(false)} />
+
+      {/* Regex Tester */}
+      <RegexTester isOpen={showRegex} onClose={() => setShowRegex(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">
