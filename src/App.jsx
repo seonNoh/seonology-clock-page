@@ -28,6 +28,7 @@ import BrowserStats from './components/BrowserStats';
 import SpeedTest, { SpeedTestMini } from './components/SpeedTest';
 import RegexTester from './components/RegexTester';
 import EpochConverter from './components/EpochConverter';
+import TextCounter from './components/TextCounter';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1087,6 +1088,7 @@ function App() {
   const [showSpeedTest, setShowSpeedTest] = useState(false);
   const [showRegex, setShowRegex] = useState(false);
   const [showEpoch, setShowEpoch] = useState(false);
+  const [showTextCounter, setShowTextCounter] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1132,6 +1134,7 @@ function App() {
         else if (showSpeedTest) setShowSpeedTest(false);
         else if (showRegex) setShowRegex(false);
         else if (showEpoch) setShowEpoch(false);
+        else if (showTextCounter) setShowTextCounter(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1527,6 +1530,17 @@ function App() {
           <span className="app-icon-label">Epoch</span>
         </button>
 
+        <button className="app-icon-btn" onClick={() => openPanel(setShowTextCounter)} title="Text Counter">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </span>
+          <span className="app-icon-label">TextCnt</span>
+        </button>
+
         <button className="app-icon-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor Animation">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1758,6 +1772,9 @@ function App() {
 
       {/* Epoch Converter */}
       <EpochConverter isOpen={showEpoch} onClose={() => setShowEpoch(false)} />
+
+      {/* Text Counter */}
+      <TextCounter isOpen={showTextCounter} onClose={() => setShowTextCounter(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">
