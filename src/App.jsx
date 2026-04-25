@@ -30,6 +30,7 @@ import RegexTester from './components/RegexTester';
 import EpochConverter from './components/EpochConverter';
 import TextCounter from './components/TextCounter';
 import DnsLookup from './components/DnsLookup';
+import MermaidEditor from './components/MermaidEditor';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1091,6 +1092,7 @@ function App() {
   const [showEpoch, setShowEpoch] = useState(false);
   const [showTextCounter, setShowTextCounter] = useState(false);
   const [showDns, setShowDns] = useState(false);
+  const [showMermaid, setShowMermaid] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1138,6 +1140,7 @@ function App() {
         else if (showEpoch) setShowEpoch(false);
         else if (showTextCounter) setShowTextCounter(false);
         else if (showDns) setShowDns(false);
+        else if (showMermaid) setShowMermaid(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1555,6 +1558,16 @@ function App() {
           <span className="app-icon-label">DNS</span>
         </button>
 
+        <button className="app-icon-btn" onClick={() => openPanel(setShowMermaid)} title="Mermaid Editor">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Mermaid</span>
+        </button>
+
         <button className="app-icon-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor Animation">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1792,6 +1805,9 @@ function App() {
 
       {/* DNS Lookup */}
       <DnsLookup isOpen={showDns} onClose={() => setShowDns(false)} />
+
+      {/* Mermaid Editor */}
+      <MermaidEditor isOpen={showMermaid} onClose={() => setShowMermaid(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">
