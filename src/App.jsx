@@ -1314,7 +1314,29 @@ function App() {
       </div>
 
       {/* App Icon Grid */}
-      <div className="app-icon-grid">
+      <div className="app-icon-grid"
+        onMouseMove={(e) => {
+          const grid = e.currentTarget;
+          const btns = grid.querySelectorAll('.app-icon-btn');
+          const rect = grid.getBoundingClientRect();
+          const mx = e.clientX;
+          const my = e.clientY;
+          btns.forEach(btn => {
+            const br = btn.getBoundingClientRect();
+            const bx = br.left + br.width / 2;
+            const by = br.top + br.height / 2;
+            const dist = Math.sqrt((mx - bx) ** 2 + (my - by) ** 2);
+            const maxDist = 120;
+            const scale = 1 + Math.max(0, 1 - dist / maxDist) * 0.35;
+            btn.style.transform = `scale(${scale})`;
+            btn.style.zIndex = scale > 1.1 ? '2' : '1';
+          });
+        }}
+        onMouseLeave={(e) => {
+          const btns = e.currentTarget.querySelectorAll('.app-icon-btn');
+          btns.forEach(btn => { btn.style.transform = ''; btn.style.zIndex = ''; });
+        }}
+      >
         <button className="app-icon-btn" onClick={() => openModal('calendar')} title="Calendar">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

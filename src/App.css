@@ -57,15 +57,12 @@
   border: none;
   background: none;
   cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.app-icon-btn:hover {
-  transform: scale(1.1);
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
 }
 
 .app-icon-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.95) !important;
 }
 
 .app-icon-visual {
