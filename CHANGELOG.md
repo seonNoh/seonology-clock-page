@@ -1,3 +1,14 @@
+# [1.32.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.31.0...v1.32.0) (2026-04-25)
+
+
+### Features
+
+* add DNS Lookup tool ([729539b](https://github.com/seonNoh/seonology-clock-page/commit/729539bc35cd82c4ec114202dcc19f769290aa7b))
+* add Epoch/Timestamp Converter tool ([875343e](https://github.com/seonNoh/seonology-clock-page/commit/875343e153d8ee7fa5f6ed8d9cd1e42b35340c45))
+* add Mermaid Editor tool ([f6390b4](https://github.com/seonNoh/seonology-clock-page/commit/f6390b4ed286c3b666dcf0a6d0d95a51a1557893))
+* add Regex Tester tool ([8003f86](https://github.com/seonNoh/seonology-clock-page/commit/8003f864a080f0dd17547492d7976a7f4552a2a6))
+* add Text Counter tool ([35fd1c5](https://github.com/seonNoh/seonology-clock-page/commit/35fd1c52f7cd6aef5de6a1a3e4dc797d0426a51b))
+
 # [1.31.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.30.1...v1.31.0) (2026-04-25)
 
 
