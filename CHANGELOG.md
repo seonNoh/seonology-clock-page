@@ -1,3 +1,10 @@
+# [1.34.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.33.0...v1.34.0) (2026-04-25)
+
+
+### Features
+
+* add macOS Dock-style magnification effect to app icon grid ([685fef2](https://github.com/seonNoh/seonology-clock-page/commit/685fef274391bc000467c7f8a9fa1abeb48bb91a))
+
 # [1.33.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.32.0...v1.33.0) (2026-04-25)
 
 
