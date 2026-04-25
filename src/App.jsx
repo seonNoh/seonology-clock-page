@@ -27,6 +27,7 @@ import ArchIconSearch from './components/ArchIconSearch';
 import BrowserStats from './components/BrowserStats';
 import SpeedTest, { SpeedTestMini } from './components/SpeedTest';
 import RegexTester from './components/RegexTester';
+import EpochConverter from './components/EpochConverter';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1085,6 +1086,7 @@ function App() {
   const [showArchIcon, setShowArchIcon] = useState(false);
   const [showSpeedTest, setShowSpeedTest] = useState(false);
   const [showRegex, setShowRegex] = useState(false);
+  const [showEpoch, setShowEpoch] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1129,6 +1131,7 @@ function App() {
         else if (showArchIcon) setShowArchIcon(false);
         else if (showSpeedTest) setShowSpeedTest(false);
         else if (showRegex) setShowRegex(false);
+        else if (showEpoch) setShowEpoch(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1514,6 +1517,16 @@ function App() {
           <span className="app-icon-label">Regex</span>
         </button>
 
+        <button className="app-icon-btn" onClick={() => openPanel(setShowEpoch)} title="Epoch Converter">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+              <path d="M2 12h2" /><path d="M20 12h2" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Epoch</span>
+        </button>
+
         <button className="app-icon-btn" onClick={() => { setShowAnimPicker(!showAnimPicker); setShowGlowPicker(false); }} title="Cursor Animation">
           <span className="app-icon-visual">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1742,6 +1755,9 @@ function App() {
 
       {/* Regex Tester */}
       <RegexTester isOpen={showRegex} onClose={() => setShowRegex(false)} />
+
+      {/* Epoch Converter */}
+      <EpochConverter isOpen={showEpoch} onClose={() => setShowEpoch(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">
