@@ -1,3 +1,10 @@
+# [1.31.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.30.1...v1.31.0) (2026-04-25)
+
+
+### Features
+
+* add YouTube web link and local app shortcuts row ([5ecc617](https://github.com/seonNoh/seonology-clock-page/commit/5ecc6179c4d213dc98a4787bf7393a4af1d9dcc6))
+
 ## [1.30.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.30.0...v1.30.1) (2026-03-14)
 
 
