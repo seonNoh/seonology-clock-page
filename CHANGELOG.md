@@ -1,3 +1,10 @@
+# [1.35.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.34.0...v1.35.0) (2026-04-25)
+
+
+### Features
+
+* add collapsible toggle for app icon grid ([b6ad447](https://github.com/seonNoh/seonology-clock-page/commit/b6ad447c7c0673ae926f8c8e072c32a0727c9774))
+
 # [1.34.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.33.0...v1.34.0) (2026-04-25)
 
 
