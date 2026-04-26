@@ -130,8 +130,12 @@ function InfraDashboard({ isOpen, onClose }) {
                       const memPct = n.memTotal ? (n.memUsed / n.memTotal * 100) : 0;
                       const diskPct = n.diskTotal ? (n.diskUsed / n.diskTotal * 100) : 0;
                       return (
-                        <div key={i} className="infra-node-card">
-                          <div className="infra-node-name">{n.name}</div>
+                        <div key={i} className={`infra-node-card${n.ready === false ? ' node-notready' : ''}`}>
+                          <div className="infra-node-header">
+                            <div className="infra-node-name">{n.name}</div>
+                            {n.nodeType && <span className={`infra-node-type infra-nt-${n.nodeType}`}>{n.nodeType}</span>}
+                            {n.source && <span className="infra-node-source">{n.source === 'prometheus' ? 'prom' : 'k8s'}</span>}
+                          </div>
                           <div className="infra-node-charts">
                             <div className="infra-chart-item">
                               <DonutChart value={n.cpu || 0} size={52} stroke={4} color="#6366f1" />
@@ -253,6 +257,50 @@ function InfraDashboard({ isOpen, onClose }) {
                       ))}
                     </div>
                   </div>
+
+                  {(nas.network || []).length > 0 && (
+                    <div className="infra-net-section">
+                      <div className="infra-ns-title">NETWORK</div>
+                      <div className="infra-net-grid">
+                        {nas.network.filter(n => n.device !== 'total').map((n, i) => (
+                          <div key={i} className="infra-net-item">
+                            <span className="infra-net-dev">{n.device}</span>
+                            <span className="infra-net-rx">RX {formatBytes(n.rx)}/s</span>
+                            <span className="infra-net-tx">TX {formatBytes(n.tx)}/s</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {(nas.shares || []).length > 0 && (
+                    <div className="infra-shares-section">
+                      <div className="infra-ns-title">SHARED FOLDERS ({nas.shares.length})</div>
+                      <div className="infra-shares-grid">
+                        {nas.shares.map((s, i) => (
+                          <div key={i} className="infra-share-item">
+                            <span className="infra-share-name">{s.name}</span>
+                            <span className="infra-share-path">{s.path}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {(nas.connections || []).length > 0 && (
+                    <div className="infra-conn-section">
+                      <div className="infra-ns-title">CONNECTED USERS ({nas.connections.length})</div>
+                      <div className="infra-conn-list">
+                        {nas.connections.map((c, i) => (
+                          <div key={i} className="infra-conn-item">
+                            <span className="infra-conn-user">{c.user}</span>
+                            <span className="infra-conn-from">{c.from}</span>
+                            <span className="infra-conn-type">{c.type}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>

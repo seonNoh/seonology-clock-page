@@ -1787,49 +1787,100 @@ function promQuery(query) {
 // k3s Cluster Stats
 app.get('/api/infra/cluster', async (req, res) => {
   try {
-    const [cpuRes, memRes, memTotalRes, diskRes, diskTotalRes, nodeInfoRes, podRes] = await Promise.all([
-      promQuery('100-(avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m]))*100)'),
-      promQuery('node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes'),
-      promQuery('node_memory_MemTotal_bytes'),
-      promQuery('node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"} - node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}'),
-      promQuery('node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"}'),
-      promQuery('node_uname_info'),
-      promQuery('count by(namespace)(kube_pod_info)'),
+    // Fetch from both metrics-server (all nodes) and Prometheus (detailed metrics)
+    const metricsPromise = isInCluster ? k8sRequest('/apis/metrics.k8s.io/v1beta1/nodes').catch(() => null) : null;
+    const nodeListPromise = isInCluster ? k8sRequest('/api/v1/nodes').catch(() => null) : null;
+
+    const [cpuRes, memRes, memTotalRes, diskRes, diskTotalRes, nodeInfoRes, podRes, metricsData, nodeListData] = await Promise.all([
+      promQuery('100-(avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m]))*100)').catch(() => null),
+      promQuery('node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes').catch(() => null),
+      promQuery('node_memory_MemTotal_bytes').catch(() => null),
+      promQuery('node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"} - node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}').catch(() => null),
+      promQuery('node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"}').catch(() => null),
+      promQuery('node_uname_info').catch(() => null),
+      promQuery('count by(namespace)(kube_pod_info)').catch(() => null),
+      metricsPromise,
+      nodeListPromise,
     ]);
 
     const nodes = {};
     const getInst = (r) => r.metric?.instance || '';
 
-    // Node info
+    // Build node info from k8s API (all nodes including Lightsail)
+    const nodeCapacity = {};
+    (nodeListData?.items || []).forEach(n => {
+      const name = n.metadata?.name || '';
+      const labels = n.metadata?.labels || {};
+      const cap = n.status?.capacity || {};
+      const alloc = n.status?.allocatable || {};
+      nodeCapacity[name] = {
+        cpuCores: parseInt(alloc.cpu || cap.cpu || '0'),
+        memTotal: parseInt(alloc.memory || cap.memory || '0') * 1024, // Ki to bytes
+        nodeType: labels['node-type'] || '',
+        os: n.status?.nodeInfo?.osImage || '',
+        kubelet: n.status?.nodeInfo?.kubeletVersion || '',
+        ready: (n.status?.conditions || []).some(c => c.type === 'Ready' && c.status === 'True'),
+      };
+    });
+
+    // Build nodes from metrics-server (all nodes)
+    (metricsData?.items || []).forEach(m => {
+      const name = m.metadata?.name || '';
+      const cpuNano = parseInt((m.usage?.cpu || '0').replace('n', '')) || 0;
+      const memBytes = parseInt((m.usage?.memory || '0').replace('Ki', '')) * 1024 || 0;
+      const cap = nodeCapacity[name] || {};
+      const cpuPct = cap.cpuCores ? (cpuNano / (cap.cpuCores * 1e9)) * 100 : 0;
+      nodes[name] = {
+        name: name,
+        instance: name,
+        cpu: Math.round(cpuPct * 10) / 10,
+        memUsed: memBytes,
+        memTotal: cap.memTotal || 0,
+        nodeType: cap.nodeType,
+        os: cap.os,
+        kubelet: cap.kubelet,
+        ready: cap.ready !== false,
+        source: 'metrics-server',
+      };
+    });
+
+    // Override with Prometheus data (more accurate for nodes that have node-exporter)
+    const promNodes = {};
     (nodeInfoRes?.data?.result || []).forEach(r => {
       const inst = getInst(r);
-      nodes[inst] = { name: r.metric?.nodename || inst, instance: inst };
+      const nodename = r.metric?.nodename || inst;
+      promNodes[inst] = nodename;
     });
 
-    // CPU
     (cpuRes?.data?.result || []).forEach(r => {
       const inst = getInst(r);
-      if (nodes[inst]) nodes[inst].cpu = parseFloat(r.value?.[1] || 0);
+      const nodename = promNodes[inst];
+      if (nodename && nodes[nodename]) {
+        nodes[nodename].cpu = parseFloat(r.value?.[1] || 0);
+        nodes[nodename].source = 'prometheus';
+      }
     });
 
-    // Memory
     (memRes?.data?.result || []).forEach(r => {
       const inst = getInst(r);
-      if (nodes[inst]) nodes[inst].memUsed = parseInt(r.value?.[1] || 0);
+      const nodename = promNodes[inst];
+      if (nodename && nodes[nodename]) nodes[nodename].memUsed = parseInt(r.value?.[1] || 0);
     });
     (memTotalRes?.data?.result || []).forEach(r => {
       const inst = getInst(r);
-      if (nodes[inst]) nodes[inst].memTotal = parseInt(r.value?.[1] || 0);
+      const nodename = promNodes[inst];
+      if (nodename && nodes[nodename]) nodes[nodename].memTotal = parseInt(r.value?.[1] || 0);
     });
 
-    // Disk
     (diskRes?.data?.result || []).forEach(r => {
       const inst = getInst(r);
-      if (nodes[inst]) nodes[inst].diskUsed = parseInt(r.value?.[1] || 0);
+      const nodename = promNodes[inst];
+      if (nodename && nodes[nodename]) nodes[nodename].diskUsed = parseInt(r.value?.[1] || 0);
     });
     (diskTotalRes?.data?.result || []).forEach(r => {
       const inst = getInst(r);
-      if (nodes[inst]) nodes[inst].diskTotal = parseInt(r.value?.[1] || 0);
+      const nodename = promNodes[inst];
+      if (nodename && nodes[nodename]) nodes[nodename].diskTotal = parseInt(r.value?.[1] || 0);
     });
 
     // Pods per namespace
@@ -1867,14 +1918,19 @@ app.get('/api/infra/tailscale', async (req, res) => {
       }).on('error', e => reject(new Error(`Request error: ${e.message}`))).end();
     });
     if (data.message) throw new Error(data.message);
-    const devices = (data.devices || []).map(d => ({
-      hostname: d.hostname,
-      ip: d.addresses?.[0] || '',
-      os: d.os || '',
-      online: !!d.online,
-      lastSeen: d.lastSeen || '',
-      clientVersion: d.clientVersion || '',
-    }));
+    const now = Date.now();
+    const devices = (data.devices || []).map(d => {
+      const lastSeenMs = d.lastSeen ? new Date(d.lastSeen).getTime() : 0;
+      const isOnline = d.online === true || (d.online == null && lastSeenMs > 0 && (now - lastSeenMs) < 300000);
+      return {
+        hostname: d.hostname,
+        ip: d.addresses?.[0] || '',
+        os: d.os || '',
+        online: isOnline,
+        lastSeen: d.lastSeen || '',
+        clientVersion: d.clientVersion || '',
+      };
+    });
     res.json({ devices });
   } catch (err) {
     console.error('Tailscale error:', err.message || err);
@@ -1924,10 +1980,12 @@ app.get('/api/infra/nas', async (req, res) => {
   if (!NAS_PASSWORD) return res.status(500).json({ error: 'NAS password not configured' });
   try {
     const sid = await nasLogin();
-    const [sysInfo, utilization, storage] = await Promise.all([
+    const [sysInfo, utilization, storage, connections, shares] = await Promise.all([
       nasApi('SYNO.Core.System', 3, 'info', sid),
       nasApi('SYNO.Core.System.Utilization', 1, 'get', sid),
       nasApi('SYNO.Storage.CGI.Storage', 1, 'load_info', sid),
+      nasApi('SYNO.Core.CurrentConnection', 1, 'list', sid).catch(() => ({ data: {} })),
+      nasApi('SYNO.Core.Share', 1, 'list', sid).catch(() => ({ data: {} })),
     ]);
 
     const sys = sysInfo.data || {};
@@ -1936,6 +1994,25 @@ app.get('/api/infra/nas', async (req, res) => {
     const mem = util.memory || {};
     const memTotal = parseInt(mem.memory_size || 0);
     const memAvail = parseInt(mem.avail_real || 0);
+
+    // Network interfaces
+    const network = (util.network || []).map(n => ({
+      device: n.device,
+      rx: n.rx || 0,
+      tx: n.tx || 0,
+    }));
+
+    // Disk I/O
+    const diskIO = [];
+    const diskUtil = util.disk || {};
+    if (diskUtil.total) {
+      diskIO.push({ device: 'total', read: diskUtil.total.read_access || 0, write: diskUtil.total.write_access || 0 });
+    }
+    if (Array.isArray(diskUtil.disk)) {
+      diskUtil.disk.forEach(d => {
+        diskIO.push({ device: d.device || '?', read: d.read_access || 0, write: d.write_access || 0 });
+      });
+    }
 
     const volumes = (storage.data?.volumes || []).map(v => ({
       id: v.id,
@@ -1950,6 +2027,23 @@ app.get('/api/infra/nas', async (req, res) => {
       temp: d.temp,
       status: d.status,
       size: d.size_total,
+      smart_status: d.smart_status,
+    }));
+
+    // Connected users
+    const connList = connections.data?.items || connections.data || [];
+    const connUsers = Array.isArray(connList) ? connList.map(c => ({
+      user: c.who || c.user || '?',
+      from: c.from || c.ip || '?',
+      type: c.type || '?',
+      time: c.time || '',
+    })) : [];
+
+    // Shared folders
+    const sharedFolders = (shares.data?.shares || []).map(s => ({
+      name: s.name,
+      path: s.vol_path || s.path || '',
+      desc: s.desc || '',
     }));
 
     res.json({
@@ -1957,10 +2051,15 @@ app.get('/api/infra/nas', async (req, res) => {
       firmware: sys.firmware_ver,
       temp: sys.sys_temp,
       uptime: sys.up_time,
+      serial: sys.serial,
       cpu: { user: cpu.user_load, system: cpu.system_load },
-      memory: { total: memTotal, used: memTotal - memAvail },
+      memory: { total: memTotal, used: memTotal - memAvail, cached: parseInt(mem.cached_kern || 0), swapUsed: parseInt(mem.real_usage || 0) },
+      network,
+      diskIO,
       volumes,
       disks,
+      connections: connUsers,
+      shares: sharedFolders,
     });
   } catch (err) {
     console.error('NAS error:', err.message);
