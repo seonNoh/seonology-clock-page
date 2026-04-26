@@ -1,3 +1,10 @@
+## [1.40.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.40.0...v1.40.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* copy all API files in Dockerfile and add .dockerignore ([c601f3d](https://github.com/seonNoh/seonology-clock-page/commit/c601f3d7be7fcd887677fe7aa6f542de08f883a8))
+
 # [1.40.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.39.0...v1.40.0) (2026-04-26)
 
 
