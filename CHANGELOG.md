@@ -1,3 +1,10 @@
+## [1.36.4](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.3...v1.36.4) (2026-04-26)
+
+
+### Bug Fixes
+
+* schedule clock-page pod on lightsail nodes for external API access ([d64e7dd](https://github.com/seonNoh/seonology-clock-page/commit/d64e7dda02ecdb18c1843bfd9e0c1f1db710d3d4))
+
 ## [1.36.3](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.2...v1.36.3) (2026-04-26)
 
 
