@@ -33,6 +33,7 @@ import DnsLookup from './components/DnsLookup';
 import MermaidEditor from './components/MermaidEditor';
 import InfraDashboard from './components/InfraDashboard';
 import NasBrowser from './components/NasBrowser';
+import CloudBrowser from './components/CloudBrowser';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1097,6 +1098,8 @@ function App() {
   const [showMermaid, setShowMermaid] = useState(false);
   const [showInfra, setShowInfra] = useState(false);
   const [showNasBrowser, setShowNasBrowser] = useState(false);
+  const [showGdrive, setShowGdrive] = useState(false);
+  const [showOnedrive, setShowOnedrive] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1148,6 +1151,8 @@ function App() {
         else if (showMermaid) setShowMermaid(false);
         else if (showInfra) setShowInfra(false);
         else if (showNasBrowser) setShowNasBrowser(false);
+        else if (showGdrive) setShowGdrive(false);
+        else if (showOnedrive) setShowOnedrive(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1339,6 +1344,26 @@ function App() {
           </svg>
         </span>
         <span className="tools-toggle-label">NAS</span>
+      </button>
+
+      {/* Google Drive Button */}
+      <button className={`tools-toggle-btn${showGdrive ? ' expanded' : ''}`} onClick={() => openPanel(setShowGdrive)}>
+        <span className="tools-toggle-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4285f4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L2 19.5h20L12 2z" /><path d="M12 2l8.5 17.5" /><path d="M2 19.5h17" />
+          </svg>
+        </span>
+        <span className="tools-toggle-label">GDrive</span>
+      </button>
+
+      {/* OneDrive Button */}
+      <button className={`tools-toggle-btn${showOnedrive ? ' expanded' : ''}`} onClick={() => openPanel(setShowOnedrive)}>
+        <span className="tools-toggle-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0078d4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+          </svg>
+        </span>
+        <span className="tools-toggle-label">OneDrive</span>
       </button>
 
       {/* App Icon Grid Toggle */}
@@ -1879,6 +1904,12 @@ function App() {
 
       {/* NAS File Browser */}
       <NasBrowser isOpen={showNasBrowser} onClose={() => setShowNasBrowser(false)} />
+
+      {/* Google Drive */}
+      <CloudBrowser isOpen={showGdrive} onClose={() => setShowGdrive(false)} provider="gdrive" />
+
+      {/* OneDrive */}
+      <CloudBrowser isOpen={showOnedrive} onClose={() => setShowOnedrive(false)} provider="onedrive" />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">

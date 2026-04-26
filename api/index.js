@@ -6,6 +6,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Cloud Drives
+const { setupGoogleRoutes, setupMicrosoftRoutes } = require('./cloud-drives');
+
 // AI Chat configuration
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
@@ -2246,6 +2249,10 @@ app.post('/api/nas/upload', async (req, res) => {
     req.pipe(bb);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
+
+// Cloud Drive routes
+setupGoogleRoutes(app);
+setupMicrosoftRoutes(app);
 
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);

@@ -75,6 +75,18 @@
 .nb-loading { padding: 40px; text-align: center; font-family: 'Inter', sans-serif; font-size: 0.75rem; color: var(--text-muted); }
 .nb-empty { padding: 40px; text-align: center; font-family: 'Inter', sans-serif; font-size: 0.75rem; color: var(--text-muted); }
 
+/* Connect Screen */
+.nb-connect-screen {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 40px;
+}
+.nb-connect-text { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+.nb-connect-btn {
+  padding: 10px 24px; border: none; border-radius: 8px; color: white;
+  font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s ease;
+}
+.nb-connect-btn:hover { opacity: 0.9; }
+
 /* Share Grid */
 .nb-share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; padding: 16px 20px; }
 .nb-share-item {
