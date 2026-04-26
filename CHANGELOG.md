@@ -1,3 +1,10 @@
+## [1.37.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.37.1...v1.37.2) (2026-04-26)
+
+
+### Bug Fixes
+
+* fix NAS API stale session and add timeout/error logging ([f3f852e](https://github.com/seonNoh/seonology-clock-page/commit/f3f852e43f121cd362e85f3081b887642ddb40a3))
+
 ## [1.37.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.37.0...v1.37.1) (2026-04-26)
 
 
