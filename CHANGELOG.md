@@ -1,3 +1,10 @@
+# [1.42.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.41.0...v1.42.0) (2026-04-26)
+
+
+### Features
+
+* increase orbit clock size and text readability ([a4f5119](https://github.com/seonNoh/seonology-clock-page/commit/a4f5119b28512150fe47b8bfec064db76f3f4246))
+
 # [1.41.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.40.1...v1.41.0) (2026-04-26)
 
 
