@@ -39,6 +39,30 @@ spec:
               name: clock-page-secrets
               key: gemini-api-key
               optional: true
+        - name: TAILSCALE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: clock-page-secrets
+              key: tailscale-api-key
+              optional: true
+        - name: NAS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clock-page-secrets
+              key: nas-password
+              optional: true
+        - name: NAS_HOST
+          value: "100.94.199.8"
+        - name: NAS_PORT
+          value: "5001"
+        - name: NAS_ACCOUNT
+          value: "seon"
+        - name: GRAFANA_URL
+          value: "http://kube-prometheus-stack-grafana.monitoring:80"
+        - name: GRAFANA_USER
+          value: "admin"
+        - name: GRAFANA_PASS
+          value: "grafana-admin-pass"
         volumeMounts:
         - name: bookmarks-data
           mountPath: /data

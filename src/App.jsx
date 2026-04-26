@@ -31,6 +31,7 @@ import EpochConverter from './components/EpochConverter';
 import TextCounter from './components/TextCounter';
 import DnsLookup from './components/DnsLookup';
 import MermaidEditor from './components/MermaidEditor';
+import InfraDashboard from './components/InfraDashboard';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1093,6 +1094,7 @@ function App() {
   const [showTextCounter, setShowTextCounter] = useState(false);
   const [showDns, setShowDns] = useState(false);
   const [showMermaid, setShowMermaid] = useState(false);
+  const [showInfra, setShowInfra] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1142,6 +1144,7 @@ function App() {
         else if (showTextCounter) setShowTextCounter(false);
         else if (showDns) setShowDns(false);
         else if (showMermaid) setShowMermaid(false);
+        else if (showInfra) setShowInfra(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1313,6 +1316,17 @@ function App() {
       <div className="mobile-drawer-handle" onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}>
         <div className="drawer-handle-bar" />
       </div>
+
+      {/* Infrastructure Dashboard Button */}
+      <button className={`tools-toggle-btn${showInfra ? ' expanded' : ''}`} onClick={() => openPanel(setShowInfra)}>
+        <span className="tools-toggle-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="3" width="20" height="4" rx="1" /><path d="M12 7v4" /><path d="M6 11h12" /><path d="M6 11v4" /><path d="M18 11v4" /><path d="M12 11v4" />
+            <rect x="2" y="15" width="6" height="4" rx="1" /><rect x="9" y="15" width="6" height="4" rx="1" /><rect x="16" y="15" width="6" height="4" rx="1" />
+          </svg>
+        </span>
+        <span className="tools-toggle-label">Infra</span>
+      </button>
 
       {/* App Icon Grid Toggle */}
       <button className={`tools-toggle-btn${toolsExpanded ? ' expanded' : ''}`} onClick={() => setToolsExpanded(!toolsExpanded)}>
@@ -1846,6 +1860,9 @@ function App() {
 
       {/* Mermaid Editor */}
       <MermaidEditor isOpen={showMermaid} onClose={() => setShowMermaid(false)} />
+
+      {/* Infrastructure Dashboard */}
+      <InfraDashboard isOpen={showInfra} onClose={() => setShowInfra(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">

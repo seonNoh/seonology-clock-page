@@ -1747,6 +1747,200 @@ app.get('/api/sapporo-events/all', async (req, res) => {
   });
 });
 
+// ===== Infrastructure Dashboard APIs =====
+
+// Grafana/Prometheus configuration
+const GRAFANA_URL = process.env.GRAFANA_URL || 'https://grafana.seonology.com';
+const GRAFANA_USER = process.env.GRAFANA_USER || 'admin';
+const GRAFANA_PASS = process.env.GRAFANA_PASS || 'grafana-admin-pass';
+
+// Tailscale configuration
+const TAILSCALE_API_KEY = process.env.TAILSCALE_API_KEY || '';
+
+// Synology NAS configuration
+const NAS_HOST = process.env.NAS_HOST || '100.94.199.8';
+const NAS_PORT = process.env.NAS_PORT || '5001';
+const NAS_ACCOUNT = process.env.NAS_ACCOUNT || 'seon';
+const NAS_PASSWORD = process.env.NAS_PASSWORD || '';
+
+function promQuery(query) {
+  const url = `${GRAFANA_URL}/api/datasources/proxy/1/api/v1/query?query=${encodeURIComponent(query)}`;
+  const auth = Buffer.from(`${GRAFANA_USER}:${GRAFANA_PASS}`).toString('base64');
+  return fetchJSON(url, { 'Authorization': `Basic ${auth}` });
+}
+
+// k3s Cluster Stats
+app.get('/api/infra/cluster', async (req, res) => {
+  try {
+    const [cpuRes, memRes, memTotalRes, diskRes, diskTotalRes, nodeInfoRes, podRes] = await Promise.all([
+      promQuery('100-(avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m]))*100)'),
+      promQuery('node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes'),
+      promQuery('node_memory_MemTotal_bytes'),
+      promQuery('node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"} - node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}'),
+      promQuery('node_filesystem_size_bytes{mountpoint="/",fstype!="rootfs"}'),
+      promQuery('node_uname_info'),
+      promQuery('count by(namespace)(kube_pod_info)'),
+    ]);
+
+    const nodes = {};
+    const getInst = (r) => r.metric?.instance || '';
+
+    // Node info
+    (nodeInfoRes?.data?.result || []).forEach(r => {
+      const inst = getInst(r);
+      nodes[inst] = { name: r.metric?.nodename || inst, instance: inst };
+    });
+
+    // CPU
+    (cpuRes?.data?.result || []).forEach(r => {
+      const inst = getInst(r);
+      if (nodes[inst]) nodes[inst].cpu = parseFloat(r.value?.[1] || 0);
+    });
+
+    // Memory
+    (memRes?.data?.result || []).forEach(r => {
+      const inst = getInst(r);
+      if (nodes[inst]) nodes[inst].memUsed = parseInt(r.value?.[1] || 0);
+    });
+    (memTotalRes?.data?.result || []).forEach(r => {
+      const inst = getInst(r);
+      if (nodes[inst]) nodes[inst].memTotal = parseInt(r.value?.[1] || 0);
+    });
+
+    // Disk
+    (diskRes?.data?.result || []).forEach(r => {
+      const inst = getInst(r);
+      if (nodes[inst]) nodes[inst].diskUsed = parseInt(r.value?.[1] || 0);
+    });
+    (diskTotalRes?.data?.result || []).forEach(r => {
+      const inst = getInst(r);
+      if (nodes[inst]) nodes[inst].diskTotal = parseInt(r.value?.[1] || 0);
+    });
+
+    // Pods per namespace
+    const namespaces = {};
+    (podRes?.data?.result || []).forEach(r => {
+      namespaces[r.metric?.namespace || '?'] = parseInt(r.value?.[1] || 0);
+    });
+
+    res.json({
+      nodes: Object.values(nodes),
+      namespaces,
+      totalPods: Object.values(namespaces).reduce((a, b) => a + b, 0),
+    });
+  } catch (err) {
+    console.error('Cluster stats error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Tailscale Devices
+app.get('/api/infra/tailscale', async (req, res) => {
+  if (!TAILSCALE_API_KEY) return res.status(500).json({ error: 'Tailscale API key not configured' });
+  try {
+    const auth = Buffer.from(`${TAILSCALE_API_KEY}:`).toString('base64');
+    const data = await fetchJSON('https://api.tailscale.com/api/v2/tailnet/-/devices', { 'Authorization': `Basic ${auth}` });
+    const devices = (data.devices || []).map(d => ({
+      hostname: d.hostname,
+      ip: d.addresses?.[0] || '',
+      os: d.os || '',
+      online: !!d.online,
+      lastSeen: d.lastSeen || '',
+      clientVersion: d.clientVersion || '',
+    }));
+    res.json({ devices });
+  } catch (err) {
+    console.error('Tailscale error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Synology NAS Status
+let nasSid = null;
+let nasSidTime = 0;
+
+async function nasLogin() {
+  const now = Date.now();
+  if (nasSid && (now - nasSidTime) < 600000) return nasSid; // reuse for 10min
+  const url = `https://${NAS_HOST}:${NAS_PORT}/webapi/entry.cgi?api=SYNO.API.Auth&version=6&method=login&account=${NAS_ACCOUNT}&passwd=${encodeURIComponent(NAS_PASSWORD)}&format=sid`;
+  const data = await new Promise((resolve, reject) => {
+    const req = https.request(url, { rejectUnauthorized: false }, (resp) => {
+      let body = '';
+      resp.on('data', c => body += c);
+      resp.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { reject(e); } });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+  if (data.success) {
+    nasSid = data.data.sid;
+    nasSidTime = now;
+    return nasSid;
+  }
+  throw new Error('NAS login failed');
+}
+
+function nasApi(api, version, method, sid) {
+  const url = `https://${NAS_HOST}:${NAS_PORT}/webapi/entry.cgi?api=${api}&version=${version}&method=${method}&_sid=${sid}`;
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, { rejectUnauthorized: false }, (resp) => {
+      let body = '';
+      resp.on('data', c => body += c);
+      resp.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { reject(e); } });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+app.get('/api/infra/nas', async (req, res) => {
+  if (!NAS_PASSWORD) return res.status(500).json({ error: 'NAS password not configured' });
+  try {
+    const sid = await nasLogin();
+    const [sysInfo, utilization, storage] = await Promise.all([
+      nasApi('SYNO.Core.System', 3, 'info', sid),
+      nasApi('SYNO.Core.System.Utilization', 1, 'get', sid),
+      nasApi('SYNO.Storage.CGI.Storage', 1, 'load_info', sid),
+    ]);
+
+    const sys = sysInfo.data || {};
+    const util = utilization.data || {};
+    const cpu = util.cpu || {};
+    const mem = util.memory || {};
+    const memTotal = parseInt(mem.memory_size || 0);
+    const memAvail = parseInt(mem.avail_real || 0);
+
+    const volumes = (storage.data?.volumes || []).map(v => ({
+      id: v.id,
+      total: parseInt(v.size?.total || 0),
+      used: parseInt(v.size?.used || 0),
+      status: v.status,
+    }));
+
+    const disks = (storage.data?.disks || []).map(d => ({
+      id: d.id,
+      model: d.model,
+      temp: d.temp,
+      status: d.status,
+      size: d.size_total,
+    }));
+
+    res.json({
+      model: sys.model,
+      firmware: sys.firmware_ver,
+      temp: sys.sys_temp,
+      uptime: sys.up_time,
+      cpu: { user: cpu.user_load, system: cpu.system_load },
+      memory: { total: memTotal, used: memTotal - memAvail },
+      volumes,
+      disks,
+    });
+  } catch (err) {
+    console.error('NAS error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Running in cluster: ${isInCluster}`);
