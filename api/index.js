@@ -1855,7 +1855,8 @@ app.get('/api/infra/tailscale', async (req, res) => {
   try {
     const auth = Buffer.from(`${TAILSCALE_API_KEY}:`).toString('base64');
     const resp = await fetchJSON('https://api.tailscale.com/api/v2/tailnet/-/devices', { 'Authorization': `Basic ${auth}` });
-    const data = resp.data;
+    const data = resp.data || resp;
+    if (data.message) throw new Error(data.message);
     const devices = (data.devices || []).map(d => ({
       hostname: d.hostname,
       ip: d.addresses?.[0] || '',
@@ -1866,8 +1867,8 @@ app.get('/api/infra/tailscale', async (req, res) => {
     }));
     res.json({ devices });
   } catch (err) {
-    console.error('Tailscale error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('Tailscale error:', err.message || err);
+    res.status(500).json({ error: err.message || String(err) });
   }
 });
 
