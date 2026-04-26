@@ -1766,7 +1766,22 @@ const NAS_PASSWORD = process.env.NAS_PASSWORD || '';
 function promQuery(query) {
   const url = `${GRAFANA_URL}/api/datasources/proxy/1/api/v1/query?query=${encodeURIComponent(query)}`;
   const auth = Buffer.from(`${GRAFANA_USER}:${GRAFANA_PASS}`).toString('base64');
-  return fetchJSON(url, { 'Authorization': `Basic ${auth}` });
+  const urlObj = new URL(url);
+  const httpMod = urlObj.protocol === 'https:' ? https : require('http');
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: urlObj.hostname,
+      port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+      path: urlObj.pathname + urlObj.search,
+      method: 'GET',
+      headers: { 'Accept': 'application/json', 'Authorization': `Basic ${auth}` },
+    };
+    httpMod.request(options, (res) => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => { try { resolve(JSON.parse(data)); } catch(e) { reject(e); } });
+    }).on('error', reject).end();
+  });
 }
 
 // k3s Cluster Stats
@@ -1839,7 +1854,8 @@ app.get('/api/infra/tailscale', async (req, res) => {
   if (!TAILSCALE_API_KEY) return res.status(500).json({ error: 'Tailscale API key not configured' });
   try {
     const auth = Buffer.from(`${TAILSCALE_API_KEY}:`).toString('base64');
-    const data = await fetchJSON('https://api.tailscale.com/api/v2/tailnet/-/devices', { 'Authorization': `Basic ${auth}` });
+    const resp = await fetchJSON('https://api.tailscale.com/api/v2/tailnet/-/devices', { 'Authorization': `Basic ${auth}` });
+    const data = resp.data;
     const devices = (data.devices || []).map(d => ({
       hostname: d.hostname,
       ip: d.addresses?.[0] || '',
