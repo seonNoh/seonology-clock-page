@@ -21,7 +21,7 @@ RUN apk add --no-cache nginx
 COPY api/package*.json ./api/
 RUN cd api && npm ci --production
 
-COPY api/index.js ./api/
+COPY api/ ./api/
 
 # Copy built frontend
 COPY --from=builder /app/dist /usr/share/nginx/html
