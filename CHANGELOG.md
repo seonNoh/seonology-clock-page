@@ -1,3 +1,10 @@
+## [1.36.3](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.2...v1.36.3) (2026-04-26)
+
+
+### Bug Fixes
+
+* rewrite Tailscale API call with direct https.request for better error handling ([048722a](https://github.com/seonNoh/seonology-clock-page/commit/048722a6e107cd91fa9656252cf897f62f354971))
+
 ## [1.36.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.1...v1.36.2) (2026-04-26)
 
 
