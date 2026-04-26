@@ -1,3 +1,10 @@
+# [1.41.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.40.1...v1.41.0) (2026-04-26)
+
+
+### Features
+
+* add upload/download to Google Drive and OneDrive browsers ([487b498](https://github.com/seonNoh/seonology-clock-page/commit/487b49885f7f47a330e95716656fcbb4f13cd089))
+
 ## [1.40.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.40.0...v1.40.1) (2026-04-26)
 
 
