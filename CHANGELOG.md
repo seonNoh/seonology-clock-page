@@ -1,3 +1,10 @@
+## [1.42.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.42.0...v1.42.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* adjust clock vertical position to prevent overlap with top panel ([2402a7a](https://github.com/seonNoh/seonology-clock-page/commit/2402a7a06ffc41159c1e98e3fd9d3d75ac24ec45))
+
 # [1.42.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.41.0...v1.42.0) (2026-04-26)
 
 
