@@ -1,3 +1,10 @@
+# [1.39.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.38.0...v1.39.0) (2026-04-26)
+
+
+### Features
+
+* support 10GB file upload/download via streaming ([20409ea](https://github.com/seonNoh/seonology-clock-page/commit/20409ea0a8e22495efe86e893a4d36852302cbac))
+
 # [1.38.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.37.2...v1.38.0) (2026-04-26)
 
 
