@@ -1,3 +1,10 @@
+## [1.37.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.37.0...v1.37.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* add metrics.k8s.io and nodes API permissions to ClusterRole ([724425c](https://github.com/seonNoh/seonology-clock-page/commit/724425c5b22eef3b2cd6cf919fc6e4db6e1518b3))
+
 # [1.37.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.4...v1.37.0) (2026-04-26)
 
 
