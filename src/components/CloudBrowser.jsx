@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import './NasBrowser.css';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -39,6 +39,8 @@ function CloudBrowser({ isOpen, onClose, provider }) {
   const [renaming, setRenaming] = useState(null);
   const [renameVal, setRenameVal] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
   const currentFolderId = folderStack[folderStack.length - 1]?.id || 'root';
 
@@ -132,6 +134,20 @@ function CloudBrowser({ isOpen, onClose, provider }) {
     window.open(`${API}/download?fileId=${encodeURIComponent(fileId)}&name=${encodeURIComponent(fileName)}`, '_blank');
   };
 
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true); setError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('parentId', currentFolderId);
+      const res = await fetch(`${API}/upload`, { method: 'POST', body: form });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      fetchFiles(currentFolderId);
+    } catch (e) { setError(e.message); } finally { setUploading(false); e.target.value = ''; }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -146,7 +162,13 @@ function CloudBrowser({ isOpen, onClose, provider }) {
           </div>
           <div className="nb-header-actions">
             {connected && (
-              <button className="nb-tool-btn" onClick={() => { setShowMkdir(true); setNewName(''); }}>New Folder</button>
+              <>
+                <button className="nb-tool-btn" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </button>
+                <input ref={fileInputRef} type="file" hidden onChange={handleUpload} />
+                <button className="nb-tool-btn" onClick={() => { setShowMkdir(true); setNewName(''); }}>New Folder</button>
+              </>
             )}
             <button className="nb-close-btn" onClick={onClose}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
