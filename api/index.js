@@ -1966,12 +1966,13 @@ async function nasLogin() {
 function nasApi(api, version, method, sid) {
   const url = `https://${NAS_HOST}:${NAS_PORT}/webapi/entry.cgi?api=${api}&version=${version}&method=${method}&_sid=${sid}`;
   return new Promise((resolve, reject) => {
-    const req = https.request(url, { rejectUnauthorized: false }, (resp) => {
+    const req = https.request(url, { rejectUnauthorized: false, timeout: 10000 }, (resp) => {
       let body = '';
       resp.on('data', c => body += c);
       resp.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { reject(e); } });
     });
     req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('NAS API timeout')); });
     req.end();
   });
 }
@@ -1979,6 +1980,9 @@ function nasApi(api, version, method, sid) {
 app.get('/api/infra/nas', async (req, res) => {
   if (!NAS_PASSWORD) return res.status(500).json({ error: 'NAS password not configured' });
   try {
+    // Force fresh login to avoid stale session
+    nasSid = null;
+    nasSidTime = 0;
     const sid = await nasLogin();
     const [sysInfo, utilization, storage, connections, shares] = await Promise.all([
       nasApi('SYNO.Core.System', 3, 'info', sid),
@@ -1989,7 +1993,9 @@ app.get('/api/infra/nas', async (req, res) => {
     ]);
 
     const sys = sysInfo.data || {};
+    if (!sysInfo.success) console.error('NAS sysInfo failed:', JSON.stringify(sysInfo));
     const util = utilization.data || {};
+    if (!utilization.success) console.error('NAS utilization failed:', JSON.stringify(utilization));
     const cpu = util.cpu || {};
     const mem = util.memory || {};
     const memTotal = parseInt(mem.memory_size || 0);
