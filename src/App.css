@@ -209,8 +209,8 @@
 
 .glow-picker-dropdown {
   position: absolute;
-  bottom: calc(100% + 8px);
-  right: calc(100% + 8px);
+  bottom: 0;
+  right: calc(100% + 12px);
   background: rgba(15, 15, 25, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -223,6 +223,7 @@
   animation: glowDropIn 0.2s ease;
   max-height: 60vh;
   overflow-y: auto;
+  z-index: 20;
 }
 
 .glow-picker-label {
