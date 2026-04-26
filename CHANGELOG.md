@@ -1,3 +1,10 @@
+# [1.36.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.35.0...v1.36.0) (2026-04-26)
+
+
+### Features
+
+* add Infrastructure Dashboard (k3s, Tailscale, Synology NAS) ([f29a2a8](https://github.com/seonNoh/seonology-clock-page/commit/f29a2a83e0ca40764c9d294a1f242284288c9c9e))
+
 # [1.35.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.34.0...v1.35.0) (2026-04-25)
 
 
