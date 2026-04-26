@@ -1,3 +1,10 @@
+## [1.42.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.42.1...v1.42.2) (2026-04-26)
+
+
+### Bug Fixes
+
+* reposition glow/effect picker dropdown to prevent overlap ([0d0213c](https://github.com/seonNoh/seonology-clock-page/commit/0d0213cb1c4ed8716c1f9e5629da7ccf66706277))
+
 ## [1.42.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.42.0...v1.42.1) (2026-04-26)
 
 
