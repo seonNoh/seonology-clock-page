@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.4...v1.37.0) (2026-04-26)
+
+
+### Features
+
+* improve Infrastructure Dashboard - all 3 issues fixed ([8bb0411](https://github.com/seonNoh/seonology-clock-page/commit/8bb04117bb59bec76b300ae1f5eaec4032f3c172))
+
 ## [1.36.4](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.3...v1.36.4) (2026-04-26)
 
 
