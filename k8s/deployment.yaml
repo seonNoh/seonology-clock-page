@@ -20,7 +20,7 @@ spec:
         node-type: lightsail
       containers:
       - name: seonology-clock-page
-        image: ghcr.io/seonnoh/seonology-clock-page:v1.37.2
+        image: ghcr.io/seonnoh/seonology-clock-page:v1.38.0
         ports:
         - containerPort: 80
           name: http
