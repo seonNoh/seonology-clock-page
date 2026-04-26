@@ -1854,8 +1854,18 @@ app.get('/api/infra/tailscale', async (req, res) => {
   if (!TAILSCALE_API_KEY) return res.status(500).json({ error: 'Tailscale API key not configured' });
   try {
     const auth = Buffer.from(`${TAILSCALE_API_KEY}:`).toString('base64');
-    const resp = await fetchJSON('https://api.tailscale.com/api/v2/tailnet/-/devices', { 'Authorization': `Basic ${auth}` });
-    const data = resp.data || resp;
+    const data = await new Promise((resolve, reject) => {
+      https.request({
+        hostname: 'api.tailscale.com',
+        path: '/api/v2/tailnet/-/devices',
+        method: 'GET',
+        headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' },
+      }, (resp) => {
+        let body = '';
+        resp.on('data', c => body += c);
+        resp.on('end', () => { try { resolve(JSON.parse(body)); } catch(e) { reject(new Error(`Parse error: ${body.slice(0,200)}`)); } });
+      }).on('error', e => reject(new Error(`Request error: ${e.message}`))).end();
+    });
     if (data.message) throw new Error(data.message);
     const devices = (data.devices || []).map(d => ({
       hostname: d.hostname,
