@@ -2073,6 +2073,167 @@ app.get('/api/infra/nas', async (req, res) => {
   }
 });
 
+// ===== NAS File Browser APIs =====
+
+async function getNasSid() {
+  nasSid = null;
+  nasSidTime = 0;
+  return nasLogin();
+}
+
+// List shares
+app.get('/api/nas/shares', async (req, res) => {
+  try {
+    const sid = await getNasSid();
+    const data = await nasApi('SYNO.FileStation.List', 2, 'list_share', sid);
+    if (!data.success) throw new Error('Failed to list shares');
+    res.json({ shares: (data.data.shares || []).map(s => ({ name: s.name, path: s.path })) });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// List files in folder
+app.get('/api/nas/files', async (req, res) => {
+  const folder = req.query.path;
+  if (!folder) return res.status(400).json({ error: 'path required' });
+  try {
+    const sid = await getNasSid();
+    const sort = req.query.sort || 'name';
+    const dir = req.query.dir || 'ASC';
+    const data = await nasApi('SYNO.FileStation.List', 2,
+      `list&folder_path=${encodeURIComponent(folder)}&additional=size,time,type&sort_by=${sort}&sort_direction=${dir}`, sid);
+    if (!data.success) throw new Error(`Failed to list: ${JSON.stringify(data.error)}`);
+    const files = (data.data.files || []).map(f => ({
+      name: f.name,
+      path: f.path,
+      isdir: f.isdir,
+      size: f.additional?.size || 0,
+      time: f.additional?.time?.mtime || 0,
+      type: f.additional?.type || '',
+    }));
+    res.json({ files, total: data.data.total || files.length });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Create folder
+app.post('/api/nas/mkdir', async (req, res) => {
+  const { folderPath, name } = req.body;
+  if (!folderPath || !name) return res.status(400).json({ error: 'folderPath and name required' });
+  try {
+    const sid = await getNasSid();
+    const data = await nasApi('SYNO.FileStation.CreateFolder', 2,
+      `create&folder_path=${encodeURIComponent(folderPath)}&name=${encodeURIComponent(name)}`, sid);
+    if (!data.success) throw new Error(`Failed: ${JSON.stringify(data.error)}`);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Rename
+app.post('/api/nas/rename', async (req, res) => {
+  const { path: filePath, name } = req.body;
+  if (!filePath || !name) return res.status(400).json({ error: 'path and name required' });
+  try {
+    const sid = await getNasSid();
+    const data = await nasApi('SYNO.FileStation.Rename', 2,
+      `rename&path=${encodeURIComponent(filePath)}&name=${encodeURIComponent(name)}`, sid);
+    if (!data.success) throw new Error(`Failed: ${JSON.stringify(data.error)}`);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Delete
+app.post('/api/nas/delete', async (req, res) => {
+  const { path: filePath } = req.body;
+  if (!filePath) return res.status(400).json({ error: 'path required' });
+  try {
+    const sid = await getNasSid();
+    const data = await nasApi('SYNO.FileStation.Delete', 2,
+      `delete&path=${encodeURIComponent(filePath)}`, sid);
+    if (!data.success) throw new Error(`Failed: ${JSON.stringify(data.error)}`);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Move/Copy
+app.post('/api/nas/move', async (req, res) => {
+  const { path: filePath, destPath, overwrite } = req.body;
+  if (!filePath || !destPath) return res.status(400).json({ error: 'path and destPath required' });
+  try {
+    const sid = await getNasSid();
+    const data = await nasApi('SYNO.FileStation.CopyMove', 3,
+      `start&path=${encodeURIComponent(filePath)}&dest_folder_path=${encodeURIComponent(destPath)}&remove_src=true&overwrite=${overwrite ? 'true' : 'false'}`, sid);
+    if (!data.success) throw new Error(`Failed: ${JSON.stringify(data.error)}`);
+    res.json({ success: true, taskid: data.data?.taskid });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Download proxy
+app.get('/api/nas/download', async (req, res) => {
+  const filePath = req.query.path;
+  if (!filePath) return res.status(400).json({ error: 'path required' });
+  try {
+    const sid = await getNasSid();
+    const url = `https://${NAS_HOST}:${NAS_PORT}/webapi/entry.cgi?api=SYNO.FileStation.Download&version=2&method=download&path=${encodeURIComponent(filePath)}&mode=download&_sid=${sid}`;
+    const fileName = filePath.split('/').pop();
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+    const proxyReq = https.request(url, { rejectUnauthorized: false }, (proxyRes) => {
+      if (proxyRes.headers['content-type']) res.setHeader('Content-Type', proxyRes.headers['content-type']);
+      if (proxyRes.headers['content-length']) res.setHeader('Content-Length', proxyRes.headers['content-length']);
+      proxyRes.pipe(res);
+    });
+    proxyReq.on('error', (e) => { res.status(500).json({ error: e.message }); });
+    proxyReq.end();
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Upload (multipart)
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
+
+app.post('/api/nas/upload', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'file required' });
+  const destPath = req.body.path;
+  if (!destPath) return res.status(400).json({ error: 'path required' });
+  try {
+    const sid = await getNasSid();
+    const boundary = '----NASUpload' + Date.now();
+    const fileName = req.file.originalname;
+
+    const parts = [];
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="api"\r\n\r\nSYNO.FileStation.Upload`);
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="version"\r\n\r\n2`);
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="method"\r\n\r\nupload`);
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="path"\r\n\r\n${destPath}`);
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="create_parents"\r\n\r\ntrue`);
+    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="overwrite"\r\n\r\ntrue`);
+    const fileHeader = `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${fileName}"\r\nContent-Type: application/octet-stream\r\n\r\n`;
+    const footer = `\r\n--${boundary}--\r\n`;
+
+    const prefix = parts.join('\r\n') + '\r\n' + fileHeader;
+    const prefixBuf = Buffer.from(prefix);
+    const footerBuf = Buffer.from(footer);
+    const body = Buffer.concat([prefixBuf, req.file.buffer, footerBuf]);
+
+    const uploadRes = await new Promise((resolve, reject) => {
+      const r = https.request({
+        hostname: NAS_HOST, port: NAS_PORT,
+        path: `/webapi/entry.cgi?_sid=${sid}`,
+        method: 'POST', rejectUnauthorized: false,
+        headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}`, 'Content-Length': body.length },
+      }, (resp) => {
+        let d = '';
+        resp.on('data', c => d += c);
+        resp.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+      });
+      r.on('error', reject);
+      r.write(body);
+      r.end();
+    });
+
+    if (!uploadRes.success) throw new Error(`Upload failed: ${JSON.stringify(uploadRes.error)}`);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Running in cluster: ${isInCluster}`);

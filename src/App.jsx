@@ -32,6 +32,7 @@ import TextCounter from './components/TextCounter';
 import DnsLookup from './components/DnsLookup';
 import MermaidEditor from './components/MermaidEditor';
 import InfraDashboard from './components/InfraDashboard';
+import NasBrowser from './components/NasBrowser';
 import './App.css';
 
 // Import version from VERSION file (will be replaced at build time)
@@ -1095,6 +1096,7 @@ function App() {
   const [showDns, setShowDns] = useState(false);
   const [showMermaid, setShowMermaid] = useState(false);
   const [showInfra, setShowInfra] = useState(false);
+  const [showNasBrowser, setShowNasBrowser] = useState(false);
   const [showQuickLinks, setShowQuickLinks] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [mobileTopSheetOpen, setMobileTopSheetOpen] = useState(false);
@@ -1145,6 +1147,7 @@ function App() {
         else if (showDns) setShowDns(false);
         else if (showMermaid) setShowMermaid(false);
         else if (showInfra) setShowInfra(false);
+        else if (showNasBrowser) setShowNasBrowser(false);
         else if (showQuickLinks) setShowQuickLinks(false);
         else if (showNotes) setShowNotes(false);
         else closeModal();
@@ -1326,6 +1329,16 @@ function App() {
           </svg>
         </span>
         <span className="tools-toggle-label">Infra</span>
+      </button>
+
+      {/* NAS File Browser Button */}
+      <button className={`tools-toggle-btn${showNasBrowser ? ' expanded' : ''}`} onClick={() => openPanel(setShowNasBrowser)}>
+        <span className="tools-toggle-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          </svg>
+        </span>
+        <span className="tools-toggle-label">NAS</span>
       </button>
 
       {/* App Icon Grid Toggle */}
@@ -1863,6 +1876,9 @@ function App() {
 
       {/* Infrastructure Dashboard */}
       <InfraDashboard isOpen={showInfra} onClose={() => setShowInfra(false)} />
+
+      {/* NAS File Browser */}
+      <NasBrowser isOpen={showNasBrowser} onClose={() => setShowNasBrowser(false)} />
 
       {/* Modals */}
       <Modal isOpen={activeModal === 'services'} onClose={closeModal} title="SEONOLOGY">
