@@ -1,3 +1,10 @@
+## [1.36.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.0...v1.36.1) (2026-04-26)
+
+
+### Bug Fixes
+
+* fix infra API fetchJSON response handling and Grafana HTTP proxy ([987223d](https://github.com/seonNoh/seonology-clock-page/commit/987223dabdd1dbdcf96ce0ebfc6b05f531bac7cb))
+
 # [1.36.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.35.0...v1.36.0) (2026-04-26)
 
 
