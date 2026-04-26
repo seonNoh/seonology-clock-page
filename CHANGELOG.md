@@ -1,3 +1,10 @@
+## [1.36.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.1...v1.36.2) (2026-04-26)
+
+
+### Bug Fixes
+
+* improve infra API error handling and Tailscale response parsing ([f80a22b](https://github.com/seonNoh/seonology-clock-page/commit/f80a22b059376eaa3680e3c123eb9d1cc91a2910))
+
 ## [1.36.1](https://github.com/seonNoh/seonology-clock-page/compare/v1.36.0...v1.36.1) (2026-04-26)
 
 
