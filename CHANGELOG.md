@@ -1,3 +1,10 @@
+# [1.38.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.37.2...v1.38.0) (2026-04-26)
+
+
+### Features
+
+* add NAS File Browser with full CRUD operations ([be81b60](https://github.com/seonNoh/seonology-clock-page/commit/be81b609f0e8502982aec6d8c3f05039625f7666))
+
 ## [1.37.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.37.1...v1.37.2) (2026-04-26)
 
 
