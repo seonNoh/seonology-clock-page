@@ -2175,7 +2175,7 @@ app.get('/api/nas/download', async (req, res) => {
     const url = `https://${NAS_HOST}:${NAS_PORT}/webapi/entry.cgi?api=SYNO.FileStation.Download&version=2&method=download&path=${encodeURIComponent(filePath)}&mode=download&_sid=${sid}`;
     const fileName = filePath.split('/').pop();
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-    const proxyReq = https.request(url, { rejectUnauthorized: false }, (proxyRes) => {
+    const proxyReq = https.request(url, { rejectUnauthorized: false, timeout: 600000 }, (proxyRes) => {
       if (proxyRes.headers['content-type']) res.setHeader('Content-Type', proxyRes.headers['content-type']);
       if (proxyRes.headers['content-length']) res.setHeader('Content-Length', proxyRes.headers['content-length']);
       proxyRes.pipe(res);
@@ -2185,52 +2185,65 @@ app.get('/api/nas/download', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Upload (multipart)
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
+// Upload (streaming to NAS)
+app.post('/api/nas/upload', async (req, res) => {
+  const busboy = require('busboy');
+  let destPath = '';
+  let fileName = '';
+  let uploadDone = false;
 
-app.post('/api/nas/upload', upload.single('file'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'file required' });
-  const destPath = req.body.path;
-  if (!destPath) return res.status(400).json({ error: 'path required' });
   try {
     const sid = await getNasSid();
-    const boundary = '----NASUpload' + Date.now();
-    const fileName = req.file.originalname;
+    const bb = busboy({ headers: req.headers, limits: { fileSize: 11 * 1024 * 1024 * 1024 } });
 
-    const parts = [];
-    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="api"\r\n\r\nSYNO.FileStation.Upload`);
-    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="version"\r\n\r\n2`);
-    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="method"\r\n\r\nupload`);
-    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="path"\r\n\r\n${destPath}`);
-    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="create_parents"\r\n\r\ntrue`);
-    parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="overwrite"\r\n\r\ntrue`);
-    const fileHeader = `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${fileName}"\r\nContent-Type: application/octet-stream\r\n\r\n`;
-    const footer = `\r\n--${boundary}--\r\n`;
+    bb.on('field', (name, val) => {
+      if (name === 'path') destPath = val;
+    });
 
-    const prefix = parts.join('\r\n') + '\r\n' + fileHeader;
-    const prefixBuf = Buffer.from(prefix);
-    const footerBuf = Buffer.from(footer);
-    const body = Buffer.concat([prefixBuf, req.file.buffer, footerBuf]);
+    bb.on('file', (fieldname, fileStream, info) => {
+      fileName = info.filename;
+      if (!destPath) { fileStream.resume(); return; }
 
-    const uploadRes = await new Promise((resolve, reject) => {
-      const r = https.request({
+      const boundary = '----NASStream' + Date.now();
+      const parts = [];
+      parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="api"\r\n\r\nSYNO.FileStation.Upload`);
+      parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="version"\r\n\r\n2`);
+      parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="method"\r\n\r\nupload`);
+      parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="path"\r\n\r\n${destPath}`);
+      parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="create_parents"\r\n\r\ntrue`);
+      parts.push(`--${boundary}\r\nContent-Disposition: form-data; name="overwrite"\r\n\r\ntrue`);
+      const fileHeader = `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${fileName}"\r\nContent-Type: application/octet-stream\r\n\r\n`;
+      const prefix = parts.join('\r\n') + '\r\n' + fileHeader;
+      const footer = `\r\n--${boundary}--\r\n`;
+
+      const nasReq = https.request({
         hostname: NAS_HOST, port: NAS_PORT,
         path: `/webapi/entry.cgi?_sid=${sid}`,
         method: 'POST', rejectUnauthorized: false,
-        headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}`, 'Content-Length': body.length },
-      }, (resp) => {
-        let d = '';
-        resp.on('data', c => d += c);
-        resp.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+        headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}`, 'Transfer-Encoding': 'chunked' },
+        timeout: 600000,
+      }, (nasRes) => {
+        let body = '';
+        nasRes.on('data', c => body += c);
+        nasRes.on('end', () => {
+          uploadDone = true;
+          try {
+            const d = JSON.parse(body);
+            if (d.success) res.json({ success: true });
+            else res.status(500).json({ error: `Upload failed: ${JSON.stringify(d.error)}` });
+          } catch { res.status(500).json({ error: 'Invalid NAS response' }); }
+        });
       });
-      r.on('error', reject);
-      r.write(body);
-      r.end();
+      nasReq.on('error', (e) => { if (!uploadDone) res.status(500).json({ error: e.message }); });
+
+      nasReq.write(prefix);
+      fileStream.on('data', (chunk) => nasReq.write(chunk));
+      fileStream.on('end', () => { nasReq.write(footer); nasReq.end(); });
+      fileStream.on('error', (e) => { nasReq.destroy(); if (!uploadDone) res.status(500).json({ error: e.message }); });
     });
 
-    if (!uploadRes.success) throw new Error(`Upload failed: ${JSON.stringify(uploadRes.error)}`);
-    res.json({ success: true });
+    bb.on('error', (e) => { if (!uploadDone) res.status(500).json({ error: e.message }); });
+    req.pipe(bb);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
