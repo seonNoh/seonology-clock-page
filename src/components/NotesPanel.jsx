@@ -194,13 +194,29 @@ function NotesPanel({ isOpen, onClose }) {
     : notes;
 
   const formatDate = (dateStr) => {
+    if (!dateStr) return '';
     const d = new Date(dateStr);
     const now = new Date();
     const diff = now - d;
     if (diff < 60000) return 'just now';
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-    return `${d.getMonth() + 1}/${d.getDate()}`;
+    if (diff < 7 * 86400000) return `${Math.floor(diff / 86400000)}d ago`;
+    const sameYear = d.getFullYear() === now.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return sameYear ? `${m}/${day}` : `${d.getFullYear()}/${m}/${day}`;
+  };
+
+  const formatFullDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${day} ${hh}:${mm}`;
   };
 
   if (!isOpen) return null;
@@ -273,6 +289,12 @@ function NotesPanel({ isOpen, onClose }) {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
+              <div className="notes-meta">
+                <span className="notes-meta-title" title={getTitle(activeNote)}>{getTitle(activeNote)}</span>
+                <span className="notes-meta-time" title={formatFullDate(activeNote.updatedAt)}>
+                  {activeNote.updatedAt ? `Updated ${formatDate(activeNote.updatedAt)}` : ''}
+                </span>
+              </div>
               <textarea
                 ref={textareaRef}
                 className="notes-textarea"
@@ -310,7 +332,11 @@ function NotesPanel({ isOpen, onClose }) {
                       </button>
                     </div>
                     <div className="notes-list-preview">{getPreview(note)}</div>
-                    <div className="notes-list-date">{formatDate(note.updatedAt)}</div>
+                    <div className="notes-list-date" title={formatFullDate(note.updatedAt)}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span>{formatDate(note.updatedAt)}</span>
+                      <span className="notes-list-date-full">{formatFullDate(note.updatedAt)}</span>
+                    </div>
                   </div>
                 ))
               )}
