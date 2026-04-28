@@ -1,3 +1,10 @@
+# [1.43.0](https://github.com/seonNoh/seonology-clock-page/compare/v1.42.2...v1.43.0) (2026-04-28)
+
+
+### Features
+
+* **notes:** show note title and last updated time ([974c242](https://github.com/seonNoh/seonology-clock-page/commit/974c242d2a7cd77a1131b03e37264fecee91d1b4))
+
 ## [1.42.2](https://github.com/seonNoh/seonology-clock-page/compare/v1.42.1...v1.42.2) (2026-04-26)
 
 
