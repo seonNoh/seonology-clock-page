@@ -1,49 +1,168 @@
-/* 전체 브리핑 모달 본문 */
+/* 전체 브리핑 모달 본문 — 브리핑 / 일정 / 근거 3탭.
+   모든 글자 크기는 calc(<기본rem> * var(--bf-scale, 1)) 로 선언해
+   헤더의 A-/A+ 버튼이 documentElement 의 --bf-scale 만 바꿔도 전부 따라오게 한다. */
 .briefing-panel {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: 62vh;
+  max-height: 70vh;
+  min-width: 0;
   overflow-y: auto;
-  padding-right: 0.25rem;
+  overflow-x: hidden;
+  padding-right: 0.35rem;
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  line-height: 1.6;
+  color: var(--text-primary);
 }
 
 .briefing-panel-message {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: calc(1.05rem * var(--bf-scale, 1));
   padding: 1rem 0;
+}
+
+.briefing-panel-note {
+  color: var(--text-secondary);
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  padding: 0.35rem 0;
+}
+
+.briefing-panel-note-bad {
+  color: #f2705e;
+}
+
+/* ── 고정 헤더 + 탭 바 ─────────────────────────────── */
+.briefing-panel-top {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.1rem 0 0.6rem;
+  background: var(--bg-card, #151520);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .briefing-panel-head {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.6rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid var(--border-color);
+  min-width: 0;
   font-family: 'JetBrains Mono', 'SF Mono', monospace;
 }
 
+/* 상주 카드(.briefing-status-dot)와 겹치지 않도록 패널 전용 클래스로 둔다. */
+.briefing-panel-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.briefing-panel-dot-ok { background: #4ac97e; }
+.briefing-panel-dot-bad { background: #f2705e; }
+.briefing-panel-dot-pending { background: #6b7280; }
+
 .briefing-panel-date {
-  font-size: 0.95rem;
+  font-size: calc(1.15rem * var(--bf-scale, 1));
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .briefing-panel-meta {
-  font-size: 0.72rem;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
   color: var(--text-secondary);
+  word-break: break-word;
 }
 
 .briefing-panel-status {
-  margin-left: auto;
-  font-size: 0.72rem;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
   color: #f2705e;
 }
 
+.briefing-scale {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.briefing-scale-button {
+  min-width: 2.1rem;
+  padding: 0.2rem 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.briefing-scale-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.briefing-scale-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.briefing-scale-value {
+  min-width: 3.4rem;
+  text-align: center;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  color: var(--text-secondary);
+}
+
+.briefing-tabs {
+  display: flex;
+  gap: 0.35rem;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.briefing-tab {
+  padding: 0.35rem 0.95rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.briefing-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.briefing-tab.active {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.briefing-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  min-width: 0;
+}
+
+/* ── 탭 1: 브리핑 ──────────────────────────────────── */
 .briefing-section {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.55rem;
+  min-width: 0;
 }
 
 .briefing-section-header {
@@ -55,66 +174,347 @@
   padding: 0.2rem 0;
   cursor: pointer;
   color: var(--text-primary);
-  font-size: 0.85rem;
+  font-size: calc(1.15rem * var(--bf-scale, 1));
   font-weight: 600;
   text-align: left;
 }
 
-.briefing-section-caret {
+.briefing-caret {
   display: inline-block;
   color: var(--text-secondary);
   transition: transform 0.15s ease;
+  flex: none;
 }
 
-.briefing-section-caret.open {
+.briefing-caret.open {
   transform: rotate(90deg);
 }
 
 .briefing-section-count {
-  font-size: 0.7rem;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.06);
   border-radius: 999px;
-  padding: 0.05rem 0.5rem;
+  padding: 0.05rem 0.55rem;
 }
 
 .briefing-items {
   list-style: none;
   margin: 0;
-  padding: 0 0 0 1.1rem;
+  padding: 0 0 0 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 1rem;
+  min-width: 0;
 }
 
 .briefing-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  color: var(--text-primary);
+  gap: 0.55rem;
+  min-width: 0;
   border-left: 2px solid var(--border-color);
-  padding-left: 0.7rem;
+  padding-left: 0.85rem;
 }
 
 .briefing-item-text {
+  margin: 0;
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  line-height: 1.65;
+  color: var(--text-primary);
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
-.briefing-item-chips {
+.briefing-item-sources,
+.briefing-item-claims {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
-.briefing-chip {
-  font-size: 0.66rem;
+.briefing-item-claims {
+  margin-top: -0.15rem;
+}
+
+.briefing-source-chip {
+  display: inline-block;
+  max-width: 100%;
   font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  line-height: 1.4;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius-md);
+  padding: 0.2rem 0.6rem;
+  text-align: left;
+  overflow-wrap: anywhere;
+  transition: var(--transition);
+}
+
+button.briefing-source-chip {
+  cursor: pointer;
+}
+
+button.briefing-source-chip:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: var(--text-primary);
+}
+
+.briefing-source-unknown {
+  opacity: 0.6;
+}
+
+/* 시간 칩은 출처 칩보다 테두리를 흐리게 해 다른 계열임을 드러낸다. */
+.briefing-claim-chip {
+  display: inline-block;
+  max-width: 100%;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  line-height: 1.4;
+  color: var(--text-muted, rgba(255, 255, 255, 0.35));
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-md);
+  padding: 0.15rem 0.55rem;
+  overflow-wrap: anywhere;
+}
+
+/* ── 탭 2: 일정 타임라인 ───────────────────────────── */
+.briefing-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.briefing-timeline-row {
+  display: flex;
+  gap: 0.9rem;
+  min-width: 0;
+  padding: 0.7rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.briefing-timeline-time {
+  flex: none;
+  width: 8.5rem;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  color: var(--text-secondary);
+  padding-top: 0.1rem;
+}
+
+.briefing-timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.briefing-timeline-title {
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.briefing-timeline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.briefing-timeline-organizer {
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.briefing-badge {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  line-height: 1.3;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+
+.briefing-badge-warn {
+  color: #e0a740;
+  border-color: rgba(224, 167, 64, 0.35);
+}
+
+.briefing-timeline-preps {
+  list-style: none;
+  margin: 0.2rem 0 0;
+  padding: 0 0 0 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-left: 2px solid var(--border-color);
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  line-height: 1.6;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* ── 탭 3: 근거(메일 원장) ─────────────────────────── */
+.briefing-mail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.75rem 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.briefing-mail-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.briefing-attn {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.briefing-attn-urgent { background: #f2705e; }
+.briefing-attn-high { background: #e0a740; }
+.briefing-attn-normal { background: #6b7280; }
+
+.briefing-mail-title {
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+}
+
+.briefing-mail-sender {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.briefing-mail-time {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  color: var(--text-secondary);
+  flex: none;
+}
+
+.briefing-mail-summary {
+  margin: 0;
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  line-height: 1.6;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.briefing-mail-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.briefing-evidence-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.briefing-evidence-label {
+  font-size: calc(0.9rem * var(--bf-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.briefing-evidence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.briefing-evidence-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.briefing-evidence-text {
+  font-size: calc(1.05rem * var(--bf-scale, 1));
+  line-height: 1.6;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.briefing-evidence {
+  margin: 0;
+  padding: 0.35rem 0 0.35rem 0.8rem;
+  border-left: 2px solid var(--border-color);
+  font-size: calc(0.95rem * var(--bf-scale, 1));
+  line-height: 1.6;
+  color: var(--text-muted, rgba(255, 255, 255, 0.35));
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 출처 칩에서 점프했을 때 2초간 유지되는 강조. */
+.bf-jump-highlight {
+  border-color: rgba(124, 159, 255, 0.65);
+  background: rgba(124, 159, 255, 0.12);
+  box-shadow: 0 0 0 1px rgba(124, 159, 255, 0.35);
+}
+
+@media (max-width: 768px) {
+  .briefing-timeline-row {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .briefing-timeline-time {
+    width: auto;
+  }
 }

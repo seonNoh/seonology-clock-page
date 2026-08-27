@@ -4,6 +4,9 @@ import './BriefingCard.css';
 
 const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
 const SEEN_KEY = 'briefing-last-seen-run';
+const FONT_SCALE_KEY = 'briefing-font-scale';
+const FONT_SCALES = [1, 1.15, 1.3, 1.45, 1.6];
+const DEFAULT_FONT_SCALE = 1.15;
 
 // 좌하 상주 카드. 최신 브리핑 요약을 보여주고, SSE 로 신규 도착을 감지해
 // NEW 배지·하이라이트·브라우저 알림을 띄운다. 클릭하면 전체 모달을 연다.
@@ -27,6 +30,16 @@ function BriefingCard({ onClick }) {
       setUnavailable(true);
     }
   };
+
+  // 패널에서 저장한 글씨 배율을 카드에도 적용한다(조절 버튼은 패널에만 있다).
+  useEffect(() => {
+    let scale = DEFAULT_FONT_SCALE;
+    try {
+      const stored = Number(localStorage.getItem(FONT_SCALE_KEY));
+      if (FONT_SCALES.includes(stored)) scale = stored;
+    } catch { /* ignore */ }
+    try { document.documentElement.style.setProperty('--bf-scale', String(scale)); } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     load();

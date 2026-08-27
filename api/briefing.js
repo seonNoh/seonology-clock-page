@@ -1,5 +1,7 @@
 // worklog 아침 브리핑 통합.
 // - /api/briefing/latest  최신 run 요약 + 본문(structured_result). worklog API 를 mTLS 로 프록시한다.
+// - /api/briefing/mails   run 의 메일 목록(커서 페이지네이션) 프록시.
+// - /api/briefing/events  run 의 일정 목록(커서 페이지네이션) 프록시.
 // - /api/briefing/stream  신규 브리핑 SSE. NATS work.briefing.> 구독을 push 로 중계한다.
 // worklog 호출은 공용 인그레스를 클라이언트 인증서(seon-clock-client)로 통과한다.
 // 인증서나 NATS 설정이 없으면 브리핑 기능만 비활성화되고 다른 기능에는 영향이 없다.
@@ -63,6 +65,49 @@ async function getLatest(force) {
   return payload;
 }
 
+const RUN_ID_RE = /^[0-9a-f-]{36}$/;
+
+// mails/events 는 run 하위 컬렉션을 커서로 넘겨받는 구조가 같아 한 핸들러로 처리한다.
+// run_id 가 없으면 최신 run 을 쓰고, 최신 run 자체가 없으면 빈 목록을 200 으로 돌려준다.
+function makeRunCollectionHandler(kind) {
+  return async (req, res) => {
+    if (!worklogConfigured()) return res.status(503).json({ error: 'briefing not configured' });
+
+    const runIdParam = req.query.run_id;
+    if (runIdParam !== undefined && !(typeof runIdParam === 'string' && RUN_ID_RE.test(runIdParam))) {
+      return res.status(400).json({ error: 'invalid run_id' });
+    }
+    const cursorParam = req.query.cursor;
+    if (cursorParam !== undefined && typeof cursorParam !== 'string') {
+      return res.status(400).json({ error: 'invalid cursor' });
+    }
+    const limitParam = req.query.limit;
+    let limit = null;
+    if (limitParam !== undefined) {
+      if (typeof limitParam !== 'string' || !/^\d+$/.test(limitParam)) return res.status(400).json({ error: 'invalid limit' });
+      limit = Number(limitParam);
+      if (limit < 1 || limit > 100) return res.status(400).json({ error: 'invalid limit' });
+    }
+
+    try {
+      let runId = runIdParam;
+      if (!runId) {
+        const { run } = await getLatest(false);
+        if (!run) return res.json({ items: [], next_cursor: '' });
+        runId = String(run.id);
+      }
+      const qs = [];
+      if (limit !== null) qs.push(`limit=${limit}`);
+      if (cursorParam) qs.push(`cursor=${encodeURIComponent(cursorParam)}`);
+      const suffix = qs.length ? `?${qs.join('&')}` : '';
+      const payload = await worklogGet(`/api/morning-briefing/runs/${encodeURIComponent(runId)}/${kind}${suffix}`);
+      res.json(payload);
+    } catch (e) {
+      res.status(502).json({ error: 'worklog upstream error', detail: String(e.message || e) });
+    }
+  };
+}
+
 const sseClients = new Set();
 let lastEventFrame = null;
 function broadcast(eventJson) {
@@ -111,6 +156,9 @@ function setupBriefingRoutes(app) {
       res.status(502).json({ error: 'worklog upstream error', detail: String(e.message || e) });
     }
   });
+
+  app.get('/api/briefing/mails', makeRunCollectionHandler('mails'));
+  app.get('/api/briefing/events', makeRunCollectionHandler('events'));
 
   app.get('/api/briefing/stream', (req, res) => {
     res.writeHead(200, {

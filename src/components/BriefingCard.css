@@ -41,7 +41,7 @@
 }
 
 .briefing-title {
-  font-size: 0.85rem;
+  font-size: calc(1rem * var(--bf-scale, 1.15));
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.05em;
@@ -58,12 +58,12 @@
 .briefing-status-pending { background: #6b7280; }
 
 .briefing-date {
-  font-size: 0.7rem;
+  font-size: calc(0.8rem * var(--bf-scale, 1.15));
   color: var(--text-secondary);
 }
 
 .briefing-new {
-  font-size: 0.6rem;
+  font-size: calc(0.7rem * var(--bf-scale, 1.15));
   font-weight: 700;
   letter-spacing: 0.08em;
   color: #7c9fff;
@@ -73,12 +73,12 @@
 }
 
 .briefing-counts {
-  font-size: 0.72rem;
+  font-size: calc(0.9rem * var(--bf-scale, 1.15));
   color: var(--text-secondary);
 }
 
 .briefing-first-line {
-  font-size: 0.7rem;
+  font-size: calc(0.85rem * var(--bf-scale, 1.15));
   color: var(--text-tertiary, rgba(255, 255, 255, 0.4));
   white-space: nowrap;
   overflow: hidden;
@@ -86,7 +86,7 @@
 }
 
 .briefing-empty {
-  font-size: 0.72rem;
+  font-size: calc(0.85rem * var(--bf-scale, 1.15));
   color: var(--text-secondary);
 }
 
