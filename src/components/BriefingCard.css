@@ -1,0 +1,95 @@
+/* 좌하 브리핑 상주 카드 — Todo 미리보기(.todo-preview)와 같은 시각 언어를 공유한다. */
+.briefing-preview {
+  position: fixed;
+  bottom: calc(5rem + 200px);
+  left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition), left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  min-width: 200px;
+  max-width: 280px;
+  z-index: 10;
+}
+
+.briefing-preview:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.briefing-fresh {
+  border-color: rgba(124, 159, 255, 0.55);
+  box-shadow: 0 0 14px rgba(124, 159, 255, 0.25);
+}
+
+.briefing-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.briefing-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.briefing-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+}
+
+.briefing-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.briefing-status-ok { background: #4ac97e; }
+.briefing-status-bad { background: #f2705e; }
+.briefing-status-pending { background: #6b7280; }
+
+.briefing-date {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.briefing-new {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #7c9fff;
+  background: rgba(124, 159, 255, 0.15);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.briefing-counts {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.briefing-first-line {
+  font-size: 0.7rem;
+  color: var(--text-tertiary, rgba(255, 255, 255, 0.4));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.briefing-empty {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .briefing-preview { display: none; }
+}

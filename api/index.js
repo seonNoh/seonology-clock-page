@@ -29,6 +29,7 @@ const {
 const { setupGithubCatalogRoutes } = require('./github-catalog');
 const { setupIconRoutes } = require('./icons');
 const { setupJmaRoutes } = require('./jma');
+const { setupBriefingRoutes } = require('./briefing');
 
 // Sapporo Events configuration
 const DOORKEEPER_TOKEN = runtimeConfig.api.doorkeeperToken;
@@ -2392,6 +2393,7 @@ setupMicrosoftRoutes(app, { ...cloudRouteDependencies.microsoft, ...dependencies
 setupGithubCatalogRoutes(app);
 setupIconRoutes(app);
 setupJmaRoutes(app);
+setupBriefingRoutes(app);
 
 return app;
 }

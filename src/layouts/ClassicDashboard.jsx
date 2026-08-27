@@ -5,6 +5,8 @@ import Clock from '../components/Clock';
 import CursorCanvas from '../components/CursorCanvas';
 import Weather from '../components/Weather';
 import TodoList from '../components/TodoList';
+import BriefingCard from '../components/BriefingCard';
+import BriefingPanel from '../components/BriefingPanel';
 import Calendar from '../components/Calendar';
 import ExchangeRate from '../components/ExchangeRate';
 import LoadingProgress from '../components/LoadingProgress';
@@ -1414,6 +1416,7 @@ function ClassicDashboard({ colorMode }) {
 
       {/* Bottom Left - Todo Preview */}
       <TodoPreview onClick={() => openModal('todo')} />
+      <BriefingCard onClick={() => openModal('briefing')} />
 
 
 
@@ -1441,6 +1444,10 @@ function ClassicDashboard({ colorMode }) {
 
       <Modal isOpen={activeModal === 'exchange'} onClose={closeModal} title="Exchange Rate">
         <ExchangeRate />
+      </Modal>
+
+      <Modal isOpen={activeModal === 'briefing'} onClose={closeModal} title="Morning Briefing">
+        <BriefingPanel />
       </Modal>
 
       <Modal isOpen={activeModal === 'todo'} onClose={closeModal} title="Todo">

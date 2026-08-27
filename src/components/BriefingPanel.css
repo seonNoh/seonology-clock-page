@@ -1,0 +1,120 @@
+/* 전체 브리핑 모달 본문 */
+.briefing-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 62vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.briefing-panel-message {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
+.briefing-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border-color);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.briefing-panel-date {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.briefing-panel-meta {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.briefing-panel-status {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #f2705e;
+}
+
+.briefing-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.briefing-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0.2rem 0;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.briefing-section-caret {
+  display: inline-block;
+  color: var(--text-secondary);
+  transition: transform 0.15s ease;
+}
+
+.briefing-section-caret.open {
+  transform: rotate(90deg);
+}
+
+.briefing-section-count {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+
+.briefing-items {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.briefing-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  border-left: 2px solid var(--border-color);
+  padding-left: 0.7rem;
+}
+
+.briefing-item-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.briefing-item-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.briefing-chip {
+  font-size: 0.66rem;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.05rem 0.4rem;
+}

@@ -84,6 +84,73 @@ export function StatusSummary({ onOpenWeather, onOpenExchange }) {
   );
 }
 
+export function BriefingSummary({ onOpen }) {
+  const [latest, setLatest] = useState(null);
+  const [fresh, setFresh] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const result = await requestJson('/api/briefing/latest');
+        if (!active) return;
+        setLatest(result);
+        let seen = null;
+        try { seen = localStorage.getItem('briefing-last-seen-run'); } catch { /* ignore */ }
+        if (result.run && result.run.status === 'succeeded' && result.run.id !== seen) setFresh(true);
+      } catch {
+        if (active) setLatest(null);
+      }
+    };
+    load();
+    const interval = setInterval(load, 10 * 60 * 1000);
+    const source = new EventSource('/api/briefing/stream');
+    source.addEventListener('briefing', (event) => {
+      let payload = null;
+      try { payload = JSON.parse(event.data); } catch { return; }
+      load();
+      if (payload && payload.event === 'completed') {
+        setFresh(true);
+        try {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Morning Briefing', { body: `${payload.target_date} 브리핑이 도착했습니다.` });
+          }
+        } catch { /* ignore */ }
+      }
+    });
+    source.onerror = () => { /* 브라우저가 자동 재연결 */ };
+    return () => {
+      active = false;
+      clearInterval(interval);
+      source.close();
+    };
+  }, []);
+
+  const open = () => {
+    if (latest && latest.run) {
+      try { localStorage.setItem('briefing-last-seen-run', latest.run.id); } catch { /* ignore */ }
+    }
+    setFresh(false);
+    try {
+      if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    } catch { /* ignore */ }
+    onOpen();
+  };
+
+  const run = latest?.run;
+  const result = latest?.detail?.structured_result;
+  const summary = result
+    ? `일정 ${(result.schedule_preparation ?? []).length} · 리스크 ${(result.risks ?? []).length} · 결정 ${(result.decisions ?? []).length}`
+    : (run ? `${run.status}${run.error_code ? ` (${run.error_code})` : ''}` : '브리핑 없음');
+
+  return (
+    <button type="button" className="split-summary-card" onClick={open}>
+      <span>BRIEFING{fresh ? ' · NEW' : ''}{run ? ` · ${run.target_date}` : ''}</span>
+      <b>{summary}</b>
+    </button>
+  );
+}
+
 export function TodoSummary({ onOpen }) {
   const [pending, setPending] = useState([]);
 

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 
 import BrowserStats from '../components/BrowserStats.jsx';
+import BriefingPanel from '../components/BriefingPanel.jsx';
 import Clock from '../components/Clock.jsx';
 import CursorCanvas from '../components/CursorCanvas.jsx';
 import LoadingProgress from '../components/LoadingProgress.jsx';
@@ -12,6 +13,7 @@ import { CURSOR_ANIMATIONS, CURSOR_GLOW_EFFECTS } from '../features/effects/effe
 import { DASHBOARD_LINK_GROUPS } from '../features/dashboard/dashboardLinks.js';
 import {
   GoogleSearch,
+  BriefingSummary,
   StatusSummary,
   TodoSummary,
 } from '../features/dashboard/DashboardWidgets.jsx';
@@ -206,6 +208,7 @@ function SplitConsoleDashboard({
 
         <div className="split-work-actions">
           <TodoSummary onOpen={() => openModal('todo')} />
+          <BriefingSummary onOpen={() => openModal('briefing')} />
           <button type="button" className="split-summary-card" onClick={() => openTool('speedtest')}><span>SPEED TEST</span><b>네트워크 측정</b></button>
           <button type="button" className="split-summary-card" data-capability="bookmarks-manage" onClick={() => openModal('bookmarks')}><span>BOOKMARKS</span><b>즐겨찾기 관리</b></button>
         </div>
@@ -251,6 +254,7 @@ function SplitConsoleDashboard({
       {activeModal === 'weather' && <DashboardDialog title="Weather" eyebrow="LIVE STATUS" onClose={() => transitionSurface(closeModal)}><Weather /></DashboardDialog>}
       {activeModal === 'exchange' && <DashboardDialog title="Exchange Rate" eyebrow="LIVE STATUS" onClose={() => transitionSurface(closeModal)}><ExchangeRate /></DashboardDialog>}
       {activeModal === 'todo' && <DashboardDialog title="Todo" eyebrow="WORKSPACE" onClose={() => transitionSurface(closeModal)}><TodoList /></DashboardDialog>}
+      {activeModal === 'briefing' && <DashboardDialog title="Morning Briefing" eyebrow="WORKSPACE" onClose={() => transitionSurface(closeModal)}><BriefingPanel /></DashboardDialog>}
       {activeModal === 'calendar' && <DashboardDialog title="Calendar" eyebrow="WORKSPACE" onClose={() => transitionSurface(closeModal)}><Calendar /></DashboardDialog>}
 
       {ActiveToolComponent && (
