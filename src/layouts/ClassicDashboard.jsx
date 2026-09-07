@@ -31,6 +31,7 @@ const TOOL_GRID_IDS = new Set([
   'notes', 'markdown', 'chat', 'unit', 'base64', 'json', 'ip', 'password',
   'color', 'cron', 'subnet', 'slo', 'cicd', 'excel', 'rbac', 'terraform',
   'gl2gh', 'archicon', 'regex', 'epoch', 'textcounter', 'dns', 'mermaid',
+  'clipboard',
 ]);
 
 // Services will be loaded from API
@@ -1274,6 +1275,17 @@ function ClassicDashboard({ colorMode }) {
             </svg>
           </span>
           <span className="app-icon-label">Mermaid</span>
+        </button>
+
+        <button className="app-icon-btn" hidden={!visibleToolIds.has('clipboard')} onClick={() => openTool('clipboard')} title="Clipboard Images">
+          <span className="app-icon-visual">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              <path d="M8 13l2.5 2.5L16 10" />
+            </svg>
+          </span>
+          <span className="app-icon-label">Clipboard</span>
         </button>
 
           </div>{/* end tools-modal-grid */}

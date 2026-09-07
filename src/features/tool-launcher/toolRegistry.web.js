@@ -31,6 +31,7 @@ const WEB_TOOL_LOADERS = {
   nas: () => import('../../components/NasBrowser.jsx'),
   gdrive: () => import('../../components/CloudBrowser.jsx'),
   onedrive: () => import('../../components/CloudBrowser.jsx'),
+  clipboard: () => import('../clipboard/ClipboardImagesPanel.jsx'),
 };
 
 const WEB_TOOL_MODULES = new Map();

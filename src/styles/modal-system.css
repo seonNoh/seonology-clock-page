@@ -58,7 +58,8 @@ body :is(
   .mm-overlay,
   .infra-overlay,
   .repocat-overlay,
-  .nb-overlay
+  .nb-overlay,
+  .clip-overlay
 ) {
   padding: 6dvh 4dvw;
 }
@@ -107,7 +108,8 @@ body :is(
   .mm-overlay > .mm-modal,
   .infra-overlay > .infra-modal,
   .repocat-overlay > .repocat-modal,
-  .nb-overlay > .nb-modal
+  .nb-overlay > .nb-modal,
+  .clip-overlay > .clip-modal
 ) {
   width: var(--modal-workspace-width) !important;
   max-width: 1600px !important;
@@ -206,7 +208,8 @@ body .modal-overlay > .modal-content > .modal-body {
   .mm-modal,
   .infra-modal,
   .repocat-modal,
-  .nb-modal
+  .nb-modal,
+  .clip-modal
 ) {
   --bg-primary: #edf1f8;
   --bg-card: #f8faff;
@@ -334,7 +337,8 @@ body :is(
     .mm-overlay,
     .infra-overlay,
     .repocat-overlay,
-    .nb-overlay
+    .nb-overlay,
+    .clip-overlay
   ) {
     align-items: stretch;
     place-items: stretch;
@@ -371,7 +375,8 @@ body :is(
     .mm-overlay > .mm-modal,
     .infra-overlay > .infra-modal,
     .repocat-overlay > .repocat-modal,
-    .nb-overlay > .nb-modal
+    .nb-overlay > .nb-modal,
+    .clip-overlay > .clip-modal
   ) {
     max-width: 100dvw !important;
     border-right: 0 !important;

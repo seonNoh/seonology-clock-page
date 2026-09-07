@@ -11,7 +11,7 @@ const EXPECTED_TOOL_IDS = [
   'notes', 'chat', 'markdown', 'unit', 'base64', 'json', 'ip', 'password',
   'color', 'cron', 'subnet', 'slo', 'cicd', 'excel', 'rbac', 'terraform',
   'gl2gh', 'archicon', 'speedtest', 'regex', 'epoch', 'textcounter', 'dns',
-  'mermaid', 'infra', 'repos', 'nas', 'gdrive', 'onedrive',
+  'mermaid', 'infra', 'repos', 'nas', 'gdrive', 'onedrive', 'clipboard',
 ];
 
 test('web tool catalog has one complete entry for every dialog tool', () => {

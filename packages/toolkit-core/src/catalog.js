@@ -36,6 +36,7 @@ export const TOOL_CATALOG = Object.freeze([
   freezeTool({ id: 'nas', name: 'NAS Browser', aliases: ['files', 'storage'], surfaces: ['web'] }),
   freezeTool({ id: 'gdrive', name: 'Google Drive', aliases: ['cloud', 'files'], props: { provider: 'gdrive' }, surfaces: ['web'] }),
   freezeTool({ id: 'onedrive', name: 'OneDrive', aliases: ['cloud', 'files'], props: { provider: 'onedrive' }, surfaces: ['web'] }),
+  freezeTool({ id: 'clipboard', name: 'Clipboard Images', aliases: ['paste', 'image', 'screenshot'], surfaces: ['web'] }),
   freezeTool({ id: 'cidr', name: 'CIDR / Subnet', aliases: ['subnet', 'ip'], category: 'tools', icon: 'cidr', weight: 'light', surfaces: ['popup', 'newtab'] }),
   freezeTool({ id: 'textcount', name: 'Text Counter', aliases: [], category: 'tools', icon: 'text', weight: 'light', surfaces: ['popup', 'newtab', 'context'] }),
   freezeTool({ id: 'excel2md', name: 'Excel → Markdown', aliases: [], category: 'infra', icon: 'xls', weight: 'light', surfaces: ['popup', 'newtab'] }),

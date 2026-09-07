@@ -4,6 +4,7 @@ const DOCK_TOOLS = Object.freeze([
   { id: 'nas', code: 'NS', label: 'NAS' },
   { id: 'gdrive', code: 'GD', label: 'GDrive' },
   { id: 'onedrive', code: 'OD', label: 'OneDrive' },
+  { id: 'clipboard', code: 'CB', label: 'Clipboard' },
 ]);
 
 function ToolDock({ activeToolId, onOpenTool, onOpenTools, onOpenEffects }) {

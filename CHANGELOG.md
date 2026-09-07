@@ -1,3 +1,9 @@
+## [1.58.0] - 2026-09-07
+
+### Features
+
+- feat: add clipboard image transfer tool
+
 ## [1.57.0] - 2026-08-27
 
 ### Features

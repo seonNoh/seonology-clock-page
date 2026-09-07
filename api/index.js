@@ -56,6 +56,14 @@ const agentPlatformClient = dependencies.agentPlatformClient || createAgentPlatf
 });
 setupChatRoutes(app, { geminiClient, agentPlatformClient });
 
+// Clipboard image transfer keeps its own /data store and raw image body parser.
+const { createClipboardImageStore } = require('./domains/clipboard/image-store');
+const { setupClipboardRoutes } = require('./clipboard/clipboard-routes');
+setupClipboardRoutes(app, {
+  store: dependencies.clipboardStore || createClipboardImageStore(runtimeConfig.clipboard),
+  maxImageBytes: runtimeConfig.clipboard.maxImageBytes,
+});
+
 // Kubernetes API configuration
 const K8S_API_HOST = process.env.KUBERNETES_SERVICE_HOST || 'kubernetes.default.svc';
 const K8S_API_PORT = process.env.KUBERNETES_SERVICE_PORT || '443';

@@ -8,7 +8,7 @@
 
 | 범주 | 변수 |
 | --- | --- |
-| 저장소 및 런타임 | `BOOKMARKS_DIR`, `PORT`, `CATALOG_INTERVAL_MS`, `ICONS_BASE` |
+| 저장소 및 런타임 | `BOOKMARKS_DIR`, `PORT`, `CATALOG_INTERVAL_MS`, `ICONS_BASE`, `CLIPBOARD_DIR`, `CLIPBOARD_MAX_IMAGE_BYTES`, `CLIPBOARD_MAX_TOTAL_BYTES`, `CLIPBOARD_MAX_ITEMS` |
 | 브라우저 origin | `CORS_ALLOWED_ORIGINS` |
 | OAuth·cloud | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `MS_REDIRECT_URI`, `GITHUB_CATALOG_TOKEN`, `CLOUD_TOKEN_ENCRYPTION_KEY` |
 | NAS | `NAS_HOST`, `NAS_PORT`, `NAS_ACCOUNT`, `NAS_PASSWORD`, `NAS_ALLOWED_ROOTS`, `NAS_CA_PATH`, `NAS_TLS_SERVERNAME`, `NAS_MAX_UPLOAD_BYTES`, `NAS_MAX_UPLOAD_FILES` |
@@ -28,10 +28,11 @@ AI Chat의 정액제 하네스는 브라우저에서 Agent Platform으로 직접
 - 업로드는 대상 경로를 stream보다 먼저 검증하고, size·count·abort·upstream 오류를 provider 경계에서 처리합니다.
 - Bookmark URL은 API의 POST·PATCH·전체 PUT과 기존 데이터 read 경계에서 모두 검사합니다. `http:`·`https:`만 허용하고 credential 포함 URL, `javascript:`, `data:`, `file:`, protocol-relative URL과 2,048자를 넘는 값을 거부합니다. 웹에서도 링크를 열기 직전에 같은 정책을 다시 적용합니다.
 - Google 검색 제안 proxy는 HTTPS upstream, 5초 timeout, 256 KiB 응답 상한과 2xx 상태 확인을 사용합니다.
+- 클립보드 이미지는 클라이언트 `Content-Type` 대신 매직 바이트로 PNG·JPEG·GIF·WebP만 받고, 장당 25 MiB를 넘으면 거부하며 총 256 MiB·100장을 넘으면 오래된 항목부터 삭제합니다. 파일 이름은 서버가 생성한 24자리 hex id로만 만들고 조회·삭제도 같은 형식만 허용합니다.
 
 ## 전송 및 브라우저 경계
 
-nginx는 `/health`와 `/api/`를 loopback Express API로만 프록시합니다. `/health`가 API 연결 실패를 그대로 5xx로 반환하므로 readiness가 stale static asset으로 성공하지 않습니다. 일반 요청은 1 MiB로 제한하고, NAS·Google Drive·OneDrive 업로드 route의 전체 client request는 12 GiB로 제한합니다. API는 provider별 단일 파일을 최대 11 GiB까지 스트리밍하며 파일 크기·개수·대상 경로·abort·upstream 오류를 검증합니다. nginx의 추가 1 GiB는 multipart field, part header, boundary를 포함하는 envelope 여유이고, `proxy_request_buffering off`를 유지하므로 전체 요청을 nginx 임시 파일에 먼저 모으지 않습니다. nginx 상한은 API 검증을 대체하지 않고 과도한 전체 요청을 앞단에서 제한합니다.
+nginx는 `/health`와 `/api/`를 loopback Express API로만 프록시합니다. `/health`가 API 연결 실패를 그대로 5xx로 반환하므로 readiness가 stale static asset으로 성공하지 않습니다. 일반 요청은 1 MiB로 제한하고, NAS·Google Drive·OneDrive 업로드 route의 전체 client request는 12 GiB로 제한합니다. 클립보드 이미지 업로드 route는 32 MiB로 제한해 API의 장당 25 MiB 상한 앞에 여유만 남깁니다. API는 provider별 단일 파일을 최대 11 GiB까지 스트리밍하며 파일 크기·개수·대상 경로·abort·upstream 오류를 검증합니다. nginx의 추가 1 GiB는 multipart field, part header, boundary를 포함하는 envelope 여유이고, `proxy_request_buffering off`를 유지하므로 전체 요청을 nginx 임시 파일에 먼저 모으지 않습니다. nginx 상한은 API 검증을 대체하지 않고 과도한 전체 요청을 앞단에서 제한합니다.
 
 컨테이너는 UID/GID `10001`로 실행하며 privilege escalation과 Linux capabilities를 허용하지 않고, RuntimeDefault seccomp profile을 사용합니다. root filesystem은 read-only이고 `/data` PVC 및 `/tmp`, `/var/cache/nginx`, `/var/run/nginx` emptyDir만 쓰기 가능하게 mount합니다. Docker smoke도 같은 read-only 조건과 tmpfs mount를 강제해 health endpoint를 검증합니다.
 

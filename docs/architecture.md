@@ -29,6 +29,7 @@ src/App.jsx
   |     +-- features/bookmarks/          즐겨찾기 CRUD와 Quick Link
   |     +-- features/effects/            공용 커서 광원·애니메이션 카탈로그
   |     +-- features/tool-launcher/      도구 catalog와 실행 표면
+  |     +-- features/clipboard/          붙여넣기 이미지 업로드·목록·복사 경계
   |     +-- components/SnowField.jsx     독립적인 눈 효과
   +-- layouts/ClassicDashboard.jsx      기존 화면 호환 경계
   +-- components/Clock.jsx
@@ -43,7 +44,7 @@ Split Console은 `portrait`, `square`, `panorama` 시계 메타데이터에 따�
 
 Split과 Classic은 즐겨찾기, 서비스 허브, Google 검색 자동완성, 커서 광원·애니메이션 카탈로그를 공용 기능 모듈에서 사용합니다. 두 레이아웃의 시각 배치는 독립적이지만 기능 계약과 저장 키는 하나이므로 한쪽 화면만 수정되어 기능이 누락되는 상황을 회귀 테스트에서 차단합니다.
 
-API는 `api/server.js`가 HTTP 서버 수명주기를 소유하고, `api/app.js`의 `createApp`은 포트를 열지 않는 테스트 가능한 애플리케이션 조립점입니다. 저장, OAuth transaction, cloud token, NAS path 정책은 각각 독립 경계로 분리합니다. URL과 기존 성공 응답은 호환성 계약으로 유지합니다.
+API는 `api/server.js`가 HTTP 서버 수명주기를 소유하고, `api/app.js`의 `createApp`은 포트를 열지 않는 테스트 가능한 애플리케이션 조립점입니다. 저장, OAuth transaction, cloud token, NAS path 정책은 각각 독립 경계로 분리합니다. 클립보드 이미지도 저장 디렉터리와 인덱스를 자체 경계로 두고, 웹은 `features/clipboard/`의 API 모듈만 거쳐 `/api/clipboard/images`에 접근합니다. URL과 기존 성공 응답은 호환성 계약으로 유지합니다.
 
 웹과 extension은 공통 tool catalog를 소비하지만 surface별 lazy registry를 유지합니다. Markdown과 Mermaid 출력은 공통 sanitizer 경계를 지나야 하며, 다이얼로그 상태는 웹에서 단일 활성 도구 ID로 관리합니다.
 

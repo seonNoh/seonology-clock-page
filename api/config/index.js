@@ -57,6 +57,13 @@ function loadConfig(env = process.env) {
       clientId: env.TAILSCALE_OAUTH_CLIENT_ID || '',
       clientSecret: env.TAILSCALE_OAUTH_CLIENT_SECRET || '',
     },
+    clipboard: {
+      directory: env.CLIPBOARD_DIR || path.join(dataDirectory, 'clipboard'),
+      indexFile: path.join(dataDirectory, 'clipboard-images.json'),
+      maxImageBytes: positiveInteger(env.CLIPBOARD_MAX_IMAGE_BYTES, 25 * 1024 * 1024),
+      maxTotalBytes: positiveInteger(env.CLIPBOARD_MAX_TOTAL_BYTES, 256 * 1024 * 1024),
+      maxItems: positiveInteger(env.CLIPBOARD_MAX_ITEMS, 100),
+    },
     nas: {
       host: env.NAS_HOST || '',
       port: positiveInteger(env.NAS_PORT, 5001),
