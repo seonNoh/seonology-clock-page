@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import ClipboardAddView from './ClipboardAddView.jsx';
+import ClipboardGallery from './ClipboardGallery.jsx';
 import {
-  clipboardImageUrl,
   deleteClipboardImage,
   fetchClipboardImageBlob,
   listClipboardImages,
   uploadClipboardImage,
 } from './clipboardApi.js';
+import {
+  ADD_VIEW,
+  GALLERY_VIEW,
+  prependAdded,
+  uploadImageFiles,
+} from './clipboardSession.js';
 import {
   ClipboardWriteUnsupportedError,
   copyImageToClipboard,
@@ -19,28 +26,12 @@ import './clipboard.css';
 const POLL_INTERVAL_MS = 15000;
 const COPIED_RESET_MS = 1500;
 const CLIPBOARD_READ_SUPPORTED = isClipboardReadSupported();
-const TIME_FORMAT = new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'medium' });
-
-function formatBytes(value) {
-  const bytes = Number(value) || 0;
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function formatType(value) {
-  return typeof value === 'string' && value.startsWith('image/')
-    ? value.slice('image/'.length).toUpperCase()
-    : 'IMAGE';
-}
-
-function formatTime(value) {
-  const time = Date.parse(value);
-  return Number.isNaN(time) ? '시각 미상' : TIME_FORMAT.format(new Date(time));
-}
 
 function ClipboardImagesPanel({ isOpen, onClose }) {
+  // 도구는 닫힐 때 언마운트되므로 열 때마다 갤러리에서 시작한다.
+  const [view, setView] = useState(GALLERY_VIEW);
   const [images, setImages] = useState([]);
+  const [addedImages, setAddedImages] = useState([]);
   const [totalBytes, setTotalBytes] = useState(0);
   const [limits, setLimits] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -67,23 +58,19 @@ function ClipboardImagesPanel({ isOpen, onClose }) {
   }, []);
 
   const uploadFiles = useCallback(async (files) => {
-    if (!files?.length) return;
+    if (!files?.length) return [];
     setUploadingCount((count) => count + files.length);
-    let failure = '';
-    for (const file of files) {
-      try {
-        await uploadClipboardImage(file);
-      } catch (cause) {
-        failure = cause?.message || '이미지를 저장하지 못했습니다.';
-      } finally {
-        setUploadingCount((count) => Math.max(0, count - 1));
-      }
-    }
+    const { saved, error: failure } = await uploadImageFiles(files, uploadClipboardImage, {
+      onSettled: () => setUploadingCount((count) => Math.max(0, count - 1)),
+    });
+    setAddedImages((previous) => prependAdded(previous, saved));
     setError(failure);
     await refresh({ quiet: true });
+    return saved;
   }, [refresh]);
 
-  usePasteCapture(isOpen, uploadFiles);
+  // 붙여넣기 가로채기는 추가 화면에서만 건다. 갤러리에서는 기본 동작을 그대로 둔다.
+  usePasteCapture(isOpen && view === ADD_VIEW, uploadFiles);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -149,11 +136,19 @@ function ClipboardImagesPanel({ isOpen, onClose }) {
     }
   };
 
-  if (!isOpen) return null;
+  // 추가 화면은 들어갈 때마다 이번 세션 목록을 비운다.
+  const handleOpenAdd = () => {
+    setAddedImages([]);
+    setError('');
+    setView(ADD_VIEW);
+  };
 
-  const usage = limits
-    ? `사용량 ${formatBytes(totalBytes)} / ${formatBytes(limits.maxTotalBytes)} · ${images.length} / ${limits.maxItems}`
-    : `사용량 ${formatBytes(totalBytes)} · ${images.length}장`;
+  const handleBackToGallery = () => {
+    setError('');
+    setView(GALLERY_VIEW);
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="clip-overlay" onClick={onClose}>
@@ -174,14 +169,27 @@ function ClipboardImagesPanel({ isOpen, onClose }) {
             <span className="clip-header-title" id="clip-dialog-title">Clipboard Images</span>
           </div>
           <div className="clip-actions">
-            {CLIPBOARD_READ_SUPPORTED && (
-              <button type="button" className="clip-action-btn" onClick={handleImportFromClipboard}>
-                클립보드에서 가져오기
-              </button>
+            {view === GALLERY_VIEW ? (
+              <>
+                <button type="button" className="clip-action-btn" onClick={handleOpenAdd}>
+                  추가
+                </button>
+                <button type="button" className="clip-action-btn" onClick={() => refresh()} disabled={loading}>
+                  새로고침
+                </button>
+              </>
+            ) : (
+              <>
+                <button type="button" className="clip-action-btn" onClick={handleBackToGallery}>
+                  갤러리로
+                </button>
+                {CLIPBOARD_READ_SUPPORTED && (
+                  <button type="button" className="clip-action-btn" onClick={handleImportFromClipboard}>
+                    클립보드에서 가져오기
+                  </button>
+                )}
+              </>
             )}
-            <button type="button" className="clip-action-btn" onClick={() => refresh()} disabled={loading}>
-              새로고침
-            </button>
             <button type="button" className="clip-close-btn" onClick={onClose} aria-label="닫기">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -190,53 +198,25 @@ function ClipboardImagesPanel({ isOpen, onClose }) {
           </div>
         </div>
 
-        <p className="clip-hint">
-          Ctrl+V 또는 Cmd+V 로 이미지를 붙여넣으면 바로 저장됩니다. {usage}
-        </p>
-
-        {(uploadingCount > 0 || loading || error) && (
-          <div className={`clip-status${error ? ' clip-status--error' : ''}`} role="status">
-            {error || (uploadingCount > 0 ? `이미지 ${uploadingCount}장을 저장하고 있습니다.` : '목록을 불러오고 있습니다.')}
-          </div>
-        )}
-
-        <div className="clip-grid">
-          {images.map((image) => (
-            <article className="clip-card" key={image.id}>
-              <img
-                className="clip-card-image"
-                loading="lazy"
-                src={clipboardImageUrl(image.id)}
-                alt={`clip ${image.id}`}
-              />
-              <div className="clip-meta">
-                <span>{formatType(image.type)}</span>
-                <span>{formatBytes(image.bytes)}</span>
-                <span>{formatTime(image.createdAt)}</span>
-              </div>
-              <div className="clip-card-actions">
-                <button type="button" className="clip-card-btn" onClick={() => handleCopy(image.id)}>
-                  {copiedId === image.id ? '복사됨' : '복사'}
-                </button>
-                <a className="clip-card-btn" href={clipboardImageUrl(image.id)} target="_blank" rel="noopener noreferrer">
-                  원본 열기
-                </a>
-                <button
-                  type="button"
-                  className="clip-card-btn clip-card-btn--danger"
-                  onClick={() => handleDelete(image.id)}
-                  disabled={busyIds.includes(image.id)}
-                >
-                  삭제
-                </button>
-              </div>
-              {copyError?.id === image.id && <p className="clip-card-error">{copyError.message}</p>}
-            </article>
-          ))}
-        </div>
-
-        {images.length === 0 && !loading && (
-          <p className="clip-empty">저장된 이미지가 없습니다. 이미지를 복사한 뒤 Ctrl+V 를 누르세요.</p>
+        {view === GALLERY_VIEW ? (
+          <ClipboardGallery
+            images={images}
+            totalBytes={totalBytes}
+            limits={limits}
+            loading={loading}
+            error={error}
+            copiedId={copiedId}
+            copyError={copyError}
+            busyIds={busyIds}
+            onCopy={handleCopy}
+            onDelete={handleDelete}
+          />
+        ) : (
+          <ClipboardAddView
+            addedImages={addedImages}
+            uploadingCount={uploadingCount}
+            error={error}
+          />
         )}
       </div>
     </div>

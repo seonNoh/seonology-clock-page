@@ -29,7 +29,7 @@ src/App.jsx
   |     +-- features/bookmarks/          즐겨찾기 CRUD와 Quick Link
   |     +-- features/effects/            공용 커서 광원·애니메이션 카탈로그
   |     +-- features/tool-launcher/      도구 catalog와 실행 표면
-  |     +-- features/clipboard/          붙여넣기 이미지 업로드·목록·복사 경계
+  |     +-- features/clipboard/          갤러리·추가 화면과 붙여넣기 업로드·복사 경계
   |     +-- components/SnowField.jsx     독립적인 눈 효과
   +-- layouts/ClassicDashboard.jsx      기존 화면 호환 경계
   +-- components/Clock.jsx

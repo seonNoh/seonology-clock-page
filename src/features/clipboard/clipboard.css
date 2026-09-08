@@ -193,6 +193,87 @@
   text-align: center;
 }
 
+.clip-add {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  padding: 16px 20px 20px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.clip-paste-target {
+  display: flex;
+  min-height: 160px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  border: 1px dashed var(--tool-line-strong);
+  border-radius: 10px;
+  background: var(--tool-inner);
+  color: var(--tool-muted);
+  gap: 10px;
+  text-align: center;
+}
+
+.clip-paste-icon {
+  color: var(--tool-accent);
+}
+
+.clip-paste-text {
+  max-width: 42em;
+  margin: 0;
+  color: var(--tool-muted);
+}
+
+.clip-add .clip-status {
+  margin: 0;
+}
+
+.clip-added-summary {
+  margin: 0;
+  color: var(--tool-muted);
+}
+
+.clip-added-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  list-style: none;
+}
+
+.clip-added-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--tool-line);
+  border-radius: 8px;
+  background: var(--tool-inner);
+  gap: 10px;
+}
+
+.clip-added-thumb {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border: 1px solid var(--tool-line);
+  border-radius: 6px;
+  background: var(--tool-surface);
+  object-fit: contain;
+}
+
+.clip-added-meta {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: var(--tool-muted);
+  gap: 2px;
+}
+
 @media (max-width: 719px) {
   .clip-header {
     flex-wrap: wrap;
@@ -200,5 +281,9 @@
 
   .clip-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .clip-added-list {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 }

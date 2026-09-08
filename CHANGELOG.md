@@ -1,3 +1,9 @@
+## [1.59.0] - 2026-09-08
+
+### Features
+
+- feat: open clipboard tool as a gallery with an add view for multiple pastes
+
 ## [1.58.0] - 2026-09-07
 
 ### Features
