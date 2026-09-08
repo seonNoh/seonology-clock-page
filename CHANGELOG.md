@@ -1,3 +1,10 @@
+## [1.60.0] - 2026-09-08
+
+### Features
+
+- feat: rebuild briefing modal with tabs, source evidence, and font scaling
+- feat: add morning briefing card, modal, and event stream
+
 ## [1.59.0] - 2026-09-08
 
 ### Features
